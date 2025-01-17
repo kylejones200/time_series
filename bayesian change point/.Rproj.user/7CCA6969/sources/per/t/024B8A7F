@@ -1,0 +1,28 @@
+{
+    "id": "024B8A7F",
+    "path": "~/bayesian change point/Bayesian change point detection.Rmd",
+    "project_path": "Bayesian change point detection.Rmd",
+    "type": "r_markdown",
+    "hash": "593823901",
+    "contents": "",
+    "dirty": false,
+    "created": 1729522405024.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "chunk_output_type": "inline",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "68,0",
+        "scrollLine": "49"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1729527795,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1729527795784,
+    "read_only": false,
+    "read_only_alternatives": []
+}

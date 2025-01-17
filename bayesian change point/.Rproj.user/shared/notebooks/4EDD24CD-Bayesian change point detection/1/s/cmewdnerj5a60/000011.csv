@@ -1,0 +1,5 @@
+"0","library(boot)"
+"0","data(coal)"
+"0","y <- tabulate(floor(coal[[1]]))"
+"0","y <- y[1851:length(y)]"
+"0","barplot(y,xlab=""years"", ylab=""frequency of disasters"")"

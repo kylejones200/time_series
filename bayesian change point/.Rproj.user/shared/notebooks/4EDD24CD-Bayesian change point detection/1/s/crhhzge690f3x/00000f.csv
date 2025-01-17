@@ -1,0 +1,17 @@
+"0","require(changepoint)"
+"2","Loading required package: changepoint
+"
+"2","Loading required package: zoo
+"
+"2","
+Attaching package: ‘zoo’
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+"
+"2","Successfully loaded changepoint package version 2.2.4
+ See NEWS for details of changes.
+"

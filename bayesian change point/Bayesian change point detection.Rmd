@@ -1,0 +1,130 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(boot)
+data(coal)
+y <- tabulate(floor(coal[[1]]))
+y <- y[1851:length(y)]
+barplot(y,xlab="years", ylab="frequency of disasters")
+y
+```
+
+
+
+
+
+
+```{r}
+# initialization
+n <- length(y) # number of data elements to process
+m <- 1000 # target length of the chain
+L <- numeric(n) # likelihood fxn has one slot per year
+k <- 0
+mu <- 0
+lambda <- 0
+k[1] <- sample(1:n,1) # pick 1 random year to start at
+mu[1] <- 1
+lambda[1] <- 1
+b1 <- 1
+b2 <- 1
+# now set up blank 1000 element arrays for mu, lambda, and k
+mu <- lambda <- k <- numeric(m)
+```
+
+
+
+
+```{r}
+
+# start at 2, so you can use initialization values as seeds
+# and go through this process once for each of your m iterations
+for (i in 2:m) {
+ kt <- k[i-1] # start w/random year from initialization
+ # set your shape parameter to pick mu from, based on the characteristics
+ # of the early ("before") chunk of your data
+ r <- .5 + sum(y[1:kt]) 
+ # now use it to pick mu
+ mu[i] <- rgamma(1,shape=r,rate=kt+b1) 
+ # if you're at the end of the time periods, set your shape parameter
+ # to 0.5 + the sum of all the frequencies, otherwise, just set the shape
+ # parameter that you will use to pick lambda based on the later ("after")
+ # chunk of your data
+ if (kt+1 > n) r <- 0.5 + sum(y) else r <- 0.5 + sum(y[(kt+1):n])
+ lambda[i] <- rgamma(1,shape=r,rate=n-kt+b2)
+ # now use the mu and lambda values that you got to set b1 and b2 for next iteration
+ b1 <- rgamma(1,shape=.5,rate=mu[i]+1)
+ b2 <- rgamma(1,shape=.5,rate=lambda[i]+1)
+ # for each year, find value of LIKELIHOOD function which you will 
+ # then use to determine what year to hop to next
+ for (j in 1:n) {
+ L[j] <- exp((lambda[i]-mu[i])*j) * (mu[i]/lambda[i])^sum(y[1:j])
+ }
+ L <- L/sum(L)
+ # determine which year to hop to next
+ k[i] <- sample(1:n,prob=L,size=1)
+}
+```
+
+```{r}
+
+install.packages('changepoint')
+```
+
+
+```{r}
+require(changepoint)
+```
+
+
+```{r}
+
+b <- 201 # treats time until the 200th iteration as "burn-in"
+mean(k[b:m])
+
+mean(lambda[b:m])
+
+mean(mu[b:m])
+```
+
+
+
+```{r}
+results <- cpt.mean(y,penalty="MBIC",method="AMOC")
+cpts(results)
+
+#plot(results,cpt.col="blue",xlab="Year since Start", ylab="Hotdogs and Buns Consumed",cpt.width=4)
+```
+
+
+
+```{r}
+param.est(results)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+`
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+y
+```
+
+
+```{r}
+data <- read.csv("/Users/jnesnky/Documents/hd.csv")
+```
+
+
+```{r}
+results
+```
+
+
+
+```{r}
+y = tabulate(data)
+```

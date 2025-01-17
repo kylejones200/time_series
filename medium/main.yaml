@@ -1,0 +1,21 @@
+fred:
+  api_key: "YOUR_KEY_HERE"
+  series_id: "T10Y2Y"
+  api_url: "https://api.stlouisfed.org/fred/series/observations"
+  start_date: "2000-01-01"
+
+data:
+  lag: 3
+
+model:
+  n_splits: 5
+  mlp_params:
+    hidden_layer_sizes: [64, 32]
+    activation: "relu"
+    solver: "adam"
+    max_iter: 500
+    random_state: 42
+
+plot:
+  y_label: "Spread"
+  output_dir: "outputs"
