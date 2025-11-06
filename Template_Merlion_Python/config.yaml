@@ -1,0 +1,47 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  test_size: 0.2
+
+model:
+  task: "forecast"  # Options: "forecast", "anomaly"
+  forecaster_type: "ARIMA"  # Options: "Prophet", "ARIMA"
+  forecaster_params:
+    max_forecast_steps: 100
+  arima_order: [2, 1, 2]  # [p, d, q] for ARIMA
+  detector_type: "IsolationForest"  # Options: "IsolationForest", "AutoEncoder"
+  detector_params:
+    threshold: 3.0
+  forecast_horizon: 12
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "g"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  merlion_forecast: "Merlion Forecast"
+  merlion_anomalies: "Merlion Anomaly Detection"
+
+output:
+  plot_format: "png"
+  save_plots: true
+  output_dir: "outputs"
+

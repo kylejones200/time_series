@@ -1,0 +1,43 @@
+data:
+  input_file: "input.csv"
+  feature_cols: ["feature1", "feature2", "feature3"]
+  target_col: "label"
+
+model:
+  model_name: "bert-base-uncased"
+  num_labels: 2
+  max_length: 128
+  epochs: 3
+  batch_size: 8
+  warmup_steps: 500
+  weight_decay: 0.01
+  test_size: 0.2
+  random_state: 42
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+    legend:
+      frameon: false
+      loc: "best"
+    figure:
+      figsize: [12, 6]
+      dpi: 150
+    colors:
+      primary: "k"
+      secondary: "r"
+      accent: "b"
+    linewidth: 1.5
+    markersize: 4
+    alpha: 0.7
+
+output:
+  plot_format: "png"
+  save_plots: true
+  output_dir: "outputs"
+

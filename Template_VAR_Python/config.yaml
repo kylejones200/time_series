@@ -1,0 +1,37 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_cols: ["Industrial_Production", "Consumer_Price_Index"]  # List of column names for multivariate
+  test_size: 0.2
+
+model:
+  max_lags: 15
+  use_aic: true  # Use AIC for lag selection, false for BIC
+  force_differencing: false  # Force differencing even if series appear stationary
+  granger_test: true  # Perform Granger causality tests
+  granger_maxlag: 5  # Maximum lag for Granger tests
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "g"
+    - "r"
+  linewidth: 2
+  markersize: 3
+  alpha: 0.7
+
+plot_titles:
+  var_forecast: "VAR Forecast"
+

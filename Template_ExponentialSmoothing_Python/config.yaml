@@ -1,0 +1,41 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  test_size: 0.2
+
+model:
+  type: "triple"  # Options: "simple", "double", "triple"
+  smoothing_level: 0.5
+  smoothing_trend: 0.5
+  smoothing_seasonal: 0.5
+  trend: "add"  # Options: "add", "mul"
+  seasonal: "add"  # Options: "add", "mul"
+  seasonal_periods: 12
+  optimized: false
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "b"
+    - "g"
+    - "r"
+  linewidth: 2
+  markersize: 3
+  alpha: 0.7
+
+plot_titles:
+  exponential_smoothing: "Exponential Smoothing Forecast"
+

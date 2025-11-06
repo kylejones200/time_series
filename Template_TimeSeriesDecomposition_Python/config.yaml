@@ -1,0 +1,34 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  decomposition_model: "additive"  # Options: "additive", "multiplicative"
+  period: null  # Period for seasonal component (null for auto-detect)
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 12]
+  dpi: 150
+  colors:
+    - "k"
+    - "b"
+    - "g"
+    - "r"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  decomposition: "Time Series Decomposition"
+

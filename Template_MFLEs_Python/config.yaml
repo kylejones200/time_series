@@ -1,0 +1,41 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  train_size: 0.8
+  n_estimators: 100
+  max_depth: 10
+  random_state: 42
+  lags: [1, 2, 3, 7, 14]
+  windows: [7, 14, 30]
+  rolling_funcs: ["mean", "std"]
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+    legend:
+      frameon: false
+      loc: "best"
+    figure:
+      figsize: [12, 6]
+      dpi: 150
+    colors:
+      primary: "k"
+      secondary: "r"
+      accent: "b"
+    linewidth: 1.5
+    markersize: 4
+    alpha: 0.7
+
+output:
+  plot_format: "png"
+  save_plots: true
+  output_dir: "outputs"
+

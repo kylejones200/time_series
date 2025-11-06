@@ -1,0 +1,46 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  test_size: 0.2
+  val_size: 0.15
+
+model:
+  type: "lstm"  # Options: "lstm", "gru", "bidirectional_lstm"
+  sequence_length: 30
+  hidden_units: [64, 32]
+  dropout: 0.2
+  optimizer: "adam"
+  loss: "mse"
+  forecast_steps: 30
+
+training:
+  epochs: 100
+  batch_size: 32
+  patience: 10
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 3
+  alpha: 0.7
+
+plot_titles:
+  lstm_forecast: "LSTM Forecast vs Actual (Test Set)"
+  lstm_future: "Historical Data, Test Predictions & Future Forecast"
+

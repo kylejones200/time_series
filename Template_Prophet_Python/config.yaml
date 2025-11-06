@@ -1,0 +1,40 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  forecast_horizon: 12
+  yearly_seasonality: "auto"
+  weekly_seasonality: "auto"
+  daily_seasonality: false
+  seasonality_mode: "additive"
+  growth: "linear"
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+    legend:
+      frameon: false
+      loc: "best"
+    figure:
+      figsize: [12, 6]
+      dpi: 150
+    colors:
+      primary: "k"
+      secondary: "r"
+      accent: "b"
+    linewidth: 1.5
+    markersize: 4
+    alpha: 0.7
+
+output:
+  plot_format: "png"
+  save_plots: true
+  output_dir: "outputs"
+

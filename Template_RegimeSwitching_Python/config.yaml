@@ -1,0 +1,34 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  k_regimes: 2  # Number of regimes
+  trend: "c"  # Options: "c" (constant), "n" (none)
+  switching_variance: true  # Allow variance to switch between regimes
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "b"
+    - "r"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  regime_switching: "Regime Switching Model"
+

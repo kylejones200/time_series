@@ -1,0 +1,39 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  true_anomalies_col: null  # Optional: column with true anomaly labels for evaluation
+
+model:
+  use_stumpy: true
+  stumpy_window: 50  # Window size for matrix profile
+  stumpy_percentile: 98  # Percentile threshold for anomalies
+  
+  use_pyod: true
+  pyod_method: "IForest"  # Options: "IForest", "LOF", "OCSVM"
+  pyod_contamination: 0.1  # Expected proportion of anomalies
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  anomaly_detection: "STUMPY + PyOD Anomaly Detection"
+

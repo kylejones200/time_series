@@ -1,0 +1,36 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  y_col: "value"  # Dependent variable
+  x_cols: ["value"]  # Independent variables
+  create_lags: true  # Create lagged features
+  max_lags: 2  # Maximum lag order
+  test_lags: 10  # Number of lags for tests
+  apply_corrections: true  # Apply GLS, Cochrane-Orcutt, HAC corrections
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  serial_correlation: "Serial Correlation Analysis"
+

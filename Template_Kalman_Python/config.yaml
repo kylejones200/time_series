@@ -1,0 +1,46 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  state_dimension: 2
+  measurement_dimension: 1
+  initial_state: [0.0, 0.0]
+  state_transition:
+    - [1.0, 1.0]
+    - [0.0, 1.0]
+  measurement_matrix:
+    - [1.0, 0.0]
+  initial_covariance: 1000.0
+  measurement_noise: 5.0
+  process_noise: 0.1
+  dt: 1.0
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+    legend:
+      frameon: false
+      loc: "best"
+    figure:
+      figsize: [12, 6]
+      dpi: 150
+    colors:
+      primary: "k"
+      secondary: "r"
+      accent: "b"
+    linewidth: 1.5
+    markersize: 4
+    alpha: 0.7
+
+output:
+  plot_format: "png"
+  save_plots: true
+  output_dir: "outputs"
+

@@ -1,3 +1,0 @@
-"0","y = tabulate(data)"
-"2","Error in tabulate(data) : 'bin' must be numeric or a factor
-"

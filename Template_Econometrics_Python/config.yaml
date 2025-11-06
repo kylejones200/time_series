@@ -1,0 +1,47 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"  # For univariate methods
+  value_cols: ["var1", "var2"]  # For multivariate methods (VAR)
+
+model:
+  method: "granger"  # Options: "granger", "rdd", "ols", "var"
+  
+  # Granger Causality
+  x_col: "var1"  # Variable that may cause y_col
+  y_col: "var2"  # Variable that may be caused by x_col
+  max_lag: 5
+  
+  # Regression Discontinuity
+  cutoff_date: "2020-03-01"  # Cutoff date for RDD
+  
+  # OLS Regression
+  x_cols: ["var1", "var2"]  # Independent variables
+  
+  # VAR
+  var_max_lags: 15
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "b"
+    - "r"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  rdd_analysis: "Regression Discontinuity Design Analysis"
+

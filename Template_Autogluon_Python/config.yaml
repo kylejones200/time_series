@@ -1,0 +1,40 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  item_id_col: null  # Optional: column name for item_id (for multivariate)
+  item_id: "default"  # Default item_id if item_id_col is null
+  test_size: 0.2
+
+model:
+  prediction_length: 30
+  freq: "D"  # Frequency: "D" (daily), "H" (hourly), "M" (monthly), etc.
+  eval_metric: "MAPE"  # Options: "MAPE", "sMAPE", "MASE", "MSE", "RMSE"
+  model_path: "autogluon_model"
+  presets: null  # Options: "best_quality", "high_quality", "good_quality", "medium_quality", "medium_quality_faster_train", "fast_training"
+  hyperparameters: {}  # Model-specific hyperparameters
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "g"
+    - "r"
+  linewidth: 2
+  markersize: 3
+  alpha: 0.7
+
+plot_titles:
+  autogluon_forecast: "AutoGluon Time Series Forecast"
+

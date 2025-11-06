@@ -1,0 +1,11 @@
+pandas>=2.2
+numpy>=1.26
+matplotlib>=3.8
+scikit-learn>=1.4
+statsmodels>=0.14
+pmdarima>=2.0
+tensorflow>=2.16
+torch>=2.2
+openpyxl>=3.1
+tqdm>=4.66
+seaborn>=0.13

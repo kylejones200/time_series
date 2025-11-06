@@ -1,0 +1,34 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  n_clusters: 3  # Number of clusters
+  metric: "dtw"  # Options: "euclidean", "dtw", "softdtw"
+  max_iter: 50  # Maximum iterations
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "b"
+    - "r"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  tslearn_clustering: "tslearn Time Series Clustering"
+
