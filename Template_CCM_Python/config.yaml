@@ -1,0 +1,40 @@
+data:
+  series1_file: "series1.csv"
+  series2_file: "series2.csv"
+  date_col: "date"
+  series1_col: "value"
+  series2_col: "value"
+  series1_name: "Series 1"
+  series2_name: "Series 2"
+
+model:
+  delay: 10  # Time delay for embedding
+  dimension: 3  # Embedding dimension
+  n_neighbors: null  # Number of neighbors (default: dimension + 1)
+  normalize: true  # Normalize series before analysis
+  causality_threshold: 0.1  # Threshold for bidirectional causality detection
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+output:
+  output_dir: "outputs"
+

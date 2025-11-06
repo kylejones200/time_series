@@ -11,12 +11,16 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
 import warnings
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, StackingRegressor
+from sklearn.linear_model import Ridge
+from sklearn.svm import SVR
 from sklearn.model_selection import train_test_split
+from xgboost import XGBRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot
-from utils.ts_utils import load_ts_data, split_ts, create_time_features, create_lags, create_rolling_features, detect_frequency
+from utils.plotting_utils import setup_figure, apply_legend, save_plot, apply_plot_style
+from utils.ts_utils import load_ts_data, ensure_datetime_index, split_ts, create_time_features, create_lags, create_rolling_features
 
 warnings.filterwarnings('ignore')
 
@@ -41,12 +45,34 @@ def extract_frequency_components(data, config):
 
 
 def create_ensemble_model(config):
-    """Create ensemble model."""
-    return RandomForestRegressor(
-        n_estimators=config['model'].get('n_estimators', 100),
-        max_depth=config['model'].get('max_depth', 10),
-        random_state=config['model'].get('random_state', 42)
-    )
+    """Create ensemble model based on type."""
+    model_type = config['model']['ensemble_type']
+    random_state = config['model'].get('random_state', 42)
+    
+    model_map = {
+        'bagging': lambda: RandomForestRegressor(
+            n_estimators=config['model'].get('n_estimators', 100),
+            max_depth=config['model'].get('max_depth', 10),
+            random_state=random_state
+        ),
+        'boosting': lambda: XGBRegressor(
+            n_estimators=config['model'].get('n_estimators', 100),
+            learning_rate=config['model'].get('learning_rate', 0.1),
+            max_depth=config['model'].get('max_depth', 6),
+            random_state=random_state
+        ),
+        'stacking': lambda: StackingRegressor(
+            estimators=[
+                ('rf', RandomForestRegressor(n_estimators=50, random_state=random_state)),
+                ('gbr', GradientBoostingRegressor(n_estimators=50, random_state=random_state)),
+                ('svr', SVR(kernel='rbf'))
+            ],
+            final_estimator=Ridge(),
+            cv=config['model'].get('cv_folds', 5)
+        ),
+    }
+    
+    return model_map.get(model_type, model_map['bagging'])()
 
 
 def fit_and_predict(model, X_train, y_train, X_test, config):
@@ -59,74 +85,80 @@ def fit_and_predict(model, X_train, y_train, X_test, config):
 def create_visualizations(data, train_data, test_data, predictions, config):
     """Generate clean visualizations."""
     output_dir = Path(__file__).parent / config['output']['output_dir']
-    output_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    fig, ax = setup_figure(config)
+    fig, ax = setup_figure(config['plotting']['figure_size'], config['plotting']['dpi'])
+    apply_plot_style(ax, {'plotting': config['plotting']})
     
     ax.plot(train_data.index, train_data.values,
-            c=config['plotting']['style']['colors']['primary'],
-            linewidth=config['plotting']['style']['linewidth'],
-            alpha=config['plotting']['style']['alpha'],
-            label='Train')
+            'k-', linewidth=config['plotting']['linewidth'],
+            alpha=config['plotting']['alpha'], label='Train')
     
-    [ax.plot(test_data.index, test_data.values,
-             c=config['plotting']['style']['colors']['accent'],
-             linewidth=config['plotting']['style']['linewidth'],
-             alpha=config['plotting']['style']['alpha'],
-             label='Test')
-     for _ in [None] if test_data is not None]
+    if test_data is not None:
+        ax.plot(test_data.index, test_data.values,
+                'g-', linewidth=config['plotting']['linewidth'],
+                alpha=config['plotting']['alpha'], label='Test')
     
-    forecast_index = pd.date_range(
-        start=test_data.index[0] if test_data is not None else train_data.index[-1] + pd.Timedelta(days=1),
+    forecast_index = test_data.index if test_data is not None else pd.date_range(
+        start=train_data.index[-1] + pd.Timedelta(days=1),
         periods=len(predictions),
-        freq=detect_frequency(train_data)
+        freq='D'
     )
     
     ax.plot(forecast_index, predictions,
-            c=config['plotting']['style']['colors']['secondary'],
-            linewidth=config['plotting']['style']['linewidth'],
+            'r--', linewidth=config['plotting']['linewidth'],
             label='Forecast')
     
+    ax.set_title(config['plot_titles']['mfles_forecast'])
     ax.set_xlabel('Date')
     ax.set_ylabel('Value')
-    apply_legend(ax, config)
+    apply_legend(ax, config['plotting']['legend'])
     
-    plt.tight_layout()
-    
-    [save_plot(fig, output_dir / 'mfles_forecast.png', config)
-     for _ in [None] if config['output']['save_plots']]
+    output_path = output_dir / 'mfles_forecast.png'
+    save_plot(fig, output_path)
     plt.show()
 
 
 def main():
     """Main execution function."""
     config = load_config()
-    data = load_ts_data(
-        Path(__file__).parent.parent / 'data' / config['data']['input_file'],
+    
+    df = load_ts_data(
+        data_path=Path(__file__).parent.parent / 'data' / config['data']['input_file'],
         date_col=config['data']['date_col'],
         value_col=config['data']['value_col']
     )
+    df = ensure_datetime_index(df, time_col=config['data']['date_col'])
     
-    features = extract_frequency_components(data, config)
-    features = features.dropna()
+    train_df, test_df = split_ts(df, test_size=config['data']['test_size'])
     
-    X = features.drop('value', axis=1)
-    y = features['value']
+    features_train = extract_frequency_components(train_df[config['data']['value_col']], config)
+    features_test = extract_frequency_components(test_df[config['data']['value_col']], config)
     
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=1 - config['model'].get('train_size', 0.8),
-        random_state=config['model'].get('random_state', 42)
-    )
+    features_train = features_train.dropna()
+    features_test = features_test.dropna()
+    
+    X_train = features_train.drop(config['data']['value_col'], axis=1)
+    y_train = features_train[config['data']['value_col']]
+    X_test = features_test.drop(config['data']['value_col'], axis=1)
+    y_test = features_test[config['data']['value_col']]
     
     model = create_ensemble_model(config)
     predictions = fit_and_predict(model, X_train, y_train, X_test, config)
     
-    train_data = data.iloc[:len(y_train)]
-    test_data = data.iloc[len(y_train):len(y_train) + len(y_test)] if len(y_test) > 0 else None
+    mae = mean_absolute_error(y_test, predictions)
+    rmse = np.sqrt(mean_squared_error(y_test, predictions))
+    r2 = r2_score(y_test, predictions)
     
-    create_visualizations(data, train_data, test_data, predictions, config)
+    print(f"\nModel Evaluation ({config['model']['ensemble_type']}):")
+    print(f"MAE: {mae:.4f}")
+    print(f"RMSE: {rmse:.4f}")
+    print(f"R²: {r2:.4f}")
     
-    print("✓ MFLEs ensemble forecasting complete")
+    create_visualizations(df, train_df[config['data']['value_col']], 
+                         test_df[config['data']['value_col']], predictions, config)
+    
+    print(f"✓ MFLEs {config['model']['ensemble_type']} ensemble forecasting complete")
 
 
 if __name__ == "__main__":

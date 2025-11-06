@@ -1,0 +1,39 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+
+model:
+  method: "bayesian"  # Options: "bayesian", "frequentist"
+  lambda_prior: 1.0  # Prior for lambda parameters
+  draws: 2000  # Number of MCMC samples
+  tune: 1000  # Number of tuning samples
+  chains: 2  # Number of chains
+  cores: 2  # Number of CPU cores
+  burn_in: 500  # Burn-in samples to discard
+  random_seed: 42
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  change_point: "Change Point Detection"
+

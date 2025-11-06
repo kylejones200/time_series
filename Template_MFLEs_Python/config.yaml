@@ -2,11 +2,14 @@ data:
   input_file: "input.csv"
   date_col: "date"
   value_col: "value"
+  test_size: 0.2
 
 model:
-  train_size: 0.8
+  ensemble_type: "stacking"  # Options: "bagging", "boosting", "stacking"
   n_estimators: 100
   max_depth: 10
+  learning_rate: 0.1  # For boosting
+  cv_folds: 5  # For stacking
   random_state: 42
   lags: [1, 2, 3, 7, 14]
   windows: [7, 14, 30]
@@ -20,22 +23,22 @@ plotting:
       bottom: true
       left: true
     grid: false
-    legend:
-      frameon: false
-      loc: "best"
-    figure:
-      figsize: [12, 6]
-      dpi: 150
-    colors:
-      primary: "k"
-      secondary: "r"
-      accent: "b"
-    linewidth: 1.5
-    markersize: 4
-    alpha: 0.7
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [12, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  mfles_forecast: "MFLEs Ensemble Forecast"
 
 output:
-  plot_format: "png"
-  save_plots: true
   output_dir: "outputs"
 

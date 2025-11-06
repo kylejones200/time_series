@@ -4,7 +4,7 @@ A comprehensive collection of time series forecasting and analysis templates, or
 
 ## 🎯 Overview
 
-This repository contains **31 production-ready Python templates** for time series analysis, from classical statistical methods to cutting-edge deep learning approaches. Each template is self-contained, config-driven, and follows pythonic best practices.
+This repository contains **34 production-ready Python templates** for time series analysis, from classical statistical methods to cutting-edge deep learning approaches. Each template is self-contained, config-driven, and follows pythonic best practices.
 
 ## 📁 Structure
 
@@ -53,38 +53,41 @@ time_series/
 
 ### Bayesian & Statistical
 7. **Bayesian** - PyMC Bayesian time series modeling
-8. **Orbit** - Bayesian structural time series
-9. **Nixtla** - StatsForecast fast statistical forecasting
+8. **BayesianChangePoint** - Bayesian change point detection (MCMC)
+9. **Orbit** - Bayesian structural time series
+10. **Nixtla** - StatsForecast fast statistical forecasting
 
 ### Modern Forecasting Libraries
-10. **Prophet** - Facebook's Prophet
-11. **Greykite** - LinkedIn's forecasting library
-12. **Darts** - Unified forecasting interface
-13. **PyCaret** - Low-code time series forecasting
+11. **Prophet** - Facebook's Prophet
+12. **Greykite** - LinkedIn's forecasting library
+13. **Darts** - Unified forecasting interface
+14. **PyCaret** - Low-code time series forecasting
 
 ### Deep Learning
-14. **LSTM** - Long Short-Term Memory networks for time series
-15. **NBEATS** - Neural Basis Expansion Analysis
-16. **TSAI** - Deep learning for time series
-17. **BERT** - Time series classification with BERT
+15. **LSTM** - Long Short-Term Memory networks for time series
+16. **NBEATS** - Neural Basis Expansion Analysis
+17. **TSAI** - Deep learning for time series
+18. **BERT** - Time series classification with BERT
 
 ### Feature Engineering & Analysis
-18. **TSFresh** - Automated feature extraction
-19. **Aeon** - Time series analysis toolkit
-20. **Kalman** - State space models (Kalman filters)
+19. **TSFresh** - Automated feature extraction
+20. **Aeon** - Time series analysis toolkit
+21. **Kalman** - State space models (Kalman filters)
 
 ### Specialized
-21. **Merlion** - Forecasting & anomaly detection (enhanced with ARIMA and AutoEncoder)
-22. **MFLEs** - Multi-frequency learning ensemble
-23. **Autogluon** - Automated time series forecasting
-24. **Econometrics** - Causal inference and econometric methods (Granger, RDD, OLS, VAR)
-25. **STUMPY_PyOD** - Matrix profile and outlier detection
-26. **BollingerBands** - Technical indicators
-27. **SerialCorrelation** - Serial correlation tests and corrections
-28. **ConfidenceIntervals** - Bootstrap and parametric confidence intervals
-29. **RegimeSwitching** - Markov switching models
-30. **TimeSeriesDecomposition** - Trend, seasonal, and residual decomposition
-31. **tslearn** - Time series machine learning (clustering, DTW)
+22. **Merlion** - Forecasting & anomaly detection (enhanced with ARIMA and AutoEncoder)
+23. **MFLEs** - Multi-frequency learning ensemble
+24. **Autogluon** - Automated time series forecasting
+25. **Econometrics** - Causal inference and econometric methods (Granger, RDD, OLS, VAR)
+26. **CCM** - Convergent Cross Mapping for causal inference
+27. **SparseRegression** - LASSO/Ridge/Elastic Net with automatic feature selection
+28. **STUMPY_PyOD** - Matrix profile and outlier detection
+29. **BollingerBands** - Technical indicators
+30. **SerialCorrelation** - Serial correlation tests and corrections
+31. **ConfidenceIntervals** - Bootstrap and parametric confidence intervals
+32. **RegimeSwitching** - Markov switching models
+33. **TimeSeriesDecomposition** - Trend, seasonal, and residual decomposition
+34. **tslearn** - Time series machine learning (clustering, DTW)
 
 ## 🛠️ Shared Utilities
 

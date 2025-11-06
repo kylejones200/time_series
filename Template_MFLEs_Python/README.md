@@ -12,7 +12,9 @@ pip install -r requirements.txt
 
 Edit `config.yaml` to customize:
 - **Data**: Input file path and column names
-- **Model**: Ensemble parameters, lag features, rolling windows
+- **Model**: 
+  - `ensemble_type`: "bagging", "boosting", or "stacking"
+  - Ensemble parameters, lag features, rolling windows
 - **Plotting**: Visualization styling
 - **Output**: Plot settings
 
@@ -24,9 +26,14 @@ python main.py
 
 ## Features
 
-- Multi-frequency feature extraction
-- Ensemble learning
-- Automatic feature engineering
+- ✅ Multi-frequency feature extraction
+- ✅ Lag features
+- ✅ Rolling window statistics
+- ✅ **Bagging**: Random Forest ensemble
+- ✅ **Boosting**: XGBoost gradient boosting
+- ✅ **Stacking**: Multi-model stacking with meta-learner
+- ✅ Model evaluation metrics (MAE, RMSE, R²)
+- ✅ Automatic feature engineering
 
 ## Outputs
 
