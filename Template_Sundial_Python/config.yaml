@@ -1,0 +1,46 @@
+data:
+  series_id: "DCOILWTICO"  # FRED series ID (e.g., crude oil WTI)
+  start_date: "2000-01-01"
+  resample_rule: "D"  # Resample rule (e.g., "D", "M", or null)
+
+model:
+  huggingface_model: "thuml/sundial-base-128m"
+  lookback_length: 256  # Number of past observations to feed the model
+  forecast_length: 96   # Forecast horizon
+  num_samples: 10  # Number of stochastic samples for uncertainty
+  generation:
+    do_sample: true
+    temperature: 1.0
+    top_p: 0.9
+    top_k: 0
+
+plotting:
+  history_window: 730  # Days of history to show in the plot
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 8]
+  dpi: 150
+  colors:
+    - "k"
+    - "#1f77b4"
+    - "#ff7f0e"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  forecast: "Sundial Transformer Forecast"
+
+evaluation:
+  compare_to_actual: true  # Compare forecast with held-out actual values
+
+output:
+  output_dir: "outputs"
