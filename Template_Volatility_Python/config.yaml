@@ -1,0 +1,40 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  test_size: 0.2
+  compute_returns: true  # If true, compute returns from prices; if false, use values directly
+
+model:
+  type: "GARCH"  # Options: "ARCH", "GARCH", "EGARCH"
+  p: 1  # ARCH order
+  q: 1  # GARCH order (ignored for ARCH)
+  distribution: "normal"  # Options: "normal", "t", "skewt"
+  forecast_horizon: 10  # Number of steps ahead to forecast
+  update_freq: 1  # Update frequency during fitting
+  disp: "off"  # Display option: "off", "final", "iter"
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+output:
+  output_dir: "outputs"
+

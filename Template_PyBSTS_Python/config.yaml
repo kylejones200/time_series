@@ -1,0 +1,45 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  test_size: 0.2
+
+model:
+  distribution: "gaussian"  # Options: "gaussian", "poisson", "logit"
+  ar_order: 1  # Autoregressive order
+  local_level: true  # Include local level component
+  local_slope: false  # Include local slope component
+  seasonal_period: null  # Seasonal period (null = no seasonality)
+  niter: 1000  # Number of MCMC iterations
+  burn: 100  # Burn-in iterations
+  forecast_horizon: 25  # Number of steps ahead to forecast
+  ping: 100  # Print progress every N iterations
+  random_seed: 1  # Random seed for reproducibility
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 8]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  forecast: "BSTS Forecast (pybsts)"
+
+output:
+  output_dir: "outputs"
+

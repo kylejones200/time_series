@@ -1,0 +1,40 @@
+data:
+  series1_file: "series1.csv"
+  series2_file: "series2.csv"
+  date_col: "date"
+  series1_col: "value"
+  series2_col: "value"
+  series1_name: "Series 1"
+  series2_name: "Series 2"
+  difference: true  # Whether to difference the series before analysis
+
+model:
+  k: 1  # Lag order for transfer entropy
+  bins: 3  # Number of bins for discretization
+  compute_rolling: true  # Whether to compute rolling transfer entropy
+  rolling_window: 100  # Window size for rolling computation
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 10]
+  dpi: 150
+  colors:
+    - "k"
+    - "r"
+    - "b"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+output:
+  output_dir: "outputs"
+
