@@ -1,43 +1,17 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
+  freq: "MS"
 
 model:
-  train_size: 0.8
-  forecast_horizon: 12
-  input_chunk_length: 24
+  horizon: 12
+  n_splits: 5
+  input_chunk_length: 36
   output_chunk_length: 12
-  num_stacks: 30
-  num_blocks: 1
-  num_layers: 4
-  layer_widths: 512
-  n_epochs: 100
-
-plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-    legend:
-      frameon: false
-      loc: "best"
-    figure:
-      figsize: [12, 6]
-      dpi: 150
-    colors:
-      primary: "k"
-      secondary: "r"
-      accent: "b"
-    linewidth: 1.5
-    markersize: 4
-    alpha: 0.7
+  n_epochs: 50
 
 output:
-  plot_format: "png"
-  save_plots: true
+  tufte_plot: "eia_nbeats_last_fold.png"
   output_dir: "outputs"
 

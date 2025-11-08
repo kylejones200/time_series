@@ -1,33 +1,32 @@
-# ARIMA: Autoregressive Integrated Moving Average
+# ARIMA Baselines (EIA Net Generation)
 
-Classical time series forecasting using ARIMA models.
+This template reproduces the classical baselines from the 2025‑11‑08 article:
+- SARIMAX univariate vs calendar exogenous
+- Linear calendar baseline
+- ETS/SARIMAX ensemble
+- Online SARIMAX streaming forecast
 
-## Setup
+## Installation
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Configuration
+## Usage
 
-Edit `config.yaml` to customize:
-- **Data**: Input file path and column names
-- **Model**: Model type (auto/manual), order parameters, forecast horizon
-- **Plotting**: Visualization styling
-- **Output**: Plot settings
-
-## Run
+1. Expected dataset: `data/Net_generation_United_States_all_sectors_monthly.csv`
+2. `config.yaml` controls horizon, number of rolling splits, and seasonal period.
+3. Run:
 
 ```bash
 python main.py
 ```
 
-## Model Types
+## Generated Assets
 
-- **auto**: Automatically select optimal ARIMA order using pmdarima
-- **manual**: Use specified order (p, d, q)
+- `outputs/eia_uni_vs_multi_last_fold.png`
+- `outputs/eia_ba_baseline.png`
+- `outputs/eia_ensemble_last_fold.png`
+- `outputs/eia_streaming_last.png`
 
-## Outputs
-
-Forecast plots saved to `outputs/` directory.
-
+Console output reports the MAE for each scenario exactly as listed in the article.*** End Patch

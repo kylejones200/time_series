@@ -1,7 +1,7 @@
 data:
-  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
-  date_col: "date"
-  value_col: "value"
+  input_file: "Net_generation_United_States_all_sectors_monthly_ml-ready.csv"
+  date_col: "Month"
+  value_col: "all fuels (utility-scale) thousand megawatthours"
   resample_rule: null
   frequency: "MS"
 
@@ -9,7 +9,7 @@ model:
   huggingface_model: "amazon/chronos-t5-tiny"
   prediction_length: 8
   context_length: null
-  num_samples: 50
+  num_samples: 100
   device_map: "cpu"
   torch_dtype: "float32"
 
@@ -19,7 +19,7 @@ plotting:
     history_end: "2024-12-01"
     actual_start: "2025-01-01"
     actual_end: "2025-08-01"
-    output_plot: "eia_chronos_last_fold.png"
+    output_plot: "chronos_tufte.png"
   forecast:
     title: "Chronos Forecast"
     output_plot: "chronos_forecast.png"

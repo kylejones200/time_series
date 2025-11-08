@@ -1,41 +1,21 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
-  test_size: 0.2
+  freq: "MS"
 
-model:
-  type: "triple"  # Options: "simple", "double", "triple"
-  smoothing_level: 0.5
-  smoothing_trend: 0.5
-  smoothing_seasonal: 0.5
-  trend: "add"  # Options: "add", "mul"
-  seasonal: "add"  # Options: "add", "mul"
-  seasonal_periods: 12
-  optimized: false
+evaluation:
+  horizon: 12
+  n_splits: 5
+  season: 12
 
-plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-  legend:
-    frameon: false
-    loc: "best"
-  figure_size: [15, 6]
-  dpi: 150
-  colors:
-    - "k"
-    - "b"
-    - "g"
-    - "r"
-  linewidth: 2
-  markersize: 3
-  alpha: 0.7
+experiment:
+  history_end: "2024-12-01"
+  forecast_start: "2025-01-01"
+  forecast_end: "2025-08-01"
 
-plot_titles:
-  exponential_smoothing: "Exponential Smoothing Forecast"
+output:
+  ets_plot: "eia_expsmooth_last_fold.png"
+  comparison_plot: "eia_generation_last_fold.png"
+  output_dir: "outputs"
 

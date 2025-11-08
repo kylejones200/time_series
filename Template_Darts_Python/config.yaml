@@ -1,38 +1,46 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
+  freq: "MS"
 
-model:
-  type: "ExponentialSmoothing"
-  train_size: 0.8
-  forecast_horizon: 12
-  params: {}
+evaluations:
+  tufte_last_fold:
+    horizon: 8
+    n_splits: 5
+    history_start: "2024-01-01"
+    history_end: "2024-12-01"
+    actual_start: "2025-01-01"
+    actual_end: "2025-08-01"
+    output_plot: "eia_darts_tbats_last_fold.png"
+    tbats_csv: "Template_Darts_Python/data/eia_preds_tbats.csv"
+  overview_last_fold:
+    horizon: 12
+    n_splits: 5
+    output_plot: "eia_darts_overview_last_fold.png"
 
-plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-    legend:
-      frameon: false
-      loc: "best"
-    figure:
-      figsize: [12, 6]
-      dpi: 150
-    colors:
-      primary: "k"
-      secondary: "r"
-      accent: "b"
-    linewidth: 1.5
-    markersize: 4
-    alpha: 0.7
+models:
+  tufte_last_fold:
+    - name: "ARIMA"
+      type: "ARIMA"
+      params:
+        p: 1
+        d: 1
+        q: 1
+    - name: "Theta"
+      type: "Theta"
+      params: {}
+  overview_last_fold:
+    - name: "ETS"
+      type: "ExponentialSmoothing"
+      params:
+        seasonal_periods: 12
+    - name: "NaiveSeasonal"
+      type: "NaiveSeasonal"
+      params:
+        K: 12
 
 output:
-  plot_format: "png"
-  save_plots: true
+  save_predictions_csv: "eia_preds_darts.csv"
   output_dir: "outputs"
 

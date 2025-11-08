@@ -1,47 +1,10 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
-  filter_by_time: false
-  start_date: null  # e.g., "2020-01-01"
-  end_date: null  # e.g., "2023-12-31"
-
-features:
-  rolling_windows: [7, 14, 30]  # Rolling window sizes
-  center: false  # Center rolling windows
-  threads: 1  # Number of threads for parallel processing
-  fourier_terms: true  # Add Fourier terms for seasonality
-  fourier_periods: null  # Fourier periods (null = auto)
-  fourier_K: 1  # Number of Fourier terms
-  lags: [1, 2, 3, 7, 14]  # Lag features to create
-
-plotting:
-  engine: "matplotlib"  # Options: "matplotlib", "plotly"
-  date_format: "%Y-%m"  # Date format for x-axis
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-  legend:
-    frameon: false
-    loc: "best"
-  figure_size: [15, 8]
-  dpi: 150
-  colors:
-    - "k"
-    - "r"
-    - "b"
-  linewidth: 2
-  markersize: 4
-  alpha: 0.7
-
-plot_titles:
-  time_series: "Time Series with PyTimeTK"
+  freq: "MS"
 
 output:
+  pytimetk_plot: "eia_pytimetk_viz.png"
+  overview_plot: "eia_viz.png"
   output_dir: "outputs"
-  save_features: true  # Save features to CSV
-

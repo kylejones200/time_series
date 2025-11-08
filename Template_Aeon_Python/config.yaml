@@ -1,39 +1,23 @@
 data:
-  input_file: "input.csv"
-  source: "csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
+  freq: "MS"
 
-model:
-  type: "ARIMA"
-  params:
-    order: [1, 1, 1]
-  forecast_horizon: 12
+clustering:
+  n_clusters: 3
+  distance: "dtw"
+  season_length: 12
 
 plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-    legend:
-      frameon: false
-      loc: "best"
-    figure:
-      figsize: [12, 6]
-      dpi: 150
-    colors:
-      primary: "k"
-      secondary: "r"
-      accent: "b"
-    linewidth: 1.5
-    markersize: 4
-    alpha: 0.7
+  colors:
+    clusters: ["#1f77b4", "#ff7f0e", "#2ca02c"]
+    history: "#888888"
+    actual: "#444444"
+  figsize: [16, 10]
+  dpi: 150
 
 output:
-  plot_format: "png"
-  save_plots: true
+  cluster_summary_plot: "eia_aeon_ts_clusters.png"
   output_dir: "outputs"
 

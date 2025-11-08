@@ -1,16 +1,13 @@
-# Chronos Transformer Forecasting
+# Chronos Transformer Forecasting (EIA Net Generation)
 
-Template for running Amazon’s Chronos time-series models via the
-`ChronosPipeline`. It follows the same config-driven structure used across the
-repo.
+This template mirrors the setup used in the 2025‑11‑08 Chronos article, forecasting US EIA net generation for Jan–Aug 2025 with the `amazon/chronos-t5-tiny` pipeline.
 
 ## Features
 
-- ✅ Loads time series from CSV (`config.yaml` controls columns and resampling)
-- ✅ Uses `amazon/chronos-*` models from Hugging Face
-- ✅ Configurable context length, prediction length, samples, dtype
-- ✅ Produces forecast CSV + PNG with history, forecast, and 80% interval
-- ✅ Saves evaluation metrics (MAE, RMSE, MAPE)
+- ✅ Loads the monthly EIA series defined in `config.yaml`
+- ✅ Configurable Chronos model, context length, sampling, and dtype
+- ✅ Generates both the publication Tufte-style plot and the standard forecast view
+- ✅ Saves forecast CSV plus MAE/RMSE/MAPE metrics
 
 ## Installation
 
@@ -18,34 +15,26 @@ repo.
 pip install -r requirements.txt
 ```
 
-> If the chosen Chronos model requires authentication, export
-> `HF_TOKEN=<your-token>` before running.
+> If the chosen Chronos model requires authentication, export `HF_TOKEN=<your-token>` before running.
 
 ## Usage
 
-1. Place your time series in `data/` (default uses
-   `amtrak_ridership_time_series_data.csv`).
-2. Adjust `config.yaml` for column names, forecast horizon, model name, etc.
-3. Run the template:
+1. Ensure `data/Net_generation_United_States_all_sectors_monthly.csv` is available (default path in `config.yaml`).
+2. Adjust `prediction_length`, `context_length`, or switch models via `config.yaml`.
+3. Run:
 
 ```bash
 python main.py
 ```
 
-The defaults aggregate ridership by year; modify the data-loading logic if you
-need a different granularity.
-
-Outputs are written to `outputs/`:
+Outputs land in `outputs/`:
 
 - `chronos_forecast.csv`
-- `chronos_forecast.png`
 - `chronos_metrics.yaml`
+- `chronos_forecast.png`
+- `eia_chronos_last_fold.png`
 
 ## Notes
 
-- `torch_dtype: float32` works universally; `bfloat16`/`float16` need hardware
-  support.
-- `context_length` defaults to the last 256 observations; increase/decrease as
-  needed but it must exceed `prediction_length`.
-- The template uses simple train/test split (last `prediction_length` points as
-  hold-out). Feel free to extend it with rolling backtests.
+- `torch_dtype: float32` is a safe default; half-precision dtypes need GPU/CPU support.
+- The script compares the Chronos median forecast against the last eight observed months (Jan–Aug 2025). Adjust the window via `plotting.tufte` in `config.yaml`.

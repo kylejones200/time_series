@@ -1,242 +1,218 @@
 #!/usr/bin/env python3
-"""
-Sparse Regression (LASSO) for Time Series
-LASSO regression with automatic feature selection for time series forecasting.
-"""
+"""Feature importance and supervised-learning visuals aligned with the 2025-11-08 article assets."""
 
-import yaml
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from __future__ import annotations
+
+from dataclasses import dataclass
 from pathlib import Path
-import sys
-import warnings
-from sklearn.linear_model import LassoCV, RidgeCV, ElasticNetCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.pipeline import make_pipeline
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import yaml
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot, apply_plot_style
-from utils.ts_utils import load_ts_data, ensure_datetime_index, split_ts, create_lags, create_rolling_features
-
-warnings.filterwarnings('ignore')
+from sklearn.model_selection import TimeSeriesSplit
 
 
-def load_config(config_path="config.yaml"):
-    """Load configuration from YAML file."""
+@dataclass
+class Config:
+    data_path: Path
+    date_col: str
+    value_col: str
+    season: int
+    n_splits: int
+    window_size: int
+    output_dir: Path
+    rf_plot: Path
+    supervised_forecast_plot: Path
+    supervised_importance_plot: Path
+    seasonal_pattern_plot: Path
+    fuel_mix_plot: Path
+
+
+def load_config(config_path: str = "config.yaml") -> Config:
     with open(config_path) as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+
+    repo_root = Path(__file__).resolve().parents[1]
+    data_path = repo_root / "data" / cfg["data"]["input_file"]
+    output_dir = Path(__file__).parent / cfg["output"]["output_dir"]
+    output_dir.mkdir(exist_ok=True)
+
+    return Config(
+        data_path=data_path,
+        date_col=cfg["data"]["date_col"],
+        value_col=cfg["data"]["value_col"],
+        season=int(cfg["feature_importance"]["season"]),
+        n_splits=int(cfg["feature_importance"]["n_splits"]),
+        window_size=int(cfg["sliding_window"]["window_size"]),
+        output_dir=output_dir,
+        rf_plot=output_dir / cfg["output"]["random_forest_plot"],
+        supervised_forecast_plot=output_dir / cfg["output"]["supervised_forecast"],
+        supervised_importance_plot=output_dir / cfg["output"]["supervised_importance"],
+        seasonal_pattern_plot=output_dir / cfg["output"]["seasonal_pattern"],
+        fuel_mix_plot=output_dir / cfg["output"]["fuel_mix_plot"],
+    )
 
 
-def create_sparse_model(config):
-    """Create sparse regression model."""
-    model_type = config['model']['type']
-    tscv = TimeSeriesSplit(n_splits=config['model']['cv_splits'])
-    
-    model_map = {
-        'lasso': lambda: LassoCV(
-            cv=tscv,
-            max_iter=config['model'].get('max_iter', 10000),
-            random_state=config['model'].get('random_state', None),
-            alphas=config['model'].get('alphas', None)
-        ),
-        'ridge': lambda: RidgeCV(
-            cv=tscv,
-            alphas=config['model'].get('alphas', [0.1, 1.0, 10.0, 100.0])
-        ),
-        'elastic_net': lambda: ElasticNetCV(
-            cv=tscv,
-            max_iter=config['model'].get('max_iter', 10000),
-            random_state=config['model'].get('random_state', None),
-            l1_ratio=config['model'].get('l1_ratio', [0.1, 0.5, 0.7, 0.9, 0.95, 0.99, 1.0])
-        ),
-    }
-    
-    model = model_map.get(model_type, model_map['lasso'])()
-    return make_pipeline(StandardScaler(), model)
+def load_dataframe(config: Config) -> pd.DataFrame:
+    if not config.data_path.exists():
+        raise FileNotFoundError(f"Input CSV not found at {config.data_path}")
+
+    df = pd.read_csv(config.data_path, skiprows=4)
+    df = df.rename(columns=lambda c: c.strip().lower())
+    if config.date_col.lower() not in df.columns:
+        raise ValueError("Date column not present in CSV")
+    df[config.date_col.lower()] = pd.to_datetime(df[config.date_col.lower()], errors="coerce")
+    df = df.dropna(subset=[config.date_col.lower()])
+    return df.sort_values(config.date_col.lower()).reset_index(drop=True)
 
 
-def create_features(data, config):
-    """Create feature matrix with lags and rolling features."""
-    features = data.copy()
-    
-    if config['features']['create_lags']:
-        lags = config['features'].get('lags', [1, 2, 3, 7, 14])
-        features = create_lags(features, lags)
-    
-    if config['features']['create_rolling']:
-        windows = config['features'].get('rolling_windows', [7, 14, 30])
-        functions = config['features'].get('rolling_funcs', ['mean', 'std'])
-        features = create_rolling_features(features, windows, functions)
-    
-    return features.dropna()
+def build_features(series: pd.Series, season: int) -> pd.DataFrame:
+    df = pd.DataFrame({"y": series})
+    for k in range(1, season + 1):
+        df[f"lag{k}"] = df["y"].shift(k)
+    for window in (3, 6, 12):
+        df[f"roll_mean_{window}"] = df["y"].rolling(window).mean()
+        df[f"roll_std_{window}"] = df["y"].rolling(window).std()
+    m = df.index.month if isinstance(df.index, pd.DatetimeIndex) else pd.Series(df.index, index=df.index) % 12 + 1
+    df["sin12"] = np.sin(2 * np.pi * m / 12.0)
+    df["cos12"] = np.cos(2 * np.pi * m / 12.0)
+    return df.dropna()
 
 
-def create_visualizations(data, train_data, test_data, predictions, model, X, config):
-    """Generate visualizations for sparse regression."""
-    output_dir = Path(__file__).parent / config['output']['output_dir']
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-    
-    for ax in axes.flatten():
-        apply_plot_style(ax, {'plotting': config['plotting']})
-    
-    axes[0, 0].plot(train_data.index, train_data.values,
-                    'k-', linewidth=config['plotting']['linewidth'],
-                    alpha=config['plotting']['alpha'], label='Train')
-    
-    if test_data is not None:
-        axes[0, 0].plot(test_data.index, test_data.values,
-                        'g-', linewidth=config['plotting']['linewidth'],
-                        alpha=config['plotting']['alpha'], label='Test')
-        
-        forecast_index = test_data.index
-        axes[0, 0].plot(forecast_index, predictions,
-                        'r--', linewidth=config['plotting']['linewidth'],
-                        label='Forecast')
-    else:
-        forecast_index = train_data.index
-        axes[0, 0].plot(forecast_index, predictions,
-                        'r--', linewidth=config['plotting']['linewidth'],
-                        label='Forecast')
-    
-    axes[0, 0].set_title(config['plot_titles']['forecast'])
-    axes[0, 0].set_xlabel('Date')
-    axes[0, 0].set_ylabel('Value')
-    apply_legend(axes[0, 0], config['plotting']['legend'])
-    
-    regressor = model.named_steps[config['model']['type']]
-    coef = pd.Series(regressor.coef_, index=X.columns)
-    selected = coef[coef != 0].sort_values()
-    
-    if len(selected) > 0:
-        axes[0, 1].barh(range(len(selected)), selected.values,
-                       edgecolor='black', alpha=0.7)
-        axes[0, 1].set_yticks(range(len(selected)))
-        axes[0, 1].set_yticklabels(selected.index, fontsize=8)
-        axes[0, 1].set_title(f'Selected Features (n={len(selected)})')
-        axes[0, 1].set_xlabel('Coefficient Value')
-        axes[0, 1].axvline(x=0, color='k', linestyle='--', linewidth=1)
-    else:
-        axes[0, 1].text(0.5, 0.5, 'No features selected', 
-                        ha='center', va='center', transform=axes[0, 1].transAxes)
-        axes[0, 1].set_title('Selected Features')
-    
-    if test_data is not None:
-        axes[1, 0].scatter(test_data.values, predictions,
-                          alpha=0.6, s=20, edgecolors='black', linewidths=0.5)
-        min_val = min(test_data.values.min(), predictions.min())
-        max_val = max(test_data.values.max(), predictions.max())
-        axes[1, 0].plot([min_val, max_val], [min_val, max_val],
-                        'r--', linewidth=config['plotting']['linewidth'])
-        axes[1, 0].set_title('Actual vs Predicted (Test)')
-        axes[1, 0].set_xlabel('Actual')
-        axes[1, 0].set_ylabel('Predicted')
-    
-    if hasattr(regressor, 'alpha_'):
-        axes[1, 1].text(0.5, 0.7, f'Optimal α: {regressor.alpha_:.4f}',
-                       ha='center', va='center', transform=axes[1, 1].transAxes,
-                       fontsize=12, bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    
-    if hasattr(regressor, 'l1_ratio_'):
-        axes[1, 1].text(0.5, 0.5, f'Optimal L1 Ratio: {regressor.l1_ratio_:.4f}',
-                       ha='center', va='center', transform=axes[1, 1].transAxes,
-                       fontsize=12, bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-    
-    axes[1, 1].text(0.5, 0.3, f'Features Selected: {len(selected)}/{len(coef)}',
-                   ha='center', va='center', transform=axes[1, 1].transAxes,
-                   fontsize=12, bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5))
-    axes[1, 1].axis('off')
-    axes[1, 1].set_title('Model Summary')
-    
+def feature_importance_pipeline(df: pd.DataFrame, config: Config) -> None:
+    df = df.set_index(config.date_col.lower())
+    target = df[config.value_col.lower()].astype(float)
+    features_df = build_features(target, config.season)
+
+    features = features_df.columns.drop("y")
+    X = features_df[features].values
+    y = features_df["y"].values
+    idx = np.arange(len(features_df))
+
+    splitter = TimeSeriesSplit(n_splits=config.n_splits)
+    importances = np.zeros(len(features), dtype=float)
+    maes = []
+
+    for train_idx, test_idx in splitter.split(idx):
+        X_train, X_test = X[train_idx], X[test_idx]
+        y_train, y_test = y[train_idx], y[test_idx]
+        model = RandomForestRegressor(n_estimators=300, random_state=42)
+        model.fit(X_train, y_train)
+        preds = model.predict(X_test)
+        importances += model.feature_importances_
+        maes.append(mean_absolute_error(y_test, preds))
+
+    importances /= max(1, splitter.get_n_splits())
+    importance_series = pd.Series(importances, index=features).sort_values(ascending=False)
+    print(f"Random forest baseline MAE: {np.mean(maes):.3f}")
+
+    plt.figure(figsize=(10, 5))
+    importance_series.head(15)[::-1].plot(kind="barh")
+    plt.title("Top feature importances (random forest)")
     plt.tight_layout()
-    
-    output_path = output_dir / "sparse_regression_analysis.png"
-    save_plot(fig, output_path)
-    plt.show()
+    plt.savefig(config.rf_plot, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"✓ Feature importance plot saved -> {config.rf_plot}")
 
 
-def main():
-    """Main execution function."""
-    config = load_config()
-    
-    df = load_ts_data(
-        data_path=Path(__file__).parent.parent / 'data' / config['data']['input_file'],
-        date_col=config['data']['date_col'],
-        value_col=config['data']['value_col']
-    )
-    df = ensure_datetime_index(df, time_col=config['data']['date_col'])
-    
-    train_df, test_df = split_ts(df, test_size=config['data']['test_size'])
-    
-    features_train = create_features(train_df[config['data']['value_col']], config)
-    features_test = create_features(test_df[config['data']['value_col']], config) if test_df is not None else None
-    
-    X_train = features_train.drop(config['data']['value_col'], axis=1)
-    y_train = features_train[config['data']['value_col']]
-    
-    if features_test is not None:
-        X_test = features_test.drop(config['data']['value_col'], axis=1)
-        y_test = features_test[config['data']['value_col']]
-    else:
-        X_test = None
-        y_test = None
-    
-    model = create_sparse_model(config)
+def create_sliding_window(series: np.ndarray, window_size: int) -> tuple[np.ndarray, np.ndarray]:
+    X, y = [], []
+    for i in range(len(series) - window_size):
+        X.append(series[i : i + window_size])
+        y.append(series[i + window_size])
+    return np.asarray(X), np.asarray(y)
+
+
+def supervised_learning_pipeline(df: pd.DataFrame, config: Config) -> None:
+    df = df.copy()
+    date_col = config.date_col.lower()
+    value_col = config.value_col.lower()
+    df[value_col] = pd.to_numeric(df[value_col], errors="coerce")
+    df = df.dropna(subset=[value_col])
+    generation = df[value_col].values
+
+    X, y = create_sliding_window(generation, config.window_size)
+    target_dates = df[date_col].iloc[config.window_size:].reset_index(drop=True)
+
+    train_mask = target_dates < pd.Timestamp("2021-01-01")
+    X_train, X_test = X[train_mask.values], X[~train_mask.values]
+    y_train, y_test = y[train_mask.values], y[~train_mask.values]
+    test_dates = target_dates[~train_mask.values]
+
+    model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
     model.fit(X_train, y_train)
-    
-    train_pred = model.predict(X_train)
-    test_pred = model.predict(X_test) if X_test is not None else None
-    
-    train_mae = mean_absolute_error(y_train, train_pred)
-    train_rmse = np.sqrt(mean_squared_error(y_train, train_pred))
-    train_r2 = r2_score(y_train, train_pred)
-    
-    print(f"\nSparse Regression ({config['model']['type'].upper()}) Results:")
-    print("=" * 70)
-    print(f"\nTraining Set:")
-    print(f"MAE: {train_mae:.4f}")
-    print(f"RMSE: {train_rmse:.4f}")
-    print(f"R²: {train_r2:.4f}")
-    
-    if test_pred is not None:
-        test_mae = mean_absolute_error(y_test, test_pred)
-        test_rmse = np.sqrt(mean_squared_error(y_test, test_pred))
-        test_r2 = r2_score(y_test, test_pred)
-        
-        print(f"\nTest Set:")
-        print(f"MAE: {test_mae:.4f}")
-        print(f"RMSE: {test_rmse:.4f}")
-        print(f"R²: {test_r2:.4f}")
-    
-    regressor = model.named_steps[config['model']['type']]
-    coef = pd.Series(regressor.coef_, index=X_train.columns)
-    selected = coef[coef != 0]
-    
-    print(f"\nFeature Selection:")
-    print(f"Total features: {len(coef)}")
-    print(f"Selected features: {len(selected)}")
-    print(f"Sparsity: {(1 - len(selected) / len(coef)) * 100:.1f}%")
-    
-    if hasattr(regressor, 'alpha_'):
-        print(f"Optimal regularization parameter (α): {regressor.alpha_:.4f}")
-    
-    if len(selected) > 0:
-        print(f"\nTop 10 Selected Features:")
-        for feature, coef_val in selected.abs().sort_values(ascending=False).head(10).items():
-            print(f"  {feature}: {coef[feature]:.4f}")
-    
-    create_visualizations(
-        df, train_df[config['data']['value_col']],
-        test_df[config['data']['value_col']] if test_df is not None else None,
-        test_pred if test_pred is not None else train_pred,
-        model, X_train, config
-    )
-    
-    print(f"✓ Sparse regression ({config['model']['type']}) analysis complete")
+
+    y_pred_test = model.predict(X_test)
+
+    print(f"Train RMSE: {np.sqrt(mean_squared_error(y_train, model.predict(X_train))):,.0f}")
+    print(f"Test RMSE:  {np.sqrt(mean_squared_error(y_test, y_pred_test)):,.0f}")
+    print(f"Test MAE:   {mean_absolute_error(y_test, y_pred_test):,.0f}")
+    print(f"Test R²:    {r2_score(y_test, y_pred_test):.3f}")
+
+    fig, axes = plt.subplots(2, 1, figsize=(12, 8))
+    axes[0].plot(test_dates, y_test, label="Actual", linewidth=2, alpha=0.8)
+    axes[0].plot(test_dates, y_pred_test, label="Predicted", linewidth=2, alpha=0.8, linestyle="--")
+    axes[0].set_title("US Electricity Generation Forecast (2021-2025)")
+    axes[0].set_ylabel("Generation (thousand MWh)")
+    axes[0].legend()
+    residuals = y_test - y_pred_test
+    axes[1].scatter(y_pred_test, residuals, alpha=0.6)
+    axes[1].axhline(0, color="r", linestyle="--", alpha=0.7)
+    axes[1].set_xlabel("Predicted (thousand MWh)")
+    axes[1].set_ylabel("Residuals")
+    axes[1].set_title("Residual Plot")
+    fig.tight_layout()
+    fig.savefig(config.supervised_forecast_plot, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Supervised forecast plot saved -> {config.supervised_forecast_plot}")
+
+    importances = model.feature_importances_
+    feature_names = [f"T-{config.window_size - i}" for i in range(config.window_size)]
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(feature_names, importances)
+    ax.set_xlabel("Importance")
+    ax.set_title("Lag importance (sliding window)")
+    fig.tight_layout()
+    fig.savefig(config.supervised_importance_plot, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Sliding window feature importance -> {config.supervised_importance_plot}")
+
+    df["month"] = df[date_col].dt.month
+    monthly_avg = df.groupby("month")[value_col].mean()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    ax.bar(range(1, 13), monthly_avg.values, alpha=0.7)
+    ax.set_xticks(range(1, 13))
+    ax.set_xticklabels(months)
+    ax.set_ylabel("Average Generation (thousand MWh)")
+    ax.set_title("Average US Electricity Generation by Month (2001-2025)")
+    fig.tight_layout()
+    fig.savefig(config.seasonal_pattern_plot, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Seasonal pattern plot saved -> {config.seasonal_pattern_plot}")
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for fuel in ["coal thousand megawatthours", "natural gas thousand megawatthours", "nuclear thousand megawatthours", "conventional hydroelectric thousand megawatthours"]:
+        col = fuel.strip().lower()
+        if col in df.columns:
+            ax.plot(df[date_col], pd.to_numeric(df[col], errors="coerce"), label=fuel.split()[0].title(), alpha=0.8)
+    ax.set_ylabel("Generation (thousand MWh)")
+    ax.set_title("US Electricity Generation by Fuel Source (2001-2025)")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(config.fuel_mix_plot, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Fuel mix plot saved -> {config.fuel_mix_plot}")
+
+
+def main() -> None:
+    config = load_config()
+    df = load_dataframe(config)
+    feature_importance_pipeline(df[[config.date_col.lower(), config.value_col.lower()]], config)
+    supervised_learning_pipeline(df, config)
 
 
 if __name__ == "__main__":

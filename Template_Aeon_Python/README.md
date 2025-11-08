@@ -1,6 +1,6 @@
-# Aeon: Time Series Analysis Toolkit
+# Aeon Clustering Template (EIA Net Generation)
 
-Comprehensive toolkit for time series analysis, classification, and forecasting.
+This template reproduces the AEON time-series clustering workflow from the 2025‑11‑08 article, grouping annual EIA generation profiles with DTW-based `TimeSeriesKMeans`.
 
 ## Setup
 
@@ -10,11 +10,11 @@ pip install -r requirements.txt
 
 ## Configuration
 
-Edit `config.yaml` to customize:
-- **Data**: Input file path and data source
-- **Model**: Forecaster type and parameters
-- **Plotting**: Visualization styling
-- **Output**: Plot settings
+`config.yaml` controls the entire pipeline:
+- `data`: shared CSV in `data/Net_generation_United_States_all_sectors_monthly.csv`, plus column names and frequency.
+- `clustering`: number of clusters, distance metric (`dtw`), and seasonal period (12 months).
+- `plotting`: colors, figure size, and DPI for the summary figure.
+- `output`: filename and directory (defaults to `outputs/eia_aeon_ts_clusters.png`).
 
 ## Run
 
@@ -22,12 +22,15 @@ Edit `config.yaml` to customize:
 python main.py
 ```
 
-## Forecaster Types
-
-- **PolynomialTrend**: Polynomial trend forecaster
-- **ARIMA**: ARIMA model
-
 ## Outputs
 
-Forecast plots saved to `outputs/` directory.
+Running the template produces a 6-panel summary saved to `outputs/eia_aeon_ts_clusters.png`, including:
+- Cluster assignments over time
+- Seasonal centroids
+- All annual profiles colored by cluster
+- DTW distance heat map
+- Representative year per cluster
+- Metrics panel (inertia & silhouette)
+
+Console output lists the cluster composition and basic dataset stats so the article text is fully reproducible.*** End Patch
 

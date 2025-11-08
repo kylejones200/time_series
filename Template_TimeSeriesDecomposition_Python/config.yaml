@@ -1,34 +1,14 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
+  freq: "MS"
 
 model:
-  decomposition_model: "additive"  # Options: "additive", "multiplicative"
-  period: null  # Period for seasonal component (null for auto-detect)
+  period: 12
 
-plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-  legend:
-    frameon: false
-    loc: "best"
-  figure_size: [15, 12]
-  dpi: 150
-  colors:
-    - "k"
-    - "b"
-    - "g"
-    - "r"
-  linewidth: 2
-  markersize: 4
-  alpha: 0.7
-
-plot_titles:
-  decomposition: "Time Series Decomposition"
+output:
+  decomposition_plot: "eia_patterns.png"
+  seasonal_plot: "eia_seasonal_subseries.png"
+  output_dir: "outputs"
 

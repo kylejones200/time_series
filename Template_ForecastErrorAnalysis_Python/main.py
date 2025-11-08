@@ -1,69 +1,31 @@
 #!/usr/bin/env python3
-"""Forecast error diagnostics using seasonal ETS."""
+"""Seasonal naive error diagnostics aligned with the 2025-11-08 article assets."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
-
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_plot_style, apply_legend, save_plot
-
-
-def simple_average_error(errors: pd.Series) -> float:
-    return errors.mean()
-
-
-def moving_average_error(errors: pd.Series, window: int) -> float:
-    window = min(window, len(errors))
-    return errors.iloc[-window:].mean()
-
-
-def exponential_smoothing_error(errors: pd.Series, alpha: float = 0.2) -> pd.Series:
-    smoothed = errors.ewm(alpha=alpha, adjust=False).mean()
-    return smoothed
-
-
-def sample_variance_error(errors: pd.Series, window: Optional[int] = None) -> float:
-    subset = errors.iloc[-window:] if window is not None else errors
-    return subset.var(ddof=1)
-
-
-def mean_absolute_deviation(errors: pd.Series) -> float:
-    return errors.abs().mean()
-
-
-def mean_absolute_percentage_error(y_true: pd.Series, y_pred: pd.Series) -> float:
-    eps = 1e-8
-    return (np.abs((y_true - y_pred) / (y_true + eps))).mean() * 100
-
-
-def mean_squared_error(y_true: pd.Series, y_pred: pd.Series) -> float:
-    return ((y_true - y_pred) ** 2).mean()
-
-
-def root_mean_squared_error(y_true: pd.Series, y_pred: pd.Series) -> float:
-    return np.sqrt(mean_squared_error(y_true, y_pred))
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import TimeSeriesSplit
 
 
 @dataclass
 class Config:
-    url: Optional[str]
-    input_file: Optional[str]
+    data_path: Path
     date_col: str
     value_col: str
-    seasonal_periods: int
-    moving_average_window: int
-    exponential_alpha: float
+    freq: str
+    horizon: int
+    n_splits: int
+    season: int
     output_dir: Path
+    error_plot: Path
 
 
 def load_config(config_path: str = "config.yaml") -> Config:
@@ -71,129 +33,115 @@ def load_config(config_path: str = "config.yaml") -> Config:
         cfg = yaml.safe_load(f)
 
     repo_root = Path(__file__).resolve().parents[1]
-    output_dir = Path(__file__).parent / "outputs"
+    data_path = repo_root / "data" / cfg["data"]["input_file"]
+    output_dir = Path(__file__).parent / cfg["output"]["output_dir"]
     output_dir.mkdir(exist_ok=True)
 
-    data_cfg = cfg['data']
-    url = data_cfg.get('url')
-    input_file = data_cfg.get('input_file')
-
-    if url is None and input_file is None:
-        raise ValueError("Either 'url' or 'input_file' must be provided in config.")
-
-    if input_file:
-        input_path = repo_root / 'data' / input_file
-        if not input_path.exists():
-            raise FileNotFoundError(f"Local data file not found at {input_path}")
-
     return Config(
-        url=url,
-        input_file=input_file,
-        date_col=data_cfg['date_col'],
-        value_col=data_cfg['value_col'],
-        seasonal_periods=cfg['model']['seasonal_periods'],
-        moving_average_window=cfg['analysis']['moving_average_window'],
-        exponential_alpha=cfg['analysis']['exponential_alpha'],
+        data_path=data_path,
+        date_col=cfg["data"]["date_col"],
+        value_col=cfg["data"]["value_col"],
+        freq=cfg["data"].get("freq", "MS"),
+        horizon=int(cfg["evaluation"]["horizon"]),
+        n_splits=int(cfg["evaluation"]["n_splits"]),
+        season=int(cfg["evaluation"]["season"]),
         output_dir=output_dir,
+        error_plot=output_dir / cfg["output"]["error_plot"],
     )
 
 
 def load_series(config: Config) -> pd.Series:
-    if config.url:
-        df = pd.read_csv(config.url)
-    else:
-        repo_root = Path(__file__).resolve().parents[1]
-        df = pd.read_csv(repo_root / 'data' / config.input_file)
+    if not config.data_path.exists():
+        raise FileNotFoundError(f"Input CSV not found at {config.data_path}")
 
-    df[config.date_col] = pd.to_datetime(df[config.date_col], errors='coerce')
+    df = pd.read_csv(config.data_path)
+    if config.date_col not in df.columns or config.value_col not in df.columns:
+        raise ValueError("Specified columns not present in CSV")
+
+    df[config.date_col] = pd.to_datetime(df[config.date_col], errors="coerce")
     df = df.dropna(subset=[config.date_col, config.value_col])
-    df = df.sort_values(config.date_col)
-    df = df.set_index(config.date_col)
-
-    series = pd.to_numeric(df[config.value_col], errors='coerce').dropna()
-    return series
+    df = df.sort_values(config.date_col).set_index(config.date_col)
+    series = pd.to_numeric(df[config.value_col], errors="coerce").dropna()
+    return series.asfreq(config.freq).astype(float)
 
 
-def fit_ets(series: pd.Series, seasonal_periods: int) -> pd.Series:
-    model = ExponentialSmoothing(
-        series,
-        seasonal='add',
-        trend='add',
-        seasonal_periods=seasonal_periods,
-        initialization_method="estimated"
-    ).fit()
-    return model.fittedvalues
+def mase_denominator(train: pd.Series, season: int) -> float:
+    diffs = np.abs(train.values[season:] - train.values[:-season])
+    if len(diffs) == 0 or np.allclose(diffs, 0.0):
+        return 1.0
+    return float(np.mean(diffs))
 
 
-def compute_metrics_dict(series: pd.Series, fitted: pd.Series, config: Config,
-                         smoothed_errors: pd.Series) -> dict:
-    errors = series - fitted
-    metrics = {
-        'simple_average_error': float(simple_average_error(errors)),
-        'moving_average_error': float(moving_average_error(errors, config.moving_average_window)),
-        'exp_smoothed_last': float(smoothed_errors.iloc[-1]),
-        'variance': float(sample_variance_error(errors)),
-        'mad': float(mean_absolute_deviation(errors)),
-        'mape': float(mean_absolute_percentage_error(series, fitted)),
-        'mse': float(mean_squared_error(series, fitted)),
-        'rmse': float(root_mean_squared_error(series, fitted)),
-    }
-    return metrics
+def seasonal_naive_forecast(train: pd.Series, horizon: int, season: int) -> np.ndarray:
+    forecast = []
+    values = train.values
+    for i in range(horizon):
+        src_idx = len(values) - season + i
+        if src_idx >= 0:
+            forecast.append(values[src_idx])
+        else:
+            forecast.append(values[-1])
+    return np.asarray(forecast, dtype=float)
 
 
-def plot_results(series: pd.Series, fitted: pd.Series, errors: pd.Series,
-                 smoothed_errors: pd.Series, config: Config) -> None:
-    fig, axes = plt.subplots(3, 1, figsize=(12, 12), sharex=True)
+def rolling_origin_metrics(series: pd.Series, config: Config) -> Tuple[List[dict], pd.Series, pd.Series]:
+    idx = np.arange(len(series))
+    splitter = TimeSeriesSplit(n_splits=config.n_splits)
+    metrics: List[dict] = []
+    last_truth = None
+    last_forecast = None
 
-    apply_plot_style(axes[0], {'plotting': {
-        'style': {'spines': {'top': False, 'right': False, 'bottom': True, 'left': True}, 'grid': False}
-    }})
-    axes[0].plot(series.index, series.values, color='black', label='Actual')
-    axes[0].plot(fitted.index, fitted.values, color='tomato', label='ETS Fitted')
-    axes[0].set_title('Actual vs Fitted')
-    apply_legend(axes[0], {'frameon': False, 'loc': 'best'})
+    for train_idx, _ in splitter.split(idx):
+        end = train_idx[-1]
+        train = series.iloc[: end + 1]
+        future = series.iloc[end + 1 : end + 1 + config.horizon]
+        if future.empty:
+            continue
 
-    apply_plot_style(axes[1], {'plotting': {'style': {'spines': {'top': False, 'right': False, 'bottom': True, 'left': True}, 'grid': False}}})
-    axes[1].plot(errors.index, errors.values, color='royalblue', label='Errors')
-    axes[1].axhline(0, color='grey', linewidth=1, linestyle='--')
-    axes[1].set_title('Forecast Errors')
+        forecast = seasonal_naive_forecast(train, len(future), config.season)
 
-    apply_plot_style(axes[2], {'plotting': {'style': {'spines': {'top': False, 'right': False, 'bottom': True, 'left': True}, 'grid': False}}})
-    axes[2].plot(smoothed_errors.index, smoothed_errors.values, color='seagreen', label='Exp Smoothed Errors')
-    axes[2].set_title('Exponentially Smoothed Errors')
-    axes[2].set_xlabel('Date')
+        mae = mean_absolute_error(future.values, forecast)
+        y = future.values.astype(float)
+        denom = np.where(y == 0, np.finfo(float).eps, y)
+        mape = np.mean(np.abs((y - forecast) / denom)) * 100.0
+        smape = np.mean(2 * np.abs(forecast - y) / (np.abs(y) + np.abs(forecast) + np.finfo(float).eps)) * 100.0
+        mase = np.mean(np.abs(y - forecast)) / mase_denominator(train, config.season)
 
-    for ax in axes:
-        apply_legend(ax, {'frameon': False, 'loc': 'best'})
+        metrics.append({"MAE": mae, "MAPE": mape, "SMAPE": smape, "MASE": mase})
+        last_truth = future
+        last_forecast = pd.Series(forecast, index=future.index)
 
-    plt.tight_layout()
-    plot_path = config.output_dir / 'forecast_error_analysis.png'
-    save_plot(fig, plot_path)
+    return metrics, last_truth, last_forecast
+
+
+def plot_last_fold(series: pd.Series, truth: pd.Series, forecast: pd.Series, config: Config) -> None:
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.plot(series.index, series.values, label="History", alpha=0.6)
+    if truth is not None and forecast is not None:
+        ax.plot(truth.index, truth.values, label="Actual", color="#444444")
+        ax.plot(forecast.index, forecast.values, label="Seasonal naive forecast", color="#d62728")
+    ax.legend(frameon=False)
+    ax.set_title("Seasonal naive — last fold errors")
+    ax.set_xlabel("")
+    fig.tight_layout()
+    fig.savefig(config.error_plot, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"✓ Plot saved -> {plot_path}")
+    print(f"✓ Error plot saved -> {config.error_plot}")
 
 
-def save_metrics(metrics: dict, config: Config) -> None:
-    metrics_path = config.output_dir / 'forecast_error_metrics.yaml'
-    with open(metrics_path, 'w') as f:
-        yaml.safe_dump({k: float(v) for k, v in metrics.items()}, f)
-    print(f"✓ Metrics saved -> {metrics_path}")
-
-
-def main():
+def main() -> None:
     config = load_config()
     series = load_series(config)
-    fitted = fit_ets(series, config.seasonal_periods)
-    errors = series - fitted
-    smoothed_errors = exponential_smoothing_error(errors, config.exponential_alpha)
 
-    metrics = compute_metrics_dict(series, fitted, config, smoothed_errors)
-    for k, v in metrics.items():
-        print(f"{k}: {v:.4f}")
+    metrics, truth, forecast = rolling_origin_metrics(series, config)
+    mean_metrics = {k: np.mean([m[k] for m in metrics]) for k in metrics[0].keys()}
+    print("Seasonal naive error summary:")
+    for key, value in mean_metrics.items():
+        print(f"{key}: {value:.3f}")
 
-    plot_results(series, fitted, errors, smoothed_errors, config)
-    save_metrics(metrics, config)
+    plot_last_fold(series, truth, forecast, config)
 
 
 if __name__ == "__main__":
     main()
+

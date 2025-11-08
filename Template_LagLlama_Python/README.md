@@ -1,35 +1,27 @@
-# Lag-Llama Forecasting
+# Granite TTM Forecasting Template (EIA Net Generation)
 
-Run the Lag-Llama foundation model (time-series-foundation-models/Lag-Llama) on a
-univariate series.
+This template reproduces the IBM Granite Time Series TTM forecast from the 2025‑11‑08 article, creating the Jan–Aug 2025 Tufte figure.
 
 ## Installation
 
-Lag-Llama is not published on PyPI yet. Install dependencies manually:
-
 ```bash
-pip install git+https://github.com/time-series-foundation-models/lag-llama
 pip install -r requirements.txt
 ```
 
-Download a checkpoint from Hugging Face (for example
-`time-series-foundation-models/Lag-Llama`) and update `config.yaml` with its
-local path.
+> Granite downloads from Hugging Face (`ibm-granite/granite-timeseries-ttm-r2`). Authenticate if necessary.
 
 ## Usage
+
+1. Verify `data/Net_generation_United_States_all_sectors_monthly.csv` exists.
+2. Adjust `config.yaml` (context length, horizon, checkpoint) if desired.
+3. Run:
 
 ```bash
 python main.py
 ```
 
-The template expects a CSV in `data/` (default:
-`amtrak_ridership_time_series_data.csv`). Configure `context_length`,
-`prediction_length`, and `checkpoint` in `config.yaml`.
+## Outputs
 
-Outputs (`outputs/`):
+- `outputs/eia_granite_ttm_last_fold.png` – greyscale overlay with history, actuals, and Granite forecast.
 
-- `lag_llama_forecast.csv`
-- `lag_llama_forecast.png`
-- `lag_llama_metrics.yaml`
-
-Lag-Llama runs on CPU, but using GPU is recommended for performance.
+The script mirrors the article’s setup; tweak the config to explore other contexts or horizons.*** End Patch

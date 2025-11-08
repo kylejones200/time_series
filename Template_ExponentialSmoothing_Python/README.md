@@ -1,14 +1,8 @@
-# Exponential Smoothing for Time Series Forecasting
+# Exponential Smoothing (EIA Net Generation)
 
-Classical exponential smoothing methods for time series forecasting using statsmodels.
-
-## Features
-
-- ✅ Simple Exponential Smoothing (SES)
-- ✅ Double Exponential Smoothing (Holt's method)
-- ✅ Triple Exponential Smoothing (Holt-Winters)
-- ✅ Additive and multiplicative trend/seasonality
-- ✅ Automatic parameter optimization option
+This template reproduces the ETS analyses from the 2025‑11‑08 article:
+- Rolling-origin ETS evaluation (Jan–Aug 2025 focus)
+- ETS vs SARIMAX last-fold comparison
 
 ## Installation
 
@@ -18,37 +12,18 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Place your data file in the shared `data/` directory
-2. Update `config.yaml` with your data file name and column names
+1. The shared dataset lives at `data/Net_generation_United_States_all_sectors_monthly.csv`.
+2. `config.yaml` controls the horizon, number of splits, and seasonal period.
 3. Run:
 
 ```bash
 python main.py
 ```
 
-## Configuration
-
-Edit `config.yaml` to customize:
-
-- **Model type**: `simple`, `double`, or `triple`
-- **Smoothing parameters**: Level, trend, and seasonal smoothing factors
-- **Trend/Seasonal**: Additive (`add`) or multiplicative (`mul`)
-- **Seasonal periods**: Number of periods in a season (default: 12)
-
-## Model Types
-
-- **Simple (SES)**: For data with no trend or seasonality
-- **Double (Holt)**: For data with trend but no seasonality
-- **Triple (Holt-Winters)**: For data with both trend and seasonality
-
-## When to Use
-
-- ✅ Short-term forecasting
-- ✅ Data with clear trend and/or seasonality
-- ✅ When interpretability is important
-- ✅ Baseline model for comparison
-
 ## Outputs
 
-- `outputs/exponential_smoothing_forecast.png`: Historical data, fitted values, and forecast
+- `outputs/eia_expsmooth_last_fold.png` – ETS-only Tufte plot (history 2024, forecast Jan–Aug 2025).
+- `outputs/eia_generation_last_fold.png` – ETS vs SARIMAX last-fold comparison.
+
+Console output prints the rolling-origin MAE to match the numbers in the article. Adjust the config to explore different horizons or seasonalities.*** End Patch
 

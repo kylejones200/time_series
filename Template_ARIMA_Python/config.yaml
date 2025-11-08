@@ -1,44 +1,19 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
+  freq: "MS"
 
-model:
-  type: "auto"
-  train_size: 0.8
-  forecast_horizon: 12
-  start_p: 0
-  start_q: 0
-  max_p: 5
-  max_q: 5
-  seasonal: false
-  stepwise: true
-  order: [1, 1, 1]
-
-plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-    legend:
-      frameon: false
-      loc: "best"
-    figure:
-      figsize: [12, 6]
-      dpi: 150
-    colors:
-      primary: "k"
-      secondary: "r"
-      accent: "b"
-    linewidth: 1.5
-    markersize: 4
-    alpha: 0.7
+evaluation:
+  horizon: 12
+  n_splits: 5
+  season: 12
+  max_lag: 12
 
 output:
-  plot_format: "png"
-  save_plots: true
+  uni_multi_plot: "eia_uni_vs_multi_last_fold.png"
+  baseline_plot: "eia_ba_baseline.png"
+  ensemble_plot: "eia_ensemble_last_fold.png"
+  streaming_plot: "eia_streaming_last.png"
   output_dir: "outputs"
 

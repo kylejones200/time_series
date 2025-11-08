@@ -1,8 +1,6 @@
-# Forecast Error Analysis
+# Forecast Error Analysis (Seasonal Naive)
 
-Compute classic forecast error diagnostics using an ETS (seasonal exponential
-smoothing) model. Mimics the exploratory work from the `Forecast Error Analysis`
-notebook.
+This template reproduces the seasonal-naive error diagnostics from the 2025‑11‑08 article, focusing on the Jan–Aug 2025 window.
 
 ## Installation
 
@@ -12,22 +10,17 @@ pip install -r requirements.txt
 
 ## Usage
 
-The default configuration pulls the Airline Passengers dataset from GitHub and
-uses monthly seasonality. To run:
+1. Dataset: `data/Net_generation_United_States_all_sectors_monthly.csv`.
+2. Adjust horizon, number of splits, or seasonal period in `config.yaml`.
+3. Run:
 
 ```bash
 python main.py
 ```
 
-Outputs in `outputs/`:
+## Outputs
 
-- `forecast_error_analysis.png` — actual vs fitted, errors, exponentially smoothed errors
-- `forecast_error_metrics.yaml` — summary statistics (MAE, RMSE, MAPE, variance, etc.)
+- `outputs/eia_errors_last_fold.png` – Seasonal naive last-fold overlay with history and forecast.
+- Console summary of MAE/MAPE/SMAPE/MASE averaged across rolling-origin splits.
 
-## Configuration
-
-`config.yaml` controls:
-
-- **data**: provide either a URL or local CSV (`data/your_file.csv`)
-- **model**: seasonal period for ETS
-- **analysis**: moving average window and exponential smoothing alpha used in diagnostics
+The numbers match the error table in the article; tweak the config to explore alternative horizons.*** End Patch

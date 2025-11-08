@@ -1,6 +1,6 @@
-# Darts: Time Series Forecasting Library
+# Darts: EIA Net Generation Forecasting
 
-Unified interface for multiple forecasting models using Darts.
+This template reproduces the figures and evaluation pipeline from the *Darts for Time Series Analysis in Python* article (2025‑11‑08). It evaluates multiple Darts models on the EIA net generation series and recreates the publication-ready plots.
 
 ## Setup
 
@@ -10,11 +10,11 @@ pip install -r requirements.txt
 
 ## Configuration
 
-Edit `config.yaml` to customize:
-- **Data**: Input file path and column names
-- **Model**: Model type (ExponentialSmoothing, ARIMA, Prophet, NBEATS, etc.) and parameters
-- **Plotting**: Visualization styling
-- **Output**: Plot settings
+All parameters live in `config.yaml`:
+- **data**: CSV location (`data/Net_generation_United_States_all_sectors_monthly.csv`) and column names.
+- **evaluations**: Rolling-origin settings for the Tufte-style Jan–Aug 2025 comparison and the overview plot.
+- **models**: Model roster per evaluation group (ARIMA, Theta, ExponentialSmoothing, NaiveSeasonal).
+- **output**: File names written to `outputs/`.
 
 ## Run
 
@@ -22,17 +22,12 @@ Edit `config.yaml` to customize:
 python main.py
 ```
 
-## Model Types
+## Generated Assets
 
-- **ExponentialSmoothing**: Exponential smoothing
-- **ARIMA**: ARIMA model
-- **Prophet**: Facebook Prophet
-- **NBEATS**: Neural basis expansion
-- **RandomForest**: Random Forest regressor
-- **XGBModel**: XGBoost model
-- **LightGBMModel**: LightGBM model
+Running the template produces:
+- `outputs/eia_darts_tbats_last_fold.png` – Tufte-style Jan–Aug 2025 comparison with optional TBATS overlay (`Template_Darts_Python/data/eia_preds_tbats.csv`).
+- `outputs/eia_darts_overview_last_fold.png` – Overview of last-fold forecasts for ETS and NaiveSeasonal.
+- `outputs/eia_preds_darts.csv` – ARIMA and Theta last-fold predictions aligned with ground truth.
 
-## Outputs
-
-Forecast plots saved to `outputs/` directory.
+Metrics for each model are printed to the console. Adjust `config.yaml` to swap models, horizons, or evaluation windows.*** End Patch
 

@@ -1,12 +1,14 @@
 data:
-  url: "https://raw.githubusercontent.com/jbrownlee/Datasets/master/airline-passengers.csv"
-  input_file: null
-  date_col: "Month"
-  value_col: "Passengers"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
+  date_col: "date"
+  value_col: "value"
+  freq: "MS"
 
-model:
-  seasonal_periods: 12
+evaluation:
+  horizon: 12
+  n_splits: 5
+  season: 12
 
-analysis:
-  moving_average_window: 12
-  exponential_alpha: 0.2
+output:
+  error_plot: "eia_errors_last_fold.png"
+  output_dir: "outputs"

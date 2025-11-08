@@ -1,7 +1,7 @@
 data:
-  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
-  date_col: "date"
-  value_col: "value"
+  input_file: "Net_generation_United_States_all_sectors_monthly_ml-ready.csv"
+  date_col: "Month"
+  value_col: "all fuels (utility-scale) thousand megawatthours"
   freq: "MS"
 
 experiment:
@@ -13,7 +13,8 @@ model:
   checkpoint: "ibm-granite/granite-timeseries-ttm-r2"
   context_length: 512
   horizon: 8
+  num_samples: 100
 
 output:
-  tufte_plot: "eia_granite_ttm_last_fold.png"
+  tufte_plot: "granite_ttm_tufte.png"
   output_dir: "outputs"

@@ -1,92 +1,113 @@
 #!/usr/bin/env python3
-"""
-Time Series Decomposition
-Decompose time series into trend, seasonal, and residual components.
-"""
+"""Seasonal decomposition visuals aligned with the 2025-11-08 article assets."""
 
-import yaml
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from __future__ import annotations
+
+from dataclasses import dataclass
 from pathlib import Path
-import sys
-import warnings
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import yaml
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot, apply_plot_style
-from utils.ts_utils import load_ts_data, ensure_datetime_index
 
-warnings.filterwarnings('ignore')
+@dataclass
+class Config:
+    data_path: Path
+    date_col: str
+    value_col: str
+    freq: str
+    period: int
+    output_dir: Path
+    decomposition_plot: Path
+    seasonal_plot: Path
 
 
-def load_config(config_path="config.yaml"):
-    """Load configuration from YAML file."""
+def load_config(config_path: str = "config.yaml") -> Config:
     with open(config_path) as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+
+    repo_root = Path(__file__).resolve().parents[1]
+    data_path = repo_root / "data" / cfg["data"]["input_file"]
+    output_dir = Path(__file__).parent / cfg["output"]["output_dir"]
+    output_dir.mkdir(exist_ok=True)
+
+    return Config(
+        data_path=data_path,
+        date_col=cfg["data"]["date_col"],
+        value_col=cfg["data"]["value_col"],
+        freq=cfg["data"].get("freq", "MS"),
+        period=int(cfg["model"]["period"]),
+        output_dir=output_dir,
+        decomposition_plot=output_dir / cfg["output"]["decomposition_plot"],
+        seasonal_plot=output_dir / cfg["output"]["seasonal_plot"],
+    )
 
 
-def main():
+def load_series(config: Config) -> pd.Series:
+    if not config.data_path.exists():
+        raise FileNotFoundError(f"Input CSV not found at {config.data_path}")
+
+    df = pd.read_csv(config.data_path)
+    if config.date_col not in df.columns or config.value_col not in df.columns:
+        raise ValueError("Specified columns not present in CSV")
+
+    df[config.date_col] = pd.to_datetime(df[config.date_col], errors="coerce")
+    df = df.dropna(subset=[config.date_col, config.value_col])
+    df = df.sort_values(config.date_col).set_index(config.date_col)
+    series = pd.to_numeric(df[config.value_col], errors="coerce").dropna()
+    return series.asfreq(config.freq).astype(float)
+
+
+def plot_decomposition(series: pd.Series, config: Config) -> None:
+    decomposition = seasonal_decompose(series, model="additive", period=config.period)
+
+    fig, axes = plt.subplots(4, 1, figsize=(10, 7), sharex=True)
+    axes[0].plot(series.index, series.values)
+    axes[0].set_title("Observed")
+
+    axes[1].plot(decomposition.trend.index, decomposition.trend.values)
+    axes[1].set_title("Trend")
+
+    axes[2].plot(decomposition.seasonal.index, decomposition.seasonal.values)
+    axes[2].set_title("Seasonal")
+
+    axes[3].plot(decomposition.resid.index, decomposition.resid.values)
+    axes[3].set_title("Residual")
+
+    fig.tight_layout()
+    fig.savefig(config.decomposition_plot, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Decomposition plot saved -> {config.decomposition_plot}")
+
+
+def plot_seasonal_subseries(series: pd.Series, config: Config) -> None:
+    df = series.to_frame("value")
+    df["month"] = df.index.month
+    df["year"] = df.index.year
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for month in range(1, 13):
+        subset = df[df["month"] == month]
+        ax.plot(subset["year"], subset["value"], label=f"M{month:02d}", alpha=0.6)
+
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Value")
+    ax.set_title("Seasonal subseries by month")
+    ax.legend(ncol=3, fontsize=8)
+    fig.tight_layout()
+    fig.savefig(config.seasonal_plot, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Seasonal subseries plot saved -> {config.seasonal_plot}")
+
+
+def main() -> None:
     config = load_config()
-    
-    df = load_ts_data(
-        data_path=Path(__file__).parent.parent / 'data' / config['data']['input_file'],
-        date_col=config['data']['date_col'],
-        value_col=config['data']['value_col']
-    )
-    df = ensure_datetime_index(df, time_col=config['data']['date_col'])
-    
-    data = df[config['data']['value_col']]
-    
-    decomposition = seasonal_decompose(
-        data,
-        model=config['model']['decomposition_model'],
-        period=config['model']['period'],
-        extrapolate_trend='freq'
-    )
-    
-    fig, axes = plt.subplots(4, 1, figsize=(15, 12), sharex=True)
-    
-    for ax in axes:
-        apply_plot_style(ax, {'plotting': config['plotting']})
-    
-    axes[0].plot(data.index, data.values,
-                 'k-', linewidth=config['plotting']['linewidth'],
-                 alpha=config['plotting']['alpha'])
-    axes[0].set_title('Original Time Series')
-    axes[0].set_ylabel('Value')
-    
-    axes[1].plot(decomposition.trend.index, decomposition.trend.values,
-                 'b-', linewidth=config['plotting']['linewidth'],
-                 alpha=config['plotting']['alpha'])
-    axes[1].set_title('Trend Component')
-    axes[1].set_ylabel('Trend')
-    
-    axes[2].plot(decomposition.seasonal.index, decomposition.seasonal.values,
-                 'g-', linewidth=config['plotting']['linewidth'],
-                 alpha=config['plotting']['alpha'])
-    axes[2].set_title('Seasonal Component')
-    axes[2].set_ylabel('Seasonal')
-    
-    axes[3].plot(decomposition.resid.index, decomposition.resid.values,
-                 'r-', linewidth=config['plotting']['linewidth'],
-                 alpha=config['plotting']['alpha'])
-    axes[3].axhline(y=0, color='k', linestyle='--', linewidth=1)
-    axes[3].set_title('Residual Component')
-    axes[3].set_ylabel('Residual')
-    axes[3].set_xlabel('Date')
-    
-    plt.tight_layout()
-    
-    output_path = Path(__file__).parent / "outputs" / "time_series_decomposition.png"
-    save_plot(fig, output_path)
-    plt.show()
-    
-    print("\nDecomposition Statistics:")
-    print("=" * 70)
-    print(f"Trend range: [{decomposition.trend.min():.2f}, {decomposition.trend.max():.2f}]")
-    print(f"Seasonal range: [{decomposition.seasonal.min():.2f}, {decomposition.seasonal.max():.2f}]")
-    print(f"Residual std: {decomposition.resid.std():.4f}")
+    series = load_series(config)
+    plot_decomposition(series, config)
+    plot_seasonal_subseries(series, config)
 
 
 if __name__ == "__main__":

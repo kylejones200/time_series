@@ -1,48 +1,20 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
-  value_col: "value"
-  test_size: 0.2
+  value_col: "all fuels (utility-scale) thousand megawatthours"
 
-model:
-  type: "lasso"  # Options: "lasso", "ridge", "elastic_net"
-  cv_splits: 5  # Number of time series cross-validation splits
-  max_iter: 10000  # Maximum iterations for optimization
-  random_state: 42  # Random state for reproducibility
-  alphas: null  # Regularization path (null = auto)
-  l1_ratio: null  # L1 ratio for elastic net (null = auto)
+feature_importance:
+  season: 12
+  n_splits: 5
 
-features:
-  create_lags: true
-  lags: [1, 2, 3, 7, 14, 30]
-  create_rolling: true
-  rolling_windows: [7, 14, 30]
-  rolling_funcs: ["mean", "std"]
-
-plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-  legend:
-    frameon: false
-    loc: "best"
-  figure_size: [15, 10]
-  dpi: 150
-  colors:
-    - "k"
-    - "r"
-    - "b"
-  linewidth: 2
-  markersize: 4
-  alpha: 0.7
-
-plot_titles:
-  forecast: "Sparse Regression Forecast"
+sliding_window:
+  window_size: 12
 
 output:
+  random_forest_plot: "eia_features.png"
+  supervised_forecast: "eia_supervised_forecast.png"
+  supervised_importance: "eia_feature_importance.png"
+  sliding_importance: "eia_sliding_window_feature_importance.png"
+  seasonal_pattern: "eia_seasonal_pattern.png"
+  fuel_mix_plot: "eia_fuel_mix.png"
   output_dir: "outputs"
-

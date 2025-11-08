@@ -1,16 +1,6 @@
-# Sundial Transformer Forecasting
+# Moirai Forecasting Template (EIA Net Generation)
 
-Forecast time series using the Sundial transformer model from THUML. The template fetches FRED data, prepares input windows, and generates probabilistic forecasts with uncertainty bounds.
-
-## Features
-
-- ✅ Fetches data directly from FRED (`pandas_datareader`)
-- ✅ Normalizes series and builds rolling windows
-- ✅ Runs the `thuml/sundial-base-128m` transformer
-- ✅ Generates multiple stochastic samples for uncertainty
-- ✅ Saves forecast mean and 80% intervals to CSV
-- ✅ Minimalist matplotlib visualization with history + forecast
-- ✅ Optional comparison with held-out actual values
+This template reproduces the Moirai forecast from the 2025‑11‑08 article, generating the Jan–Aug 2025 greyscale figure and matching the reported numbers.
 
 ## Installation
 
@@ -18,44 +8,23 @@ Forecast time series using the Sundial transformer model from THUML. The templat
 pip install -r requirements.txt
 ```
 
-> **Note:** Access to the Sundial model on Hugging Face may require an access token. Export `HF_TOKEN` in your environment if needed.
+> Moirai downloads from Hugging Face (`Salesforce/moirai-1.0-R-small`). Authenticate if the checkpoint requires it.
 
 ## Usage
 
-1. Place or configure your data fetch in `config.yaml` (default uses FRED ID `DCOILWTICO`).
-2. (Optional) Set `HF_TOKEN` environment variable if the model requires authentication.
-3. Run the template:
+1. Ensure the shared dataset `data/Net_generation_United_States_all_sectors_monthly.csv` exists.
+2. `config.yaml` controls everything:
+   - `experiment.history_end`, `forecast_start`, `forecast_end`
+   - Moirai checkpoint and `context_length`, `horizon`, `num_samples`
+3. Run:
 
 ```bash
 python main.py
 ```
 
-## Configuration
-
-Edit `config.yaml` to customize:
-
-- **data**
-  - `series_id`: FRED series identifier
-  - `start_date`: Earliest date to fetch
-  - `resample_rule`: Pandas resample rule (e.g., `"D"`, `"M"`, or `null`)
-- **model**
-  - `lookback_length`: Input context length
-  - `forecast_length`: Forecast horizon
-  - `num_samples`: Number of stochastic samples
-  - `generation`: Sampling parameters (`temperature`, `top_p`, etc.)
-- **plotting**
-  - `history_window`: Length of historical window to display
-- **evaluation**
-  - `compare_to_actual`: Compare forecast mean to held-out ground truth
-
 ## Outputs
 
-- `outputs/sundial_forecast.csv`: Forecast mean and 80% confidence interval
-- `outputs/sundial_forecast.png`: Plot with history, forecast, and interval
+- `outputs/eia_moirai_last_fold.png` – Tufte-style overlay with history, actuals, and Moirai forecast.
+- Console logs confirm the training window and forecast horizon used.
 
-## Notes
-
-- Sundial expects normalized input; the script standardizes and reverts scaling automatically.
-- The model is autoregressive; we rely on `max_new_tokens` to extend the series.
-- Increase `num_samples` for smoother intervals (runtime increases linearly).
-- GPU support is not required but will speed up generation if available.
+This matches the Moirai section in the article; tweak the config to explore other horizons or checkpoints.*** End Patch

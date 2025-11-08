@@ -1,39 +1,39 @@
 data:
-  input_file: "input.csv"
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
   date_col: "date"
   value_col: "value"
-  true_anomalies_col: null  # Optional: column with true anomaly labels for evaluation
+  freq: "MS"
 
-model:
-  use_stumpy: true
-  stumpy_window: 50  # Window size for matrix profile
-  stumpy_percentile: 98  # Percentile threshold for anomalies
-  
-  use_pyod: true
-  pyod_method: "IForest"  # Options: "IForest", "LOF", "OCSVM"
-  pyod_contamination: 0.1  # Expected proportion of anomalies
+methods:
+  stl:
+    enabled: true
+    season: 12
+    z_threshold: 3.0
+    output_plot: "eia_anomaly_stl.png"
+  autoencoder:
+    enabled: true
+    window: 24
+    batch_size: 32
+    epochs: 200
+    learning_rate: 0.001
+    z_threshold: 3.0
+    output_plot: "eia_anomaly_autoencoder.png"
+    error_plot: "eia_anomaly_autoencoder_error.png"
+  stumpy:
+    enabled: false
+    window: 50
+    percentile: 98
+  pyod:
+    enabled: false
+    method: "IForest"
+    contamination: 0.1
 
 plotting:
-  style:
-    spines:
-      top: false
-      right: false
-      bottom: true
-      left: true
-    grid: false
-  legend:
-    frameon: false
-    loc: "best"
-  figure_size: [15, 10]
   dpi: 150
-  colors:
-    - "k"
-    - "r"
-    - "b"
-  linewidth: 2
-  markersize: 4
-  alpha: 0.7
+  stl_color: "#444444"
+  anomaly_color: "#c70039"
+  history_color: "#2f2f2f"
 
-plot_titles:
-  anomaly_detection: "STUMPY + PyOD Anomaly Detection"
+output:
+  output_dir: "outputs"
 

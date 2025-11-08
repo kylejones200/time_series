@@ -111,11 +111,33 @@ def generate_forecast(model: MoiraiForecast, train_series: pd.Series, config: Co
     return np.asarray(forecast_array).reshape(-1)
 
 
-def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_values: np.ndarray, actual: pd.Series, config: Config) -> None:
-    start_2024 = pd.Timestamp("2024-01-01")
-    history = series.loc[start_2024:history_end]
+def compute_metrics(actual: pd.Series, forecast_values: np.ndarray, config: Config) -> tuple[pd.Series, dict]:
     forecast_index = pd.period_range(config.forecast_start, config.forecast_end, freq="M").to_timestamp()
     forecast_series = pd.Series(forecast_values[: len(forecast_index)], index=forecast_index)
+    aligned_actual, aligned_forecast = actual.align(forecast_series, join="inner")
+    metrics = {}
+    if not aligned_actual.empty:
+        errors = aligned_forecast.values - aligned_actual.values
+        mae = float(np.mean(np.abs(errors)))
+        rmse = float(np.sqrt(np.mean(errors**2)))
+        denom = np.where(aligned_actual.values == 0, np.finfo(float).eps, aligned_actual.values)
+        mape = float(np.mean(np.abs(errors / denom)) * 100)
+        metrics = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
+    return forecast_series, metrics
+
+
+def save_metrics(metrics: dict, config: Config) -> None:
+    if not metrics:
+        return
+    metrics_path = config.output_dir / "metrics.yaml"
+    with open(metrics_path, "w") as f:
+        yaml.safe_dump({k: float(v) for k, v in metrics.items()}, f)
+    print(f"✓ Metrics saved -> {metrics_path}")
+
+
+def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_series: pd.Series, actual: pd.Series, config: Config, metrics: dict) -> None:
+    start_2024 = pd.Timestamp("2024-01-01")
+    history = series.loc[start_2024:history_end]
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(history.index, history.values, color="#888888", lw=1.5)
@@ -156,16 +178,28 @@ def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_values: np
             ha="left",
             color="#444444",
         )
-    ax.annotate(
-        "Moirai",
-        xy=(forecast_series.index[-1], forecast_series.values[-1]),
-        xytext=(6, 0),
-        textcoords="offset points",
-        fontsize=9,
-        va="center",
-        ha="left",
-        color="#000000",
-    )
+    if not forecast_series.empty:
+        ax.annotate(
+            "Moirai",
+            xy=(forecast_series.index[-1], forecast_series.values[-1]),
+            xytext=(6, 0),
+            textcoords="offset points",
+            fontsize=9,
+            va="center",
+            ha="left",
+            color="#000000",
+        )
+    if metrics:
+        metrics_text = "\n".join(f"{k}: {v:.2f}" for k, v in metrics.items())
+        ax.text(
+            0.02,
+            0.95,
+            metrics_text,
+            transform=ax.transAxes,
+            va="top",
+            fontsize=9,
+            bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"),
+        )
 
     fig.tight_layout()
     fig.savefig(config.output_plot, dpi=150, bbox_inches="tight")
@@ -186,7 +220,9 @@ def main() -> None:
     model = build_moirai(config)
     forecast_values = generate_forecast(model, train_series, config)
 
-    plot_tufte(series, config.history_end, forecast_values, actual, config)
+    forecast_series, metrics = compute_metrics(actual, forecast_values, config)
+    save_metrics(metrics, config)
+    plot_tufte(series, config.history_end, forecast_series, actual, config, metrics)
 
 
 if __name__ == "__main__":

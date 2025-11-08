@@ -1,13 +1,13 @@
-# STUMPY + PyOD for Anomaly Detection
+# Anomaly Detection Template (STL + Autoencoder + STUMPY/PyOD)
 
-Matrix profile (STUMPY) and Python Outlier Detection (PyOD) for time series anomaly detection.
+The template now mirrors the 2025‑11‑08 article workflow: STL residual screening plus a lightweight residual autoencoder, with optional STUMPY matrix profile and PyOD baselines.
 
 ## Features
 
-- ✅ STUMPY matrix profile for pattern-based anomaly detection
-- ✅ PyOD with multiple algorithms (Isolation Forest, LOF, OCSVM)
-- ✅ Comprehensive evaluation metrics (precision, recall, F1)
-- ✅ Comparative visualization of both methods
+- ✅ STL residual z-score detection with configurable seasonal period.
+- ✅ Feed-forward autoencoder on STL residual windows; prints anomaly counts and saves both the main figure and error trace.
+- ✅ Optional STUMPY matrix profile and PyOD outlier detectors (disable or enable in `config.yaml`).
+- ✅ Shared EIA dataset (`data/Net_generation_United_States_all_sectors_monthly.csv`) used across all templates.
 
 ## Installation
 
@@ -17,46 +17,22 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Place your data file in the shared `data/` directory
-2. Update `config.yaml` with your data file name and column names
+1. Confirm the shared CSV is in `data/`.
+2. Adjust `config.yaml`:
+   - `methods.stl`: turn on/off STL diagnostics, set `season` and `z_threshold`.
+   - `methods.autoencoder`: window length, epochs, learning rate, and output filenames.
+   - `methods.stumpy` / `methods.pyod`: set `enabled: true` if you want the optional baselines.
 3. Run:
 
 ```bash
 python main.py
 ```
 
-## Configuration
-
-Edit `config.yaml` to customize:
-
-- **use_stumpy**: Enable/disable STUMPY detection
-- **stumpy_window**: Window size for matrix profile calculation
-- **stumpy_percentile**: Percentile threshold for anomalies
-- **use_pyod**: Enable/disable PyOD detection
-- **pyod_method**: Algorithm to use (`IForest`, `LOF`, `OCSVM`)
-- **pyod_contamination**: Expected proportion of anomalies
-
-## Methods
-
-### STUMPY
-- Matrix profile for pattern discovery
-- Detects unusual subsequences
-- Window-based approach
-
-### PyOD
-- **IForest**: Isolation Forest for anomaly detection
-- **LOF**: Local Outlier Factor
-- **OCSVM**: One-Class SVM
-
 ## Outputs
 
-- `outputs/stumpy_pyod_anomalies.png`: Anomaly detection visualization with both methods
-- Console output: Evaluation metrics for each method
+- `outputs/eia_anomaly_stl.png` – STL residual anomalies.
+- `outputs/eia_anomaly_autoencoder.png` – Autoencoder anomalies on STL residuals.
+- `outputs/eia_anomaly_autoencoder_error.png` – Reconstruction-error trace with threshold.
+- Optional: `outputs/stumpy_matrix_profile.png`, `outputs/pyod_<method>_anomalies.png`.
 
-## Notes
-
-- STUMPY is best for pattern-based anomalies
-- PyOD is best for point anomalies
-- Both methods can be used together for comprehensive detection
-- Optional true anomaly labels for evaluation if available
-
+Console logs list how many anomalies each method detected, matching the numbers quoted in the article.

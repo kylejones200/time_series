@@ -1,228 +1,214 @@
 #!/usr/bin/env python3
-"""
-LSTM for Time Series Forecasting
-Long Short-Term Memory networks for time series forecasting using TensorFlow/Keras.
-"""
+"""LSTM evaluation aligned with the 2025-11-08 article assets."""
 
-import yaml
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from __future__ import annotations
+
+from dataclasses import dataclass
 from pathlib import Path
-import sys
-import warnings
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, callbacks
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, GRU, Dense, Dropout, Bidirectional
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from typing import Tuple
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot, apply_plot_style
-from utils.ts_utils import load_ts_data, ensure_datetime_index, split_ts
-
-warnings.filterwarnings('ignore')
-tf.random.set_seed(42)
-np.random.seed(42)
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import yaml
+from darts import TimeSeries
+from darts.dataprocessing.transformers import Scaler
+from darts.models import RNNModel
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import TimeSeriesSplit
 
 
-def load_config(config_path="config.yaml"):
-    """Load configuration from YAML file."""
+@dataclass
+class Config:
+    data_path: Path
+    date_col: str
+    value_col: str
+    freq: str
+    horizon: int
+    n_splits: int
+    input_chunk_length: int
+    output_chunk_length: int
+    epochs: int
+    output_dir: Path
+    output_plot: Path
+
+
+def load_config(config_path: str = "config.yaml") -> Config:
     with open(config_path) as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
 
+    repo_root = Path(__file__).resolve().parents[1]
+    data_path = repo_root / "data" / cfg["data"]["input_file"]
+    output_dir = Path(__file__).parent / cfg["output"]["output_dir"]
+    output_dir.mkdir(exist_ok=True)
 
-def create_sequences(data, seq_length, target_col_idx=0):
-    """Create sequences for LSTM training using sliding window."""
-    X, y = [], []
-    for i in range(len(data) - seq_length):
-        X.append(data[i:i + seq_length])
-        y.append(data[i + seq_length, target_col_idx])
-    return np.array(X), np.array(y)
-
-
-def build_lstm_model(seq_length, n_features, config):
-    """Build LSTM model architecture."""
-    model_type = config['model']['type']
-    hidden_units = config['model']['hidden_units']
-    dropout = config['model']['dropout']
-    
-    model = Sequential(name=f'{model_type}_model')
-    model.add(layers.Input(shape=(seq_length, n_features)))
-    
-    for i, units in enumerate(hidden_units):
-        return_sequences = (i < len(hidden_units) - 1)
-        
-        model_map = {
-            'lstm': lambda u, rs: LSTM(u, return_sequences=rs),
-            'gru': lambda u, rs: GRU(u, return_sequences=rs),
-            'bidirectional_lstm': lambda u, rs: Bidirectional(LSTM(u, return_sequences=rs)),
-        }
-        
-        model.add(model_map.get(model_type, model_map['lstm'])(units, return_sequences))
-        
-        if dropout > 0:
-            model.add(Dropout(dropout))
-    
-    model.add(Dense(1))
-    model.compile(
-        optimizer=config['model']['optimizer'],
-        loss=config['model']['loss'],
-        metrics=['mae']
+    return Config(
+        data_path=data_path,
+        date_col=cfg["data"]["date_col"],
+        value_col=cfg["data"]["value_col"],
+        freq=cfg["data"].get("freq", "MS"),
+        horizon=int(cfg["model"]["horizon"]),
+        n_splits=int(cfg["model"]["n_splits"]),
+        input_chunk_length=int(cfg["model"]["input_chunk_length"]),
+        output_chunk_length=int(cfg["model"]["output_chunk_length"]),
+        epochs=int(cfg["model"]["epochs"]),
+        output_dir=output_dir,
+        output_plot=output_dir / cfg["output"]["tufte_plot"],
     )
-    return model
 
 
-def train_model(model, X_train, y_train, X_val, y_val, config):
-    """Train LSTM model with early stopping."""
-    early_stop = callbacks.EarlyStopping(
-        monitor='val_loss',
-        patience=config['training']['patience'],
-        restore_best_weights=True,
-        verbose=1
+def load_series(config: Config) -> TimeSeries:
+    if not config.data_path.exists():
+        raise FileNotFoundError(f"Input CSV not found at {config.data_path}")
+
+    df = pd.read_csv(config.data_path)
+    if config.date_col not in df.columns or config.value_col not in df.columns:
+        raise ValueError("Specified columns not present in CSV")
+
+    df[config.date_col] = pd.to_datetime(df[config.date_col], errors="coerce")
+    df = df.dropna(subset=[config.date_col, config.value_col])
+    df = df.sort_values(config.date_col)
+    series = pd.Series(
+        pd.to_numeric(df[config.value_col], errors="coerce").dropna().values,
+        index=pd.DatetimeIndex(df[config.date_col]),
     )
-    
-    reduce_lr = callbacks.ReduceLROnPlateau(
-        monitor='val_loss',
-        factor=0.5,
-        patience=5,
-        min_lr=1e-6,
-        verbose=1
+    series = series.asfreq(config.freq).astype(float)
+    return TimeSeries.from_series(series)
+
+
+def build_model(config: Config) -> RNNModel:
+    return RNNModel(
+        model="LSTM",
+        input_chunk_length=config.input_chunk_length,
+        output_chunk_length=config.output_chunk_length,
+        training_length=max(config.input_chunk_length, 24),
+        n_rnn_layers=2,
+        hidden_dim=64,
+        n_epochs=config.epochs,
+        random_state=42,
+        pl_trainer_kwargs={
+            "enable_progress_bar": False,
+            "accelerator": "cpu",
+            "devices": 1,
+            "logger": False,
+        },
     )
-    
-    history = model.fit(
-        X_train, y_train,
-        validation_data=(X_val, y_val),
-        epochs=config['training']['epochs'],
-        batch_size=config['training']['batch_size'],
-        callbacks=[early_stop, reduce_lr],
-        verbose=1
+
+
+def rolling_origin_lstm(series: TimeSeries, config: Config) -> Tuple[float, TimeSeries, TimeSeries]:
+    values = series.to_series()
+    idx = np.arange(len(values))
+    splitter = TimeSeriesSplit(n_splits=config.n_splits)
+    maes = []
+    last_true = None
+    last_pred = None
+
+    for train_idx, _ in splitter.split(idx):
+        end = train_idx[-1]
+        train_ts = series.drop_after(series.time_index[end])
+        future = series.split_after(series.time_index[end])[1]
+        horizon_ts = future.drop_after(future.time_index[min(config.horizon - 1, len(future) - 1)])
+        if len(horizon_ts) == 0:
+            continue
+
+        scaler = Scaler()
+        train_scaled = scaler.fit_transform(train_ts)
+        model = build_model(config)
+        model.fit(train_scaled)
+        forecast_scaled = model.predict(len(horizon_ts))
+        forecast = scaler.inverse_transform(forecast_scaled)
+        mae = mean_absolute_error(horizon_ts.values().ravel(), forecast.values().ravel())
+        maes.append(mae)
+        last_true = horizon_ts
+        last_pred = forecast
+
+    mean_mae = float(np.mean(maes)) if maes else float("nan")
+    print(f"LSTM rolling-origin MAE: {mean_mae:.3f}")
+    return mean_mae, last_true, last_pred
+
+
+def plot_tufte(series: TimeSeries, config: Config, forecast: TimeSeries) -> None:
+    s = series.to_series()
+    start_2024 = pd.Period("2024-01", freq="M").start_time + pd.offsets.MonthBegin(0)
+    end_2024 = pd.Period("2024-12", freq="M").start_time + pd.offsets.MonthBegin(0)
+    jan_2025 = pd.Period("2025-01", freq="M").start_time + pd.offsets.MonthBegin(0)
+    aug_2025 = pd.Period("2025-08", freq="M").start_time + pd.offsets.MonthBegin(0)
+
+    history = s.loc[start_2024:end_2024]
+    actual = s.loc[jan_2025:aug_2025]
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(history.index, history.values, color="#888888", lw=1.5)
+    ax.axvline(jan_2025, color="#666666", linestyle="--", lw=1)
+    if not actual.empty:
+        ax.plot(actual.index, actual.values, color="#444444", lw=1.8)
+
+    plt_forecast = forecast
+    ax.fill_between(
+        plt_forecast.time_index,
+        plt_forecast.values().ravel() - 1.96 * np.std(plt_forecast.values().ravel()),
+        plt_forecast.values().ravel() + 1.96 * np.std(plt_forecast.values().ravel()),
+        color="#000000",
+        alpha=0.06,
+        linewidth=0,
     )
-    return history
+    ax.plot(plt_forecast.time_index, plt_forecast.values().ravel(), color="#000000", lw=2.0)
+
+    from matplotlib.ticker import MaxNLocator, StrMethodFormatter
+
+    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(False)
+    ax.set_xlabel("")
+    ax.set_title("EIA Net Generation — LSTM forecast Jan–Aug 2025")
+
+    if not history.empty:
+        ax.annotate(
+            "History (2024)",
+            xy=(history.index[-1], history.values[-1]),
+            xytext=(6, 0),
+            textcoords="offset points",
+            fontsize=9,
+            va="center",
+            ha="left",
+            color="#666666",
+        )
+    if not actual.empty:
+        ax.annotate(
+            "Actual (Jan–Aug 2025)",
+            xy=(actual.index[-1], actual.values[-1]),
+            xytext=(6, 0),
+            textcoords="offset points",
+            fontsize=9,
+            va="center",
+            ha="left",
+            color="#444444",
+        )
+    ax.annotate(
+        "LSTM forecast",
+        xy=(plt_forecast.time_index[-1], plt_forecast.values().ravel()[-1]),
+        xytext=(6, 0),
+        textcoords="offset points",
+        fontsize=9,
+        va="center",
+        ha="left",
+        color="#000000",
+    )
+
+    fig.tight_layout()
+    fig.savefig(config.output_plot, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ LSTM plot saved -> {config.output_plot}")
 
 
-def evaluate_model(model, X_test, y_test, scaler):
-    """Evaluate model and calculate metrics."""
-    predictions = model.predict(X_test, verbose=0).flatten()
-    
-    dummy = np.zeros((len(predictions), scaler.n_features_in_))
-    dummy[:, 0] = predictions
-    predictions = scaler.inverse_transform(dummy)[:, 0]
-    
-    dummy[:, 0] = y_test
-    y_test_inv = scaler.inverse_transform(dummy)[:, 0]
-    
-    mae = mean_absolute_error(y_test_inv, predictions)
-    rmse = np.sqrt(mean_squared_error(y_test_inv, predictions))
-    r2 = r2_score(y_test_inv, predictions)
-    
-    return predictions, {'MAE': mae, 'RMSE': rmse, 'R²': r2}
-
-
-def forecast_future(model, last_sequence, n_steps, scaler):
-    """Generate multi-step ahead forecast."""
-    predictions = []
-    current_seq = last_sequence.copy()
-    
-    for _ in range(n_steps):
-        pred = model.predict(current_seq.reshape(1, *current_seq.shape), verbose=0)[0, 0]
-        predictions.append(pred)
-        new_row = current_seq[-1].copy()
-        new_row[0] = pred
-        current_seq = np.vstack([current_seq[1:], new_row])
-    
-    predictions = np.array(predictions)
-    dummy = np.zeros((len(predictions), scaler.n_features_in_))
-    dummy[:, 0] = predictions
-    predictions = scaler.inverse_transform(dummy)[:, 0]
-    
-    return predictions
-
-
-def main():
+def main() -> None:
     config = load_config()
-    
-    df = load_ts_data(
-        data_path=Path(__file__).parent.parent / 'data' / config['data']['input_file'],
-        date_col=config['data']['date_col'],
-        value_col=config['data']['value_col']
-    )
-    df = ensure_datetime_index(df, time_col='date')
-    
-    train_df, test_df = split_ts(df, test_size=config['data']['test_size'])
-    
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    train_scaled = scaler.fit_transform(train_df[[config['data']['value_col']]].values)
-    test_scaled = scaler.transform(test_df[[config['data']['value_col']]].values)
-    
-    seq_length = config['model']['sequence_length']
-    X_train, y_train = create_sequences(train_scaled, seq_length)
-    X_test, y_test = create_sequences(test_scaled, seq_length)
-    
-    val_size = int(len(X_train) * config['data']['val_size'])
-    X_val, y_val = X_train[-val_size:], y_train[-val_size:]
-    X_train, y_train = X_train[:-val_size], y_train[:-val_size]
-    
-    model = build_lstm_model(seq_length, 1, config)
-    history = train_model(model, X_train, y_train, X_val, y_val, config)
-    
-    predictions, metrics = evaluate_model(model, X_test, y_test, scaler)
-    
-    print("\nModel Evaluation:")
-    [print(f"{k}: {v:.4f}") for k, v in metrics.items()]
-    
-    dummy = np.zeros((len(y_test), scaler.n_features_in_))
-    dummy[:, 0] = y_test
-    y_test_inv = scaler.inverse_transform(dummy)[:, 0]
-    
-    fig, ax = setup_figure(config['plotting']['figure_size'], config['plotting']['dpi'])
-    apply_plot_style(ax, config)
-    
-    test_dates = test_df.index[seq_length:]
-    ax.plot(test_dates, y_test_inv, 'k-', linewidth=config['plotting']['linewidth'],
-            alpha=config['plotting']['alpha'], label='Actual')
-    ax.plot(test_dates, predictions, 'r--', linewidth=config['plotting']['linewidth'],
-            label='Predicted')
-    
-    ax.set_title(config['plot_titles']['lstm_forecast'])
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    apply_legend(ax, config['plotting']['legend'])
-    
-    output_path = Path(__file__).parent / "outputs" / "lstm_forecast.png"
-    save_plot(fig, output_path)
-    plt.show()
-    
-    future_steps = config['model']['forecast_steps']
-    last_sequence = X_test[-1]
-    future_predictions = forecast_future(model, last_sequence, future_steps, scaler)
-    
-    fig, ax = setup_figure(config['plotting']['figure_size'], config['plotting']['dpi'])
-    apply_plot_style(ax, config)
-    
-    ax.plot(df.index[-200:], df[config['data']['value_col']].values[-200:],
-            'k-', linewidth=config['plotting']['linewidth'], alpha=config['plotting']['alpha'],
-            label='Historical')
-    ax.plot(test_dates, y_test_inv, 'b-', linewidth=config['plotting']['linewidth'],
-            alpha=config['plotting']['alpha'], label='Test Actual')
-    ax.plot(test_dates, predictions, 'b--', linewidth=config['plotting']['linewidth'],
-            label='Test Predicted')
-    
-    future_dates = pd.date_range(start=df.index[-1] + pd.Timedelta(days=1),
-                                 periods=future_steps, freq='D')
-    ax.plot(future_dates, future_predictions, 'r:', linewidth=config['plotting']['linewidth'],
-            marker='o', markersize=config['plotting']['markersize'], label='Future Forecast')
-    
-    ax.set_title(config['plot_titles']['lstm_future'])
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    apply_legend(ax, config['plotting']['legend'])
-    
-    output_path = Path(__file__).parent / "outputs" / "lstm_future_forecast.png"
-    save_plot(fig, output_path)
-    plt.show()
+    series = load_series(config)
+    mean_mae, _, forecast = rolling_origin_lstm(series, config)
+    if forecast is not None:
+        plot_tufte(series, config, forecast)
 
 
 if __name__ == "__main__":
