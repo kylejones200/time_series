@@ -1,18 +1,20 @@
 data:
-  input_file: "input.csv"
-  date_col: "date"
-  value_col: "value"
-  item_id_col: null  # Optional: column name for item_id (for multivariate)
-  item_id: "default"  # Default item_id if item_id_col is null
-  test_size: 0.2
+  input_file: "amtrak_ridership_time_series_data.csv"
+  date_col: "Year"
+  value_col: "Ridership"
+  item_id_col: null
+  default_item_id: "amtrak"
+  frequency: "A"
 
 model:
-  prediction_length: 30
-  freq: "D"  # Frequency: "D" (daily), "H" (hourly), "M" (monthly), etc.
-  eval_metric: "MAPE"  # Options: "MAPE", "sMAPE", "MASE", "MSE", "RMSE"
+  prediction_length: 5
+  holdout_length: 5
   model_path: "autogluon_model"
-  presets: null  # Options: "best_quality", "high_quality", "good_quality", "medium_quality", "medium_quality_faster_train", "fast_training"
-  hyperparameters: {}  # Model-specific hyperparameters
+  eval_metric: "MAPE"
+  presets: "fast_training"
+  hyperparameters: {}
+  num_val_windows: 1
+  save_leaderboard: true
 
 plotting:
   style:

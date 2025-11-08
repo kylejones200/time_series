@@ -1,0 +1,14 @@
+data:
+  input_file: "amtrak_ridership_time_series_data.csv"
+  date_col: "Year"
+  value_col: "Ridership"
+  resample_rule: null
+  frequency: "A"
+
+model:
+  huggingface_model: "amazon/chronos-t5-small"
+  prediction_length: 5
+  context_length: 256
+  num_samples: 100
+  device_map: "cpu"
+  torch_dtype: "float32"

@@ -300,3 +300,51 @@ def create_time_features(data: pd.Series) -> pd.DataFrame:
     
     return df
 
+
+def locate_features_with_too_many_missing_values(df: pd.DataFrame, threshold: float = 0.1) -> list[str]:
+    """Return columns whose missing-value ratio exceeds the threshold."""
+    bad_cols = []
+    num_rows = len(df)
+    if num_rows == 0:
+        return bad_cols
+    for col in df.columns:
+        nan_perc = df[col].isna().sum() / num_rows
+        if nan_perc > threshold:
+            bad_cols.append(col)
+    return bad_cols
+
+
+def clean_up_turbine_data(df: pd.DataFrame, threshold: float = 0.1) -> pd.DataFrame:
+    """Clean wind-turbine style dataset: timestamps, duplicates, resample, drop sparse features."""
+    df = df.copy()
+    df['Timestamp'] = pd.to_datetime(df['Date_time'], infer_datetime_format=True, utc=True)
+    df = df.drop_duplicates(subset=['Timestamp'], keep='first')
+    df = df.set_index('Timestamp')
+    df = df.drop(columns=[c for c in ['Wind_turbine_name', 'Date_time'] if c in df.columns])
+    df = df.dropna(axis=1, how='all').dropna(axis=0, how='all')
+    df = df.sort_index()
+
+    df = df.resample('10T').ffill(limit=1)
+
+    bad_cols = locate_features_with_too_many_missing_values(df, threshold)
+    df = df.drop(columns=bad_cols)
+
+    df.index = pd.to_datetime(df.index)
+    return df
+
+
+def map_features(df_turbine: pd.DataFrame, df_description: pd.DataFrame) -> dict[str, list[str]]:
+    feature_map: dict[str, list[str]] = {}
+    for var_name in df_description['Variable_name']:
+        cols = [c for c in df_turbine.columns if var_name in c]
+        feature_map[var_name] = cols
+    return feature_map
+
+
+def order_columns_by_description(df_turbine: pd.DataFrame, df_description: pd.DataFrame) -> pd.DataFrame:
+    feature_map = map_features(df_turbine, df_description)
+    ordered_frames = [df_turbine[cols] for cols in feature_map.values() if cols]
+    if ordered_frames:
+        return pd.concat(ordered_frames, axis=1)
+    return df_turbine
+

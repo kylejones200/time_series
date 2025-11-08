@@ -8,6 +8,7 @@ Comprehensive econometric methods for causal inference, policy evaluation, and e
 - ✅ Regression Discontinuity Design (RDD)
 - ✅ OLS Regression
 - ✅ Vector Autoregression (VAR)
+- ✅ Panel Regression with Driscoll-Kraay & clustered SEs
 - ✅ Stationarity testing
 - ✅ Model diagnostics
 
@@ -52,6 +53,17 @@ Edit `config.yaml` to select and configure the method:
 - **value_cols**: List of variables for multivariate analysis
 - **var_max_lags**: Maximum lags to consider
 
+### Panel Regression (Fixed Effects)
+- **method**: `panel`
+- **panel_id_col**: Entity identifier column (e.g., firm, well)
+- **panel_time_col**: Time column (converted to datetime)
+- **panel_y_col**: Dependent variable
+- **panel_x_cols**: Regressor columns
+- **panel_kernel**: Kernel for Driscoll-Kraay covariance (default `bartlett`)
+- **panel_bandwidth**: Bandwidth for kernels
+- **panel_entity_effects**: Enable entity fixed effects
+- **panel_plot_units**: Number of sample entities to visualize
+
 ## Methods
 
 ### Granger Causality
@@ -77,6 +89,12 @@ Multivariate time series modeling. Useful for:
 - Multiple interdependent variables
 - Economic systems
 - Cross-variable relationships
+
+### Panel Regression
+Fixed-effects PanelOLS with robust standard errors. Useful for:
+- Heterogeneous entities (firms, wells, regions)
+- Comparing Driscoll-Kraay vs. clustered SEs
+- Visualization of entity trajectories
 
 ## Outputs
 

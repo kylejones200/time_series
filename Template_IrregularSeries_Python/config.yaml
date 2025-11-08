@@ -1,0 +1,11 @@
+resample:
+  rule: "30min"
+
+simulation:
+  start: "2025-01-01 10:00:00"
+  freq: "5min"
+  n_points: 100
+  gap_probability: 0.4
+
+gaussian_process:
+  length_scale: 1800.0  # seconds

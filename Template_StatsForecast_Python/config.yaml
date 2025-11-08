@@ -1,0 +1,10 @@
+data:
+  input_file: "amtrak_ridership_time_series_data.csv"
+  date_col: "Year"
+  value_col: "Ridership"
+  freq: "A"
+
+model:
+  season_length: 5
+  prediction_length: 5
+  holdout_length: 5

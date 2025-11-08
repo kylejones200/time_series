@@ -1,0 +1,23 @@
+data:
+  input_file: "input.csv"  # Ignored if url is provided
+  url: "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv"
+  date_col: "Year"
+  value_col: "Temperature Anomaly"
+  resample_rule: null
+
+model:
+  max_difference_order: 2  # Number of differencing levels (e.g., 0,1,2)
+
+plotting:
+  figure_size: [12, 10]
+  colors:
+    - "k"
+  linewidth: 1.8
+  alpha: 0.9
+  x_label: "Date"
+  y_label: "Value"
+  legend:
+    frameon: false
+
+plot_titles:
+  base: "Global Surface Temperature Anomalies"

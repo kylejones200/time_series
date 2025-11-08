@@ -4,7 +4,7 @@ A comprehensive collection of time series forecasting and analysis templates, or
 
 ## 🎯 Overview
 
-This repository contains **39 production-ready Python templates** for time series analysis, from classical statistical methods to cutting-edge deep learning approaches. Each template is self-contained, config-driven, and follows pythonic best practices.
+This repository contains **48 production-ready Python templates** for time series analysis, from classical statistical methods to cutting-edge deep learning approaches. Each template is self-contained, config-driven, and follows pythonic best practices.
 
 ## 📁 Structure
 
@@ -64,36 +64,44 @@ time_series/
 14. **Darts** - Unified forecasting interface
 15. **PyCaret** - Low-code time series forecasting
 16. **Sundial** - Transformer-based forecasting (THUML Sundial)
+17. **Chronos** - Amazon Chronos transformer forecasting
+18. **TimesFM** - Google TimesFM foundation model
+19. **LagLlama** - Lag-Llama foundation model forecasting
+20. **StatsForecast** - Nixtla statsforecast AutoARIMA
 
 ### Deep Learning
-17. **LSTM** - Long Short-Term Memory networks for time series
-18. **NBEATS** - Neural Basis Expansion Analysis
-19. **TSAI** - Deep learning for time series
-20. **BERT** - Time series classification with BERT
+21. **LSTM** - Long Short-Term Memory networks for time series
+22. **NBEATS** - Neural Basis Expansion Analysis
+23. **TSAI** - Deep learning for time series
+24. **BERT** - Time series classification with BERT
 
 ### Feature Engineering & Analysis
-21. **TSFresh** - Automated feature extraction
-22. **Aeon** - Time series analysis toolkit
-23. **Kalman** - State space models (Kalman filters)
+25. **TSFresh** - Automated feature extraction
+26. **Aeon** - Time series analysis toolkit
+27. **Kalman** - State space models (Kalman filters)
+28. **Differencing** - Differencing diagnostics and ADF tests
+29. **IrregularSeries** - Resampling and Gaussian Process interpolation for irregular data
+30. **ForecastErrorAnalysis** - ETS-based forecast error diagnostics
 
 ### Specialized
-24. **Merlion** - Forecasting & anomaly detection (enhanced with ARIMA and AutoEncoder)
-25. **MFLEs** - Multi-frequency learning ensemble
-26. **Autogluon** - Automated time series forecasting
-27. **Econometrics** - Causal inference and econometric methods (Granger, RDD, OLS, VAR)
-28. **CCM** - Convergent Cross Mapping for causal inference
-29. **SparseRegression** - LASSO/Ridge/Elastic Net with automatic feature selection
-30. **STUMPY_PyOD** - Matrix profile and outlier detection
-31. **BollingerBands** - Technical indicators
-32. **SerialCorrelation** - Serial correlation tests and corrections
-33. **ConfidenceIntervals** - Bootstrap and parametric confidence intervals
-34. **RegimeSwitching** - Markov switching models
-35. **TimeSeriesDecomposition** - Trend, seasonal, and residual decomposition
-36. **tslearn** - Time series machine learning (clustering, DTW)
-37. **Volatility** - ARCH/GARCH volatility modeling
-38. **TransferEntropy** - Information-theoretic causal inference
-39. **Copula** - Multivariate dependency modeling with copulas
-40. **PyTimeTK** - Feature engineering toolkit for time series
+31. **Merlion** - Forecasting & anomaly detection (enhanced with ARIMA and AutoEncoder)
+32. **MFLEs** - Multi-frequency learning ensemble
+33. **Autogluon** - Automated time series forecasting
+34. **Econometrics** - Causal inference and econometric methods (Granger, RDD, OLS, VAR)
+35. **CCM** - Convergent Cross Mapping for causal inference
+36. **SparseRegression** - LASSO/Ridge/Elastic Net with automatic feature selection
+37. **STUMPY_PyOD** - Matrix profile and outlier detection
+38. **BollingerBands** - Technical indicators
+39. **SerialCorrelation** - Serial correlation tests and corrections
+40. **ConfidenceIntervals** - Bootstrap and parametric confidence intervals
+41. **RegimeSwitching** - Markov switching models
+42. **TimeSeriesDecomposition** - Trend, seasonal, and residual decomposition
+43. **tslearn** - Time series machine learning (clustering, DTW)
+44. **Volatility** - ARCH/GARCH volatility modeling
+45. **TransferEntropy** - Information-theoretic causal inference
+46. **Copula** - Multivariate dependency modeling with copulas
+47. **PyTimeTK** - Feature engineering toolkit for time series
+48. **OrderedEvaluation** - Scoring ordinal forecasts and policy impact
 
 ## 🛠️ Shared Utilities
 

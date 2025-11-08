@@ -1,0 +1,13 @@
+simulation:
+  n_points: 200
+  class_labels: [0, 1, 2]
+
+policy:
+  intervene_cost: 20.0
+  review_cost: 5.0
+  none_cost: 0.0
+  risk_levels: [10.0, 50.0, 100.0]
+  intervention_effects:
+    intervene: 0.4
+    review: 0.7
+    none: 1.0

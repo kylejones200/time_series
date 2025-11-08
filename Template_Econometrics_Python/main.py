@@ -12,13 +12,11 @@ from pathlib import Path
 import sys
 import warnings
 from statsmodels.tsa.stattools import adfuller, grangercausalitytests
-from statsmodels.stats.stattools import durbin_watson
 from statsmodels.tsa.api import VAR
 from statsmodels.formula.api import ols
 from statsmodels.regression.linear_model import OLS
-from statsmodels.stats.diagnostic import acorr_ljungbox
 import statsmodels.api as sm
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from linearmodels.panel import PanelOLS
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.plotting_utils import setup_figure, apply_legend, save_plot, apply_plot_style
@@ -156,30 +154,104 @@ def var_analysis(data, value_cols, config):
     return fitted_model, optimal_lag
 
 
+def panel_regression(data, config):
+    """Perform panel regression with Driscoll-Kraay and clustered standard errors."""
+    print(f"\nPanel Regression (Fixed Effects)")
+    print("=" * 70)
+
+    model_cfg = config['model']
+    id_col = model_cfg['panel_id_col']
+    time_col = model_cfg['panel_time_col']
+    y_col = model_cfg['panel_y_col']
+    x_cols = model_cfg['panel_x_cols']
+
+    subset_cols = [id_col, time_col, y_col] + x_cols
+    df = data[subset_cols].dropna().copy()
+    df[time_col] = pd.to_datetime(df[time_col])
+    df = df.set_index([id_col, time_col]).sort_index()
+
+    if df.empty:
+        raise ValueError("Panel regression requires non-empty data after dropping NA values.")
+
+    y = df[y_col]
+    X = sm.add_constant(df[x_cols])
+
+    kernel = model_cfg.get('panel_kernel', 'bartlett')
+    bandwidth = model_cfg.get('panel_bandwidth', 3)
+    entity_effects = model_cfg.get('panel_entity_effects', True)
+
+    dk_model = PanelOLS(y, X, entity_effects=entity_effects).fit(
+        cov_type='kernel',
+        kernel=kernel,
+        bandwidth=bandwidth,
+    )
+    clustered_model = PanelOLS(y, X, entity_effects=entity_effects).fit(
+        cov_type='clustered',
+        cluster_entity=True,
+    )
+
+    print("Driscoll-Kraay standard errors:")
+    print(dk_model.std_errors)
+    print("\nClustered (entity) standard errors:")
+    print(clustered_model.std_errors)
+
+    sample_units = df.index.get_level_values(0).unique()[: model_cfg.get('panel_plot_units', 5)]
+    fig, ax = setup_figure(config['plotting']['figure_size'], config['plotting']['dpi'])
+    apply_plot_style(ax, {'plotting': config['plotting']})
+
+    for unit in sample_units:
+        unit_data = df.xs(unit, level=0)
+        ax.plot(
+            unit_data.index,
+            unit_data[y_col],
+            linewidth=config['plotting']['linewidth'],
+            alpha=config['plotting']['alpha'],
+            label=str(unit),
+        )
+
+    ax.set_title(config['plot_titles']['panel_analysis'])
+    ax.set_xlabel(time_col)
+    ax.set_ylabel(y_col)
+    apply_legend(ax, config['plotting']['legend'])
+
+    output_path = Path(__file__).parent / "outputs" / "panel_sample_units.png"
+    save_plot(fig, output_path)
+    plt.show()
+
+    return {
+        'driscoll_kraay': dk_model,
+        'clustered': clustered_model,
+    }
+
+
 def main():
     config = load_config()
     
     data_path = Path(__file__).parent.parent / 'data' / config['data']['input_file']
     df = pd.read_csv(data_path)
     df[config['data']['date_col']] = pd.to_datetime(df[config['data']['date_col']])
-    df = df.set_index(config['data']['date_col']).sort_index()
+    df = df.sort_values(config['data']['date_col'])
+    ts_df = df.set_index(config['data']['date_col']).sort_index()
     
     method = config['model']['method']
     
     method_map = {
         'granger': lambda: granger_causality_test(
-            df, config['model']['x_col'], config['model']['y_col'],
+            ts_df, config['model']['x_col'], config['model']['y_col'],
             config['model']['max_lag'], config
         ),
         'rdd': lambda: regression_discontinuity(
-            df, config['data']['date_col'], config['data']['value_col'],
+            ts_df, config['data']['date_col'], config['data']['value_col'],
             config['model']['cutoff_date'], config
         ),
         'ols': lambda: ols_regression(
-            df, config['model']['y_col'], config['model']['x_cols'], config
+            ts_df, config['model']['y_col'], config['model']['x_cols'], config
         ),
         'var': lambda: var_analysis(
-            df, config['data']['value_cols'], config
+            ts_df, config['data']['value_cols'], config
+        ),
+        'panel': lambda: panel_regression(
+            df, config
         ),
     }
     

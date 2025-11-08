@@ -1,0 +1,11 @@
+data:
+  input_file: "amtrak_ridership_time_series_data.csv"
+  date_col: "Year"
+  value_col: "Ridership"
+  freq: "A"
+
+model:
+  context_length: 32
+  prediction_length: 5
+  rope_scaling: false
+  checkpoint: "experiments/exoplanets/lag-llama.ckpt"  # update to your local path

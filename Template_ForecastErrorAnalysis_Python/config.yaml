@@ -1,0 +1,12 @@
+data:
+  url: "https://raw.githubusercontent.com/jbrownlee/Datasets/master/airline-passengers.csv"
+  input_file: null
+  date_col: "Month"
+  value_col: "Passengers"
+
+model:
+  seasonal_periods: 12
+
+analysis:
+  moving_average_window: 12
+  exponential_alpha: 0.2
