@@ -1,15 +1,25 @@
 data:
-  input_file: "input.csv"
+  input_file: "ercot_load_data.csv"
   date_col: "date"
-  value_col: "value"
+  value_col: "values"
+  resample:
+    enabled: false
+    freq: "15min"
+    method: "mean"
 
 model:
-  train_size: 0.8
-  forecast_horizon: 12
+  train_size: 0.85
   differenced: true
-  lag_method: "powers_of_2"
-  max_lag: 20
-  lags: [1, 2, 4, 8]
+  lag_method: "powers_of_2"   # powers_of_2 | custom | auto
+  max_lag: 16
+  custom_lags: [1, 2, 4, 8, 16]
+  forecast_horizon: 96
+
+evaluation:
+  horizon: 96
+  compare_arima:
+    enabled: true
+    order: [2, 1, 2]
 
 plotting:
   style:
@@ -37,4 +47,7 @@ output:
   plot_format: "png"
   save_plots: true
   output_dir: "outputs"
-
+  plots:
+    historical: "arar_series_visualization.png"
+    forecast: "arar_forecast_vs_actual.png"
+    comparison: "arar_vs_arima_forecast.png"
