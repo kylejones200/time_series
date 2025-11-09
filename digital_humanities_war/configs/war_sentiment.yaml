@@ -1,0 +1,10 @@
+analysis: war_sentiment
+war_sentiment:
+  dataset:
+    path: data/raw/war_term_combined_data.csv
+  date_col: date
+  text_col: text
+  term_col: term
+  time_format: "%Y-%m-%d"
+  aggregate: mean
+  output_dir: experiments/war_sentiment/outputs
