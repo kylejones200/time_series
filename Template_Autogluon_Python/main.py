@@ -10,6 +10,7 @@ AutoGluon for Time Series Forecasting
 from __future__ import annotations
 
 from dataclasses import dataclass
+from importlib import util
 from pathlib import Path
 from typing import Optional
 
@@ -19,9 +20,22 @@ import pandas as pd
 import yaml
 from autogluon.timeseries import TimeSeriesDataFrame, TimeSeriesPredictor
 
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_plot_style, apply_legend, save_plot
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+plotting_utils = repo_import("utils.plotting_utils")
+setup_figure = plotting_utils.setup_figure
+apply_plot_style = plotting_utils.apply_plot_style
+apply_legend = plotting_utils.apply_legend
+save_plot = plotting_utils.save_plot
 
 
 @dataclass

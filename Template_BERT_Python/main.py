@@ -9,19 +9,31 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-import sys
 import os
-import warnings
 import torch
+from importlib import util
 from transformers import AutoTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot
+
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+plotting_utils = repo_import("utils.plotting_utils")
+setup_figure = plotting_utils.setup_figure
+apply_legend = plotting_utils.apply_legend
+save_plot = plotting_utils.save_plot
 
 os.environ["WANDB_DISABLED"] = "true"
-warnings.filterwarnings('ignore')
 
 
 def load_config(config_path="config.yaml"):

@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-import sys
 from dataclasses import dataclass
+from importlib import util
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
@@ -19,8 +19,20 @@ from sklearn.model_selection import TimeSeriesSplit
 from darts import TimeSeries
 from darts.models import ARIMA, ExponentialSmoothing, NaiveSeasonal, Theta
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.ts_utils import load_ts_data  # noqa: E402
+
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+ts_utils = repo_import("utils.ts_utils")
+load_ts_data = ts_utils.load_ts_data
 
 np.random.seed(42)
 plt.rcParams.update(

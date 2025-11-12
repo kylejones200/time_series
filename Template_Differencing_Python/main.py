@@ -5,8 +5,7 @@ Visualize original series and successive differences (+ADF diagnostics).
 """
 
 import io
-import sys
-import warnings
+from importlib import util
 from pathlib import Path
 from typing import Optional
 
@@ -17,10 +16,23 @@ import requests
 import yaml
 from statsmodels.tsa.stattools import adfuller
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_plot_style, apply_legend, save_plot
 
-warnings.filterwarnings("ignore")
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+plotting_utils = repo_import("utils.plotting_utils")
+setup_figure = plotting_utils.setup_figure
+apply_plot_style = plotting_utils.apply_plot_style
+apply_legend = plotting_utils.apply_legend
+save_plot = plotting_utils.save_plot
 
 
 def load_config(config_path: str = "config.yaml") -> dict:

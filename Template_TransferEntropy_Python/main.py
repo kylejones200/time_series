@@ -9,16 +9,31 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-import sys
-import warnings
+from importlib import util
 import pyinform.transferentropy as te
 from tqdm import tqdm
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot, apply_plot_style
-from utils.ts_utils import load_ts_data, ensure_datetime_index
 
-warnings.filterwarnings('ignore')
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+plotting_utils = repo_import("utils.plotting_utils")
+setup_figure = plotting_utils.setup_figure
+apply_legend = plotting_utils.apply_legend
+save_plot = plotting_utils.save_plot
+apply_plot_style = plotting_utils.apply_plot_style
+
+ts_utils = repo_import("utils.ts_utils")
+load_ts_data = ts_utils.load_ts_data
+ensure_datetime_index = ts_utils.ensure_datetime_index
 
 
 def load_config(config_path="config.yaml"):

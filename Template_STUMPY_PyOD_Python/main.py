@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -24,8 +23,6 @@ try:
 except Exception:  # pragma: no cover - optional dependencies
     stumpy = None  # type: ignore
     IForest = LOF = OCSVM = None  # type: ignore
-
-warnings.filterwarnings("ignore")
 
 
 @dataclass

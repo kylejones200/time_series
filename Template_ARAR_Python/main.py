@@ -6,8 +6,7 @@ Refactored to support config-driven workflows, evaluation, and comparison with A
 
 from __future__ import annotations
 
-import sys
-import warnings
+from importlib import util
 from pathlib import Path
 from typing import Dict, List
 
@@ -20,11 +19,28 @@ from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import acf
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import apply_legend, save_plot, setup_figure
-from utils.ts_utils import detect_frequency, load_ts_data, resample_ts, split_ts
 
-warnings.filterwarnings("ignore")
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+plotting_utils = repo_import("utils.plotting_utils")
+setup_figure = plotting_utils.setup_figure
+apply_legend = plotting_utils.apply_legend
+save_plot = plotting_utils.save_plot
+
+ts_utils = repo_import("utils.ts_utils")
+detect_frequency = ts_utils.detect_frequency
+load_ts_data = ts_utils.load_ts_data
+resample_ts = ts_utils.resample_ts
+split_ts = ts_utils.split_ts
 
 
 def repo_root() -> Path:

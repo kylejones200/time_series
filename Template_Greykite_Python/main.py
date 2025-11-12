@@ -9,8 +9,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-import sys
-import warnings
+from importlib import util
 from greykite.framework.templates.autogen.forecast_config import (
     ForecastConfig, MetadataParam, ModelComponentsParam
 )
@@ -18,11 +17,25 @@ from greykite.framework.templates.forecaster import Forecaster
 from greykite.framework.templates.model_templates import ModelTemplateEnum
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot
-from utils.ts_utils import load_ts_data
 
-warnings.filterwarnings('ignore')
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+plotting_utils = repo_import("utils.plotting_utils")
+setup_figure = plotting_utils.setup_figure
+apply_legend = plotting_utils.apply_legend
+save_plot = plotting_utils.save_plot
+
+ts_utils = repo_import("utils.ts_utils")
+load_ts_data = ts_utils.load_ts_data
 
 
 def load_config(config_path="config.yaml"):

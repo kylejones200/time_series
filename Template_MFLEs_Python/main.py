@@ -9,8 +9,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-import sys
-import warnings
+from importlib import util
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, StackingRegressor
 from sklearn.linear_model import Ridge
 from sklearn.svm import SVR
@@ -18,11 +17,31 @@ from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.plotting_utils import setup_figure, apply_legend, save_plot, apply_plot_style
-from utils.ts_utils import load_ts_data, ensure_datetime_index, split_ts, create_time_features, create_lags, create_rolling_features
 
-warnings.filterwarnings('ignore')
+def repo_import(module: str):
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root.joinpath(*module.split(".")).with_suffix(".py")
+    spec = util.spec_from_file_location(module, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot import module '{module}' from {module_path}")
+    module_obj = util.module_from_spec(spec)
+    spec.loader.exec_module(module_obj)
+    return module_obj
+
+
+plotting_utils = repo_import("utils.plotting_utils")
+setup_figure = plotting_utils.setup_figure
+apply_legend = plotting_utils.apply_legend
+save_plot = plotting_utils.save_plot
+apply_plot_style = plotting_utils.apply_plot_style
+
+ts_utils = repo_import("utils.ts_utils")
+load_ts_data = ts_utils.load_ts_data
+ensure_datetime_index = ts_utils.ensure_datetime_index
+split_ts = ts_utils.split_ts
+create_time_features = ts_utils.create_time_features
+create_lags = ts_utils.create_lags
+create_rolling_features = ts_utils.create_rolling_features
 
 
 def load_config(config_path="config.yaml"):
