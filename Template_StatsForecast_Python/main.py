@@ -9,12 +9,16 @@ from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
 from statsforecast import StatsForecast
 from statsforecast.models import AutoARIMA
 from utilsforecast.losses import mae, mape, mse
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -28,11 +32,6 @@ def repo_import(module: str):
     return module_obj
 
 
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_plot_style = plotting_utils.apply_plot_style
-apply_legend = plotting_utils.apply_legend
-save_plot = plotting_utils.save_plot
 
 
 @dataclass
@@ -52,22 +51,22 @@ def load_config(config_path: str = "config.yaml") -> Config:
         cfg = yaml.safe_load(f)
 
     repo_root = Path(__file__).resolve().parents[1]
-    data_path = repo_root / "data" / cfg['data']['input_file']
+    data_path = repo_root / "data" / cfg["data"]["input_file"]
     if not data_path.exists():
         raise FileNotFoundError(f"Input file not found: {data_path}")
 
     output_dir = Path(__file__).parent / "outputs"
     output_dir.mkdir(exist_ok=True)
 
-    model_cfg = cfg['model']
+    model_cfg = cfg["model"]
     return Config(
         data_path=data_path,
-        date_col=cfg['data']['date_col'],
-        value_col=cfg['data']['value_col'],
-        freq=cfg['data'].get('freq', 'H'),
-        season_length=model_cfg.get('season_length', 24),
-        prediction_length=model_cfg['prediction_length'],
-        holdout_length=model_cfg.get('holdout_length', model_cfg['prediction_length']),
+        date_col=cfg["data"]["date_col"],
+        value_col=cfg["data"]["value_col"],
+        freq=cfg["data"].get("freq", "H"),
+        season_length=model_cfg.get("season_length", 24),
+        prediction_length=model_cfg["prediction_length"],
+        holdout_length=model_cfg.get("holdout_length", model_cfg["prediction_length"]),
         output_dir=output_dir,
     )
 
@@ -77,31 +76,32 @@ def load_series(config: Config) -> pd.DataFrame:
     if config.date_col not in df.columns or config.value_col not in df.columns:
         raise ValueError("Specified columns not found in CSV")
 
-    df[config.date_col] = pd.to_datetime(df[config.date_col], errors='coerce')
+    df[config.date_col] = pd.to_datetime(df[config.date_col], errors="coerce")
     df = df.dropna(subset=[config.date_col, config.value_col])
     df = df.sort_values(config.date_col)
 
     df = df.reset_index(drop=True)
-    df = df[[config.date_col, config.value_col]].rename(columns={
-        config.date_col: 'ds',
-        config.value_col: 'y'
-    })
+    df = df[[config.date_col, config.value_col]].rename(
+        columns={config.date_col: "ds", config.value_col: "y"}
+    )
     return df
 
 
 def prepare_data(df: pd.DataFrame, config: Config) -> tuple[pd.DataFrame, pd.DataFrame]:
-    df_resampled = df.set_index('ds').resample(config.freq)['y'].mean().reset_index()
-    df_resampled['unique_id'] = 'series_1'
+    df_resampled = df.set_index("ds").resample(config.freq)["y"].mean().reset_index()
+    df_resampled["unique_id"] = "series_1"
 
     if config.holdout_length >= len(df_resampled):
         raise ValueError("Holdout length must be smaller than series length")
 
-    train = df_resampled.iloc[:-config.holdout_length].copy()
-    test = df_resampled.iloc[-config.holdout_length:].copy()
+    train = df_resampled.iloc[: -config.holdout_length].copy()
+    test = df_resampled.iloc[-config.holdout_length :].copy()
     return train, test
 
 
-def fit_and_forecast(train: pd.DataFrame, test: pd.DataFrame, config: Config) -> pd.DataFrame:
+def fit_and_forecast(
+    train: pd.DataFrame, test: pd.DataFrame, config: Config
+) -> pd.DataFrame:
     models = [AutoARIMA(season_length=config.season_length)]
     sf = StatsForecast(models=models, freq=config.freq, n_jobs=-1)
     sf.fit(train)
@@ -110,44 +110,41 @@ def fit_and_forecast(train: pd.DataFrame, test: pd.DataFrame, config: Config) ->
 
 
 def compute_metrics(test: pd.DataFrame, forecast: pd.DataFrame) -> dict:
-    merged = test[['ds', 'y']].merge(forecast[['ds', 'AutoARIMA']], on='ds', how='left')
-    actual = merged['y'].to_numpy()
-    predicted = merged['AutoARIMA'].to_numpy()
+    merged = test[["ds", "y"]].merge(forecast[["ds", "AutoARIMA"]], on="ds", how="left")
+    actual = merged["y"].to_numpy()
+    predicted = merged["AutoARIMA"].to_numpy()
 
     metrics = {
-        'MAE': float(mae(actual, predicted)),
-        'MSE': float(mse(actual, predicted)),
-        'RMSE': float(np.sqrt(mse(actual, predicted))),
-        'MAPE': float(mape(actual, predicted)),
+        "MAE": float(mae(actual, predicted)),
+        "MSE": float(mse(actual, predicted)),
+        "RMSE": float(np.sqrt(mse(actual, predicted))),
+        "MAPE": float(mape(actual, predicted)),
     }
     return metrics, merged
 
 
 def plot_forecast(full_df: pd.DataFrame, merged: pd.DataFrame, config: Config) -> None:
-    fig, ax = setup_figure((12, 6), 150)
-    apply_plot_style(ax, {'plotting': {
-        'style': {'spines': {'top': False, 'right': False, 'bottom': True, 'left': True}, 'grid': False}
-    }})
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    ax.plot(full_df["ds"], full_df["y"], label="History", color="black")
+    ax.plot(merged["ds"], merged["y"], label="Actual", color="green", linestyle="--")
+    ax.plot(merged["ds"], merged["AutoARIMA"], label="AutoARIMA", color="tomato")
 
-    ax.plot(full_df['ds'], full_df['y'], label='History', color='black')
-    ax.plot(merged['ds'], merged['y'], label='Actual', color='green', linestyle='--')
-    ax.plot(merged['ds'], merged['AutoARIMA'], label='AutoARIMA', color='tomato')
+    ax.set_title("StatsForecast AutoARIMA")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value")
+    ax.legend(frameon=False, loc="best")
 
-    ax.set_title('StatsForecast AutoARIMA')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    apply_legend(ax, {'frameon': False, 'loc': 'best'})
-
-    path = config.output_dir / 'statsforecast_forecast.png'
-    save_plot(fig, path)
+    path = config.output_dir / "statsforecast_forecast.png"
+    fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Forecast plot saved -> {path}")
 
 
 def save_outputs(merged: pd.DataFrame, metrics: dict, config: Config) -> None:
-    merged.rename(columns={'AutoARIMA': 'forecast'}, inplace=True)
-    merged.to_csv(config.output_dir / 'statsforecast_forecast.csv', index=False)
-    with open(config.output_dir / 'statsforecast_metrics.yaml', 'w') as f:
+    merged.rename(columns={"AutoARIMA": "forecast"}, inplace=True)
+    merged.to_csv(config.output_dir / "statsforecast_forecast.csv", index=False)
+    with open(config.output_dir / "statsforecast_metrics.yaml", "w") as f:
         yaml.safe_dump(metrics, f)
     print("✓ Forecast CSV and metrics saved")
 

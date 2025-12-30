@@ -1,0 +1,236 @@
+\chapter{Time Series Applications in Music and Audio Analysis}
+
+The previous chapters covered applications in finance, energy, and earth science. This chapter explores a different domain: music and audio. Audio signals are time series. Music unfolds over time. Time series methods analyze pitch, rhythm, and performance characteristics.
+
+\section{Introduction}
+
+Music is temporal. It unfolds over time. Each moment builds on previous moments to create meaning, emotion, and structure. This temporal nature makes music an ideal domain for time series analysis. Audio signals are continuous time series. They can be digitized, analyzed, and manipulated using computational methods. Time series analysis enables understanding of musical structure, performance characteristics, and creative processes.
+
+Music analysis using time series methods encompasses diverse applications. Pitch and melody analysis tracks how musical pitches change over time. It reveals melodic contours and harmonic progressions. Rhythm and tempo analysis identifies beat patterns, tempo changes, and rhythmic structures. Performance analysis examines how musicians interpret and express musical works. It compares different performances and identifies expressive patterns.
+
+Algorithmic composition uses time series models to generate new music. It learns from existing compositions to create novel pieces. These follow musical rules and conventions. Music information retrieval applies time series analysis to organize, search, and recommend music. Similarity, genre, mood, and other characteristics are used.
+
+This chapter explores time series applications in music and audio analysis. It examines fundamentals of audio time series, pitch and melody analysis, rhythm and tempo analysis, performance analysis, algorithmic composition, music information retrieval, and audio processing. Each section provides practical insights and methods. These are widely used in music technology, research, and creative applications.
+
+You will understand how to apply time series analysis to music and audio problems. Analyzing musical performances to generating new compositions are examples. You will be equipped with techniques that bridge music theory, signal processing, and machine learning.
+
+\section{Fundamentals of Audio Time Series}
+
+Audio signals are continuous waveforms that represent sound pressure variations over time. When digitized, these signals become discrete time series that can be analyzed using computational methods.
+
+\subsection{Digital Audio Representation}
+
+Digital audio represents continuous sound waves as discrete samples. The sampling rate determines the number of samples per second, with 44.1 kHz being standard for CD quality. Bit depth specifies the number of bits per sample, determining dynamic range. Channels can be mono (one channel) or stereo (two channels). Audio data is typically stored as arrays of amplitude values in time series format.
+
+Understanding digital audio representation is essential for time series analysis. It determines the temporal resolution and dynamic range available for analysis.
+
+\subsection{Sampling and Time Domain Analysis}
+
+Time domain analysis examines audio signals as they vary over time. Waveform visualization plots amplitude versus time to reveal signal shape. Amplitude envelope tracking monitors how signal amplitude changes over time. Zero-crossing rate counts how often the signal crosses zero, indicating frequency content. Autocorrelation measures self-similarity at different time lags.
+
+Time domain analysis reveals temporal patterns, transients, and amplitude modulations. These are important for understanding musical structure and performance characteristics.
+
+\subsection{Frequency Domain Analysis}
+
+Frequency domain analysis transforms time series into frequency representations. The Fourier Transform decomposes signals into frequency components. Spectrograms visualize how frequency content changes over time. Spectral features extraction identifies characteristics like spectral centroid, bandwidth, and rolloff. Harmonic analysis identifies fundamental frequency and harmonics.
+
+Frequency domain analysis is essential for pitch detection, harmonic analysis, and understanding timbral characteristics of musical sounds.
+
+\subsection{Audio Features and Characteristics}
+
+Audio features capture important characteristics of musical signals. Timbre is the quality that distinguishes different instruments playing the same pitch. Dynamics are amplitude variations that create musical expression. Articulation describes how notes are attacked, sustained, and released. Vibrato and tremolo are periodic modulations of pitch and amplitude.
+
+Time series analysis helps extract and analyze these features. This enables deeper understanding of musical content and performance characteristics.
+
+\section{Pitch and Melody Analysis}
+
+Pitch is the perceptual correlate of frequency. Melody is a sequence of pitches that creates musical meaning. Time series analysis enables automatic pitch detection, melodic contour analysis, and harmonic understanding.
+
+\subsection{Pitch Detection and Tracking}
+
+Pitch detection identifies the fundamental frequency of musical sounds. Autocorrelation finds periodic patterns in time domain signals. Frequency domain methods identify peaks in frequency spectra. Harmonic product spectrum combines harmonics to improve accuracy. Pitch tracking follows pitch changes over time, handling vibrato and glissando.
+
+Accurate pitch detection is challenging. Noise, harmonics, and complex timbres cause this. Time series methods account for temporal continuity. They improve accuracy by constraining pitch changes to be smooth.
+
+\subsection{Melodic Contour Analysis}
+
+Melodic contour describes the shape of a melody. It shows how pitches rise and fall over time. Contour extraction represents melodies as sequences of pitch directions such as up, down, or same. Interval analysis measures pitch intervals between consecutive notes. Scale degree analysis identifies pitches relative to a tonal center. Pattern recognition identifies recurring melodic patterns and motifs.
+
+Time series analysis of melodic contours reveals musical structure. It helps identify similar melodies. It supports musicological research.
+
+\subsection{Harmonic Analysis}
+
+Harmonic analysis identifies chords and harmonic progressions. Chord detection identifies which chords are present at each time point. Harmonic progression tracking monitors how chords change over time. Cadence detection identifies harmonic resolutions and phrase endings. Key detection determines the tonal center and key of a piece.
+
+Time series methods model temporal dependencies. They improve harmonic analysis by constraining chord sequences to follow musical rules.
+
+\subsection{Tonal Center Identification}
+
+Tonal center (key) identification determines the home key of a musical piece. Pitch class distribution analysis examines which pitches occur most frequently. Template matching compares pitch distributions to key profiles. Modulation detection identifies key changes within a piece. Time-varying keys tracking monitors key changes over time.
+
+Time series analysis helps identify keys and track modulations. This supports musicological analysis and music information retrieval.
+
+\section{Rhythm and Tempo Analysis}
+
+Rhythm and tempo are fundamental aspects of music. Time series methods can analyze them. Beat detection, tempo estimation, and rhythm pattern recognition enable understanding of musical timing and structure.
+
+\subsection{Beat Detection and Tracking}
+
+Beat detection identifies the underlying pulse of music. Onset detection finds when musical events such as notes and attacks occur. Periodicity analysis identifies regular patterns in onset times. Beat tracking follows the beat over time, handling tempo changes. Downbeat detection identifies the first beat of each measure.
+
+Time series methods model temporal continuity. They improve beat tracking by constraining beat positions to follow regular patterns.
+
+\subsection{Tempo Estimation}
+
+Tempo estimation measures the speed of music in beats per minute. Global tempo estimation calculates the overall tempo of a piece. Time-varying tempo tracking monitors tempo changes throughout a piece. Tempo induction automatically determines tempo from audio. Tempo stability measures how consistent tempo is over time.
+
+Accurate tempo estimation supports music synchronization, performance analysis, and music information retrieval.
+
+\subsection{Rhythm Pattern Recognition}
+
+Rhythm pattern recognition identifies rhythmic structures. Metrical structure identification determines meter such as 4/4 or 3/4 and time signature. Rhythmic patterns recognition identifies recurring rhythmic motifs. Syncopation detection finds off-beat accents and syncopated rhythms. Polyrhythm analysis examines multiple simultaneous rhythmic layers.
+
+Time series analysis helps identify these patterns. It examines temporal relationships between musical events.
+
+\subsection{Meter and Time Signature Detection}
+
+Meter detection identifies the organization of beats into measures. Strong beat identification finds beats that receive emphasis. Measure boundaries identify where measures begin and end. Time signature classification determines meter such as 4/4, 3/4, or 6/8. Compound meter detection identifies compound meters with subdivisions.
+
+Accurate meter detection supports music transcription, performance analysis, and music information retrieval.
+
+\section{Musical Performance Analysis}
+
+Musical performance analysis examines how musicians interpret and express musical works. Time series analysis enables comparison of different performances, identification of expressive patterns, and understanding of performance style.
+
+\subsection{Performance Timing and Expression}
+
+Performance timing analysis examines temporal aspects of musical expression. Rubato represents expressive tempo variations that deviate from strict timing. Timing patterns reveal how performers time notes relative to the beat. Phrase timing shows how timing varies across musical phrases. Performance comparison examines timing differences across different performances.
+
+Time series analysis reveals how performers use timing to create musical expression. It distinguishes individual performance styles.
+
+\subsection{Dynamic Analysis}
+
+Dynamic analysis examines amplitude variations in performance. Amplitude envelope tracking monitors how loudness changes over time. Crescendo and diminuendo identification finds gradual increases and decreases in volume. Accent patterns identify emphasized notes and phrases. Dynamic range measures the range between softest and loudest passages.
+
+Time series analysis of dynamics reveals how performers use volume to create expression and structure.
+
+\subsection{Articulation and Phrasing}
+
+Articulation analysis examines how notes are attacked, sustained, and released. Attack characteristics describe how quickly notes begin, distinguishing staccato from legato. Sustain patterns reveal how notes are held and shaped. Release timing captures when and how notes end. Phrasing shows how performers group notes into musical phrases.
+
+Time series analysis helps identify these characteristics. This enables detailed performance analysis and style identification.
+
+\subsection{Comparative Performance Analysis}
+
+Comparative analysis examines differences between performances. Performance variants compare different interpretations of the same piece. Style identification recognizes performance styles and traditions. Historical performance practice analysis tracks how performance practices have changed over time. Expertise levels distinguish between expert and novice performances.
+
+Time series methods enable quantitative comparison of performances. This supports musicological research and performance pedagogy.
+
+\section{Algorithmic Composition and Generative Music}
+
+Algorithmic composition uses computational methods to generate new music. Time series models learn from existing music. They create novel compositions that follow musical rules and conventions.
+
+\subsection{Markov Models for Music Generation}
+
+Markov models generate music by learning transition probabilities between musical states. Note transitions learn which notes follow other notes. Chord progressions generate harmonic progressions based on learned patterns. Rhythmic patterns generate rhythms based on learned patterns. Multi-level models capture music at multiple hierarchical levels.
+
+Markov models are simple yet effective for music generation. They create music that follows learned patterns. They introduce novelty through randomness.
+
+\subsection{Recurrent Neural Networks for Composition}
+
+Recurrent neural networks (RNNs) and Long Short-Term Memory (LSTM) networks generate music by learning long-term dependencies. Sequence modeling learns patterns in sequences of musical events. Long-term structure captures dependencies across longer time spans. Style learning identifies characteristics of specific musical styles. Polyphonic generation creates multiple simultaneous musical lines.
+
+RNNs can generate more complex and coherent music than Markov models. They learn deeper patterns in musical structure.
+
+\subsection{Style Transfer and Imitation}
+
+Style transfer applies characteristics of one musical style to another. Style modeling learns characteristics of specific musical styles. Style transfer applies learned style to new musical material. Composer imitation generates music in the style of specific composers. Genre blending combines characteristics of different genres.
+
+Time series models enable these applications. They learn temporal patterns that characterize different musical styles.
+
+\subsection{Interactive Music Systems}
+
+Interactive music systems generate music in real time based on user input. Real-time generation creates music on the fly as users interact. Responsive systems adapt music based on user actions or environmental conditions. Collaborative composition enables human-AI collaboration in music creation. Performance systems generate accompaniment or responses to live performance.
+
+Time series models can generate music quickly and responsively. This enables these interactive applications.
+
+\section{Music Information Retrieval}
+
+Music information retrieval (MIR) applies time series analysis to organize, search, and recommend music. These applications help users discover music and understand musical relationships.
+
+\subsection{Music Similarity and Recommendation}
+
+Music similarity measures how similar pieces of music are. Feature extraction identifies time series features that capture musical characteristics. Similarity metrics measure similarity using distance metrics such as Euclidean and DTW. Recommendation systems suggest music based on similarity to user preferences. Playlist generation creates playlists of similar music.
+
+Time series analysis enables these applications. It provides quantitative measures of musical similarity.
+
+\subsection{Genre Classification}
+
+Genre classification automatically identifies the genre of musical pieces. Feature extraction identifies time series features that distinguish genres. Classification models train classifiers to identify genres. Multi-label classification handles pieces that belong to multiple genres. Subgenre identification recognizes more specific genre categories.
+
+Time series features capture rhythmic, harmonic, and timbral characteristics. These enable accurate genre classification.
+
+\subsection{Mood and Emotion Recognition}
+
+Mood and emotion recognition identifies the emotional content of music. Emotional features extraction identifies characteristics associated with emotions such as tempo, mode, and dynamics. Emotion classification categorizes music into emotional categories such as happy, sad, or energetic. Valence and arousal modeling captures emotions along dimensions of valence and arousal. Context-dependent emotions recognition acknowledges that emotions depend on context and individual perception.
+
+Time series analysis helps identify patterns associated with different emotions. This supports music recommendation and therapeutic applications.
+
+\subsection{Music Structure Analysis}
+
+Music structure analysis identifies the organization of musical pieces. Section identification finds verses, choruses, bridges, and other sections. Repetition detection locates repeated sections and motifs. Form analysis identifies overall musical form such as verse-chorus or sonata form. Segmentation divides pieces into meaningful segments.
+
+Time series analysis helps identify these structures. It detects patterns, repetitions, and transitions in musical features.
+
+\section{Audio Processing and Enhancement}
+
+Audio processing uses time series methods to enhance, restore, and modify audio signals. These applications improve audio quality, restore damaged recordings, and enable creative audio manipulation.
+
+\subsection{Noise Reduction}
+
+Noise reduction removes unwanted noise from audio signals. Spectral subtraction subtracts estimated noise spectrum from signal spectrum. Wiener filtering provides optimal filtering that minimizes mean squared error. Adaptive filtering adjusts filters based on changing noise characteristics. Deep learning methods use neural networks to separate signal from noise.
+
+Time series methods model temporal dependencies. They improve noise reduction by using information from multiple time points.
+
+\subsection{Audio Restoration}
+
+Audio restoration repairs damaged or degraded recordings. Crackle removal eliminates clicks and pops from vinyl recordings. Hum removal eliminates electrical hum and interference. Dropout repair fills in missing or corrupted audio segments. Historical restoration enhances quality of old or degraded recordings.
+
+Time series analysis helps identify and repair these problems. It models normal audio characteristics and detects anomalies.
+
+\subsection{Time-Scale Modification}
+
+Time-scale modification changes the speed of audio without changing pitch. Phase vocoders modify time scale using phase information. Overlap-add methods overlap and blend audio segments to change duration. PSOLA (Pitch-Synchronous Overlap-Add) provides a method for speech and music. Real-time processing enables real-time time-scale modification.
+
+These applications are useful for music production, audio editing, and accessibility (e.g., speeding up or slowing down audio).
+
+\subsection{Pitch Shifting}
+
+Pitch shifting changes the pitch of audio without changing tempo. Frequency domain methods shift frequency content to change pitch. Time-domain methods use time-stretching combined with resampling. Harmonic preservation maintains harmonic relationships when shifting pitch. Real-time pitch correction adjusts pitch in live performance.
+
+Pitch shifting enables key transposition, vocal correction, and creative audio effects.
+
+\section{Conclusion}
+
+Time series analysis is essential for understanding and working with music and audio. Music's temporal nature makes it an ideal domain for time series methods. These can analyze pitch, rhythm, performance characteristics, and musical structure. Audio signals become time series when digitized. They can be analyzed, processed, and manipulated using computational methods.
+
+This chapter explored a wide range of applications. Pitch detection and rhythm analysis to performance analysis and algorithmic composition were included. Music information retrieval, audio processing, and generative music systems were examined. Each application demonstrates how time series methods can reveal musical patterns, support creative applications, and enhance our understanding of music.
+
+Music technology continues to evolve. New applications emerge from advances in machine learning, signal processing, and computational methods. Time series analysis provides the foundation for many of these advances. It enables more sophisticated music analysis, generation, and interaction.
+
+Consider how these techniques can be applied to music and audio. Time series analysis provides powerful methods for working with temporal audio data. This applies whether you are analyzing musical performances, generating new compositions, or processing audio signals.
+
+\section*{Reflection Questions}
+
+\begin{enumerate}
+\item How do time series methods differ when applied to audio signals versus other types of time series data?
+
+\item What are the key challenges in analyzing musical performance using time series, and how can these be addressed?
+
+\item How can generative models like RNNs create musically coherent compositions, and what are their limitations?
+
+\item What role does time series analysis play in music information retrieval and recommendation systems?
+
+\item How can audio processing techniques enhance audio quality while preserving musical content?
+\end{enumerate}
+

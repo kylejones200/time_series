@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import torch
@@ -20,6 +21,9 @@ try:
     from pyod.models.iforest import IForest
     from pyod.models.lof import LOF
     from pyod.models.ocsvm import OCSVM
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 except Exception:  # pragma: no cover - optional dependencies
     stumpy = None  # type: ignore
     IForest = LOF = OCSVM = None  # type: ignore
@@ -110,8 +114,10 @@ def load_config(config_path: str = "config.yaml") -> Config:
             epochs=int(ae_cfg.get("epochs", 200)),
             learning_rate=float(ae_cfg.get("learning_rate", 1e-3)),
             z_threshold=float(ae_cfg.get("z_threshold", 3.0)),
-            output_plot=output_dir / ae_cfg.get("output_plot", "eia_anomaly_autoencoder.png"),
-            error_plot=output_dir / ae_cfg.get("error_plot", "eia_anomaly_autoencoder_error.png"),
+            output_plot=output_dir
+            / ae_cfg.get("output_plot", "eia_anomaly_autoencoder.png"),
+            error_plot=output_dir
+            / ae_cfg.get("error_plot", "eia_anomaly_autoencoder_error.png"),
         ),
         stumpy=StumpyConfig(
             enabled=bool(stumpy_cfg.get("enabled", False)),
@@ -153,14 +159,26 @@ def run_stl(series: pd.Series, config: Config) -> pd.Series:
     anomalies = z_scores.abs() > config.stl.z_threshold
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(series.index, series.values, color=config.colors["stl"], alpha=0.8, label="Series")
-    ax.scatter(series.index[anomalies], series[anomalies], color=config.colors["anomaly"], s=24, label="STL anomaly")
+    ax.plot(
+        series.index,
+        series.values,
+        color=config.colors["stl"],
+        alpha=0.8,
+        label="Series",
+    )
+    ax.scatter(
+        series.index[anomalies],
+        series[anomalies],
+        color=config.colors["anomaly"],
+        s=24,
+        label="STL anomaly",
+    )
     ax.set_title("STL residual z-score anomalies")
     ax.set_xlabel("Date")
     ax.set_ylabel("Value")
     ax.legend()
     fig.tight_layout()
-    fig.savefig(config.stl.output_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.stl.output_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
     print(f"✓ STL anomalies saved -> {config.stl.output_plot}")
@@ -196,7 +214,9 @@ def build_windows(arr: np.ndarray, window: int) -> np.ndarray:
     return np.stack([arr[i : i + window] for i in range(len(arr) - window + 1)], axis=0)
 
 
-def train_autoencoder(residuals: pd.Series, config: Config) -> tuple[pd.Series, pd.Series, pd.Series]:
+def train_autoencoder(
+    residuals: pd.Series, config: Config
+) -> tuple[pd.Series, pd.Series, pd.Series]:
     residuals = residuals.dropna()
     mu = residuals.mean()
     sigma = residuals.std(ddof=1) or 1.0
@@ -212,10 +232,14 @@ def train_autoencoder(residuals: pd.Series, config: Config) -> tuple[pd.Series, 
 
     device = torch.device("cpu")
     model = ResidualAutoencoder(input_dim=train_windows.shape[1]).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.autoencoder.learning_rate)
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=config.autoencoder.learning_rate
+    )
     criterion = nn.MSELoss()
     dataset = torch.utils.data.TensorDataset(torch.from_numpy(train_windows))
-    loader = torch.utils.data.DataLoader(dataset, batch_size=config.autoencoder.batch_size, shuffle=True)
+    loader = torch.utils.data.DataLoader(
+        dataset, batch_size=config.autoencoder.batch_size, shuffle=True
+    )
 
     model.train()
     for _ in range(config.autoencoder.epochs):
@@ -241,7 +265,12 @@ def train_autoencoder(residuals: pd.Series, config: Config) -> tuple[pd.Series, 
     anomalies = z_scores > config.autoencoder.z_threshold
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(residuals.index, residuals.values, label="STL residual", color=config.colors["series"])
+    ax.plot(
+        residuals.index,
+        residuals.values,
+        label="STL residual",
+        color=config.colors["series"],
+    )
     ax.scatter(
         error_series.index[anomalies],
         residuals.reindex(error_series.index)[anomalies],
@@ -252,16 +281,26 @@ def train_autoencoder(residuals: pd.Series, config: Config) -> tuple[pd.Series, 
     ax.set_title("Autoencoder residual anomalies")
     ax.legend()
     fig.tight_layout()
-    fig.savefig(config.autoencoder.output_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.autoencoder.output_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(10, 3))
-    ax.plot(error_series.index, error_series.values, color="tab:blue", label="Reconstruction error")
-    ax.axhline(err_mu + config.autoencoder.z_threshold * err_sigma, color=config.colors["anomaly"], linestyle="--", label="Threshold")
+    ax.plot(
+        error_series.index,
+        error_series.values,
+        color="tab:blue",
+        label="Reconstruction error",
+    )
+    ax.axhline(
+        err_mu + config.autoencoder.z_threshold * err_sigma,
+        color=config.colors["anomaly"],
+        linestyle="--",
+        label="Threshold",
+    )
     ax.set_title("Autoencoder reconstruction error")
     ax.legend()
     fig.tight_layout()
-    fig.savefig(config.autoencoder.error_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.autoencoder.error_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
     print(f"✓ Autoencoder anomalies saved -> {config.autoencoder.output_plot}")
@@ -279,7 +318,9 @@ def run_stumpy(series: pd.Series, config: Config) -> None:
     anomalies = matrix_profile > threshold
 
     fig, axes = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
-    axes[0].plot(series.index, series.values, label="Series", color=config.colors["series"])
+    axes[0].plot(
+        series.index, series.values, label="Series", color=config.colors["series"]
+    )
     axes[0].scatter(
         series.index[anomalies],
         series.values[anomalies],
@@ -290,13 +331,17 @@ def run_stumpy(series: pd.Series, config: Config) -> None:
     axes[0].legend()
     axes[0].set_title("STUMPY matrix profile anomalies")
 
-    axes[1].plot(series.index[: len(matrix_profile)], matrix_profile, label="Matrix profile")
-    axes[1].axhline(threshold, color=config.colors["anomaly"], linestyle="--", label="Threshold")
+    axes[1].plot(
+        series.index[: len(matrix_profile)], matrix_profile, label="Matrix profile"
+    )
+    axes[1].axhline(
+        threshold, color=config.colors["anomaly"], linestyle="--", label="Threshold"
+    )
     axes[1].legend()
     axes[1].set_xlabel("Date")
     fig.tight_layout()
     path = config.output_dir / "stumpy_matrix_profile.png"
-    fig.savefig(path, dpi=150, bbox_inches="tight")
+    fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ STUMPY matrix profile saved -> {path}")
 
@@ -316,12 +361,18 @@ def run_pyod(series: pd.Series, config: Config) -> None:
 
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(series.index, series.values, label="Series", color=config.colors["series"])
-    ax.scatter(series.index[preds], series.values[preds], label=f"{config.pyod.method} anomaly", color=config.colors["anomaly"], s=24)
+    ax.scatter(
+        series.index[preds],
+        series.values[preds],
+        label=f"{config.pyod.method} anomaly",
+        color=config.colors["anomaly"],
+        s=24,
+    )
     ax.legend()
     ax.set_title(f"PyOD ({config.pyod.method}) anomalies")
     fig.tight_layout()
     path = config.output_dir / f"pyod_{config.pyod.method.lower()}_anomalies.png"
-    fig.savefig(path, dpi=150, bbox_inches="tight")
+    fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ PyOD anomalies saved -> {path}")
 
@@ -333,14 +384,18 @@ def main() -> None:
     config = load_config()
     series = load_series(config)
 
-    print(f"Loaded series with {len(series)} points from {series.index.min().date()} to {series.index.max().date()}")
+    print(
+        f"Loaded series with {len(series)} points from {series.index.min().date()} to {series.index.max().date()}"
+    )
 
     residuals = None
     if config.stl.enabled:
         residuals = run_stl(series, config)
 
     if config.autoencoder.enabled:
-        residuals_for_ae = residuals if residuals is not None else series - series.mean()
+        residuals_for_ae = (
+            residuals if residuals is not None else series - series.mean()
+        )
         train_autoencoder(residuals_for_ae, config)
 
     run_stumpy(series, config)
@@ -351,4 +406,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

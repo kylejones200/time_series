@@ -9,7 +9,11 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import signalplot
 import yaml
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 @dataclass
@@ -53,7 +57,9 @@ def load_dataframe(config: Config) -> pd.DataFrame:
 
     df[config.date_col] = pd.to_datetime(df[config.date_col], errors="coerce")
     df[config.value_col] = pd.to_numeric(df[config.value_col], errors="coerce")
-    df = df.dropna(subset=[config.date_col, config.value_col]).sort_values(config.date_col)
+    df = df.dropna(subset=[config.date_col, config.value_col]).sort_values(
+        config.date_col
+    )
     return df
 
 
@@ -64,12 +70,15 @@ def plot_pytimetk_view(df: pd.DataFrame, config: Config) -> None:
     fig, axes = plt.subplots(2, 1, figsize=(10, 6), sharex=False)
     axes[0].plot(df[config.date_col], df[config.value_col], label="Monthly generation")
     axes[0].legend()
-    axes[1].plot(df[config.date_col], df["yoy_pct"], color="tab:orange", label="YoY % change")
+    axes[1].plot(
+        df[config.date_col], df["yoy_pct"], color="tab:orange", label="YoY % change"
+    )
     axes[1].axhline(0, color="k", lw=0.5)
     axes[1].legend()
 
     fig.tight_layout()
-    fig.savefig(config.pytimetk_plot, dpi=150, bbox_inches="tight")
+    # SignalPlot defaults: dpi=300, facecolor="white"
+    fig.savefig(config.pytimetk_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ PyTimeTK-inspired plot saved -> {config.pytimetk_plot}")
 
@@ -90,7 +99,8 @@ def plot_overview(df: pd.DataFrame, config: Config) -> None:
     axes[2].legend()
 
     fig.tight_layout()
-    fig.savefig(config.overview_plot, dpi=150, bbox_inches="tight")
+    # SignalPlot defaults: dpi=300, facecolor="white"
+    fig.savefig(config.overview_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Overview plot saved -> {config.overview_plot}")
 
@@ -104,4 +114,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -16,8 +16,8 @@ def convert_net_generation_dataset() -> Path:
     df = pd.read_csv(raw_path, skiprows=4)
     df.columns = [col.strip() for col in df.columns]
 
-    df['Month'] = pd.to_datetime(df['Month'], format='%b %Y')
-    df['Month'] = df['Month'].dt.strftime('%Y-%m-%d')
+    df["Month"] = pd.to_datetime(df["Month"], format="%b %Y")
+    df["Month"] = df["Month"].dt.strftime("%Y-%m-%d")
 
     df.to_csv(output_path, index=False)
     return output_path
@@ -30,4 +30,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

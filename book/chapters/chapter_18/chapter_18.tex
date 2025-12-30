@@ -1,0 +1,94 @@
+\chapter{Modern Forecasting Frameworks: The Nixtla Suite}
+
+The previous chapters covered individual forecasting methods. This chapter introduces the Nixtla suite. This is a unified ecosystem for time series forecasting. It combines statistical, machine learning, and deep learning methods. A single interface simplifies forecasting workflows.
+
+\section{Introduction}
+
+The Nixtla suite provides a comprehensive ecosystem for time series forecasting. It spans classical statistical methods, machine learning, and deep learning approaches. Traditional forecasting workflows require stitching together multiple libraries with different APIs and data formats. The Nixtla suite provides a unified interface across four powerful libraries: StatsForecast, MLForecast, NeuralForecast, and HierarchicalForecast. This unified approach reduces complexity. It provides state-of-the-art performance and scalability.
+
+Traditional time series forecasting often requires integrating multiple tools. Each has its own learning curve and data requirements. The Nixtla suite addresses this challenge by providing a consistent interface and data format across all libraries. The Nixtla suite provides production-ready tools optimized for performance and ease of use. Fast statistical models, machine learning with automatic feature engineering, deep learning architectures, and hierarchical forecasting are examples.
+
+This chapter explores each component of the Nixtla suite. It provides practical examples and guidance on when to use each library. You will understand how to leverage the Nixtla ecosystem for comprehensive time series forecasting solutions. Simple statistical models to complex hierarchical forecasts across multiple aggregation levels are examples.
+
+\section{The Nixtla Ecosystem}
+
+\subsection{Introduction to the Nixtla Ecosystem}
+
+The Nixtla suite is designed with several key principles. These make it powerful and user-friendly. All libraries use a unified data format. A DataFrame with three essential columns is used: \texttt{unique\_id} (identifying each time series), \texttt{ds} (date or timestamp), and \texttt{y} (the target variable). This consistent format allows seamless integration between libraries. It simplifies workflows when combining different forecasting approaches.
+
+Parallel computing is built into the Nixtla suite. This enables efficient processing of thousands of time series simultaneously. By setting \texttt{n\_jobs=-1}, you can leverage all available CPU cores. This dramatically reduces computation time for large-scale forecasting tasks. This scalability is essential for production environments. You may need to forecast hundreds or thousands of time series regularly.
+
+The Nixtla suite is production-ready. It has optimizations for speed and memory efficiency. StatsForecast uses compiled code for core operations. Rust or C++ are examples. This makes it significantly faster than pure Python implementations. This performance advantage is crucial when dealing with large datasets or when forecasts need to be generated frequently.
+
+Installation is straightforward using pip:
+
+\begin{verbatim}
+pip install statsforecast mlforecast neuralforecast hierarchicalforecast
+\end{verbatim}
+
+\subsection{StatsForecast: Statistical Forecasting}
+
+StatsForecast provides fast implementations of classical time series models. ARIMA, Exponential Smoothing, and Theta methods are examples. It is optimized for speed and can handle thousands of time series efficiently. This makes it ideal for large-scale forecasting tasks.
+
+AutoARIMA automatically selects the best ARIMA model parameters. It uses information criteria like AIC or BIC. This eliminates the need for manual parameter selection. It ensures optimal model performance. The library handles the entire model selection process. Differencing to achieve stationarity and selecting appropriate autoregressive and moving average orders are included.
+
+StatsForecast includes many classical models beyond AutoARIMA. AutoETS provides exponential smoothing with automatic model selection, choosing the best combination of error, trend, and seasonality components. The Theta method offers a simple yet effective forecasting approach, while Naive and SeasonalNaive provide baseline forecasts. WindowAverage implements moving average forecasts, useful for smoothing and trend estimation.
+
+The key advantage of StatsForecast is its speed. It uses optimized compiled code and parallel processing. It can fit models to thousands of time series in minutes rather than hours. This makes it ideal for scenarios where you need to generate forecasts for many series regularly. Retail sales forecasting across thousands of products or energy load forecasting across multiple regions are examples.
+
+\subsection{MLForecast: Machine Learning for Time Series}
+
+MLForecast combines machine learning models with automatic time series feature engineering. LightGBM and XGBoost are examples. It automatically creates lag features, rolling statistics, and date-based features. This eliminates much of the manual feature engineering typically required for time series machine learning.
+
+The automatic feature engineering in MLForecast includes lag features at specified time steps (e.g., \texttt{lags=[1, 7, 14]} for daily data), rolling statistics like moving averages and standard deviations, and date-based features such as day of week, month, and year. This comprehensive feature set captures temporal dependencies and seasonal patterns without requiring manual specification.
+
+MLForecast is time series aware. It handles time-based splits and cross-validation correctly. Standard machine learning libraries assume independent samples. MLForecast preserves temporal order. This prevents data leakage and ensures realistic model evaluation. This is crucial for accurate performance assessment and reliable forecasts.
+
+The library supports multiple machine learning models and can ensemble them for improved accuracy. You can combine LightGBM, XGBoost, and other scikit-learn compatible models, with MLForecast automatically handling the feature engineering and time series-specific considerations for each model.
+
+\subsection{NeuralForecast: Deep Learning for Time Series}
+
+NeuralForecast provides state-of-the-art deep learning architectures for time series forecasting. MLP (Multi-Layer Perceptron), NHITS (Neural Hierarchical Interpolation for Time Series), N-BEATS (Neural Basis Expansion Analysis), and Transformer-based models are examples. These models can capture complex non-linear patterns and long-term dependencies. These may be difficult for classical or traditional machine learning models.
+
+MLP models in NeuralForecast are multi-layer perceptrons specifically designed for time series, with architectures optimized for sequential data. NHITS uses hierarchical interpolation to capture patterns at multiple time scales, making it effective for data with complex seasonality. N-BEATS uses basis expansion to decompose time series into interpretable components, providing both accuracy and interpretability.
+
+NeuralForecast is built on PyTorch Lightning, providing a robust framework for training and deployment. The library handles many of the complexities of deep learning, including GPU acceleration, distributed training, and model checkpointing. This makes it accessible even to users without extensive deep learning expertise.
+
+The key parameters for NeuralForecast models include \texttt{h} (the forecast horizon), \texttt{input\_size} (number of historical time steps to use as input), and \texttt{trainer\_kwargs} (PyTorch Lightning trainer configuration). These parameters allow fine-tuning model behavior for specific forecasting tasks.
+
+\subsection{HierarchicalForecast: Coherent Hierarchical Forecasting}
+
+HierarchicalForecast addresses the challenge of forecasting time series that exist at multiple aggregation levels. In many business contexts, you need forecasts at different levels. Total sales, sales by region, and sales by store are examples. The challenge is ensuring that forecasts are coherent. Forecasts at higher levels equal the sum of forecasts at lower levels.
+
+HierarchicalForecast provides several reconciliation methods to ensure coherence. Bottom-up forecasting generates forecasts at the most disaggregated level (e.g., individual stores) and then sums them upward to create higher-level forecasts. This approach preserves detailed patterns but may suffer from high variance if lower-level forecasts are noisy.
+
+Top-down forecasting generates a forecast at the top level (e.g., total sales) and then disaggregates it downward using historical proportions. This ensures consistency but may overlook local trends or anomalies at lower levels. Middle-out forecasting generates forecasts at a middle level and then both aggregates upward and disaggregates downward.
+
+The optimal reconciliation method, MinT (Minimum Trace), minimizes forecast error while maintaining coherence across all levels. It uses the covariance structure of forecast errors to optimally adjust forecasts, ensuring that reconciled forecasts are as close as possible to the original forecasts while satisfying the hierarchical constraints.
+
+Hierarchical forecasting is essential in many business contexts: retail (store → region → country → global), finance (product → division → company), and energy (plant → region → grid). The ability to ensure coherence across levels is crucial for planning and decision-making.
+
+\subsection{Parallel Computing and Scalability}
+
+One of the key advantages of the Nixtla suite is its built-in support for parallel computing. By setting \texttt{n\_jobs=-1} in StatsForecast, you can use all available CPU cores to process multiple time series simultaneously. This dramatically reduces computation time for large-scale forecasting tasks.
+
+For large-scale forecasting, several best practices apply. Batch processing helps manage memory by processing time series in groups rather than all at once. For very large numbers of series, faster models like Naive or SeasonalNaive can provide quick baseline forecasts, while more complex models can be reserved for important series. The unified data format (\texttt{unique\_id}, \texttt{ds}, \texttt{y}) enables efficient processing and parallelization.
+
+\subsection{Choosing the Right Tool}
+
+The choice of which Nixtla library to use depends on your specific needs. Use StatsForecast when you need classical statistical models, fast forecasts for many time series, interpretable models, or baseline forecasts. Use MLForecast when you have rich external features, non-linear patterns, or want automatic feature engineering. Use NeuralForecast when you have complex patterns, large datasets, need state-of-the-art accuracy, or want to leverage deep learning. Use HierarchicalForecast when you need forecasts at multiple aggregation levels and require coherence across levels.
+
+In practice, you might combine multiple Nixtla libraries for a comprehensive forecasting solution. For example, you could use StatsForecast for baseline forecasts, MLForecast for machine learning-based forecasts, and then ensemble them for improved accuracy. This flexibility allows you to leverage the strengths of each library while addressing the limitations of individual approaches.
+
+
+
+\section{Conclusion}
+
+The Nixtla suite provides a comprehensive, unified ecosystem for time series forecasting. It spans classical statistical methods, machine learning, and deep learning. Its unified data format, built-in parallel computing, and production-ready optimizations make it an excellent choice for both research and production forecasting tasks.
+
+StatsForecast offers fast statistical models for classical forecasting. MLForecast provides machine learning with automatic feature engineering. NeuralForecast delivers state-of-the-art deep learning architectures. HierarchicalForecast ensures coherent forecasting across aggregation levels. Together, these libraries provide a complete toolkit for time series forecasting. Simple baseline models to complex hierarchical forecasts are examples.
+
+The key advantages of the Nixtla suite make it an essential tool for modern time series forecasting. Unified interface, production readiness, comprehensive coverage, and parallel computing are examples. By mastering these libraries, you can build scalable, accurate forecasting systems. These handle everything from individual time series to large-scale hierarchical forecasting tasks.
+
+Remember that the choice of tool depends on your specific needs. Data characteristics, forecasting horizon, accuracy requirements, and computational resources are examples. The Nixtla suite provides the flexibility to choose the right tool for each task. It maintains consistency and efficiency across your forecasting workflows.
+

@@ -11,13 +11,21 @@ from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    mean_squared_error,
+)
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import acf
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -31,10 +39,6 @@ def repo_import(module: str):
     return module_obj
 
 
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_legend = plotting_utils.apply_legend
-save_plot = plotting_utils.save_plot
 
 ts_utils = repo_import("utils.ts_utils")
 detect_frequency = ts_utils.detect_frequency
@@ -83,18 +87,24 @@ def load_series(config: Dict) -> pd.Series:
 def select_lags(series: pd.Series, model_cfg: Dict) -> List[int]:
     max_lag = int(model_cfg.get("max_lag", 20))
     lag_method = model_cfg.get("lag_method", "powers_of_2")
-    acf_vals = acf(series, nlags=min(max_lag, len(series) - 1)) if len(series) > 1 else [1.0]
+    acf_vals = (
+        acf(series, nlags=min(max_lag, len(series) - 1)) if len(series) > 1 else [1.0]
+    )
 
     if lag_method == "custom":
         lags = model_cfg.get("custom_lags", [1, 2, 4, 8])
     elif lag_method == "auto":
         threshold = model_cfg.get("acf_threshold", 0.1)
-        lags = [i for i in range(1, min(max_lag + 1, len(series))) if abs(acf_vals[i]) > threshold]
+        lags = [
+            i
+            for i in range(1, min(max_lag + 1, len(series)))
+            if abs(acf_vals[i]) > threshold
+        ]
     else:  # powers_of_2
         lags = []
         power = 0
         while True:
-            lag = 2 ** power
+            lag = 2**power
             if lag > max_lag or lag >= len(series):
                 break
             lags.append(lag)
@@ -121,7 +131,9 @@ def generate_forecast(
     base_level: float,
     horizon: int,
 ) -> pd.Series:
-    preds = model.predict(start=len(transformed_series), end=len(transformed_series) + horizon - 1)
+    preds = model.predict(
+        start=len(transformed_series), end=len(transformed_series) + horizon - 1
+    )
     forecast = pd.Series(preds)
     if model_cfg.get("differenced", True):
         forecast = forecast.cumsum() + base_level
@@ -146,20 +158,29 @@ def plot_historical_and_diff(
     output_dir: Path,
     config: Dict,
 ) -> None:
-    fig, axes = setup_figure(config, nrows=2, ncols=1)
-    axes[0].plot(original.index, original.values, color=config["plotting"]["style"]["colors"]["primary"])
+    figsize = tuple(config["plotting"]["figure_size"]) if "plotting" in config else (10, 8)
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=figsize)
+    axes[0].plot(
+        original.index,
+        original.values,
+        color=config["plotting"]["style"]["colors"]["primary"],
+    )
     axes[0].set_title("Original Series")
     axes[0].set_xlabel("Date")
     axes[0].set_ylabel("Value")
 
-    axes[1].plot(differenced.index, differenced.values, color=config["plotting"]["style"]["colors"]["secondary"])
+    axes[1].plot(
+        differenced.index,
+        differenced.values,
+        color=config["plotting"]["style"]["colors"]["secondary"],
+    )
     axes[1].set_title("Differenced Series")
     axes[1].set_xlabel("Date")
     axes[1].set_ylabel("Difference")
 
     plt.tight_layout()
     if config["output"].get("save_plots", True):
-        save_plot(fig, output_dir / config["output"]["plots"]["historical"], config)
+        fig.savefig(output_dir / config["output"]["plots"]["historical"], dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
@@ -170,19 +191,34 @@ def plot_forecast_vs_actual(
     output_dir: Path,
     config: Dict,
 ) -> None:
-    fig, ax = setup_figure(config)
-    ax.plot(train.index, train.values, label="Historical", color=config["plotting"]["style"]["colors"]["primary"])
-    ax.plot(actual.index, actual.values, label="Actual", color=config["plotting"]["style"]["colors"]["accent"])
-    ax.plot(forecast.index, forecast.values, label="ARAR Forecast", color=config["plotting"]["style"]["colors"]["secondary"])
+    fig, ax = plt.subplots(figsize=config)
+    ax.plot(
+        train.index,
+        train.values,
+        label="Historical",
+        color=config["plotting"]["style"]["colors"]["primary"],
+    )
+    ax.plot(
+        actual.index,
+        actual.values,
+        label="Actual",
+        color=config["plotting"]["style"]["colors"]["accent"],
+    )
+    ax.plot(
+        forecast.index,
+        forecast.values,
+        label="ARAR Forecast",
+        color=config["plotting"]["style"]["colors"]["secondary"],
+    )
 
     ax.set_xlabel("Date")
     ax.set_ylabel("Value")
     ax.set_title("ARAR Forecast vs Actuals")
-    apply_legend(ax, config)
+    ax.legend()
 
     plt.tight_layout()
     if config["output"].get("save_plots", True):
-        save_plot(fig, output_dir / config["output"]["plots"]["forecast"], config)
+        fig.savefig(output_dir / config["output"]["plots"]["forecast"], dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
@@ -195,12 +231,29 @@ def plot_comparison(
     config: Dict,
     arima_forecast: pd.Series | None = None,
 ) -> None:
-    fig, ax = setup_figure(config)
-    ax.plot(series.index, series.values, label="Historical", color=config["plotting"]["style"]["colors"]["primary"])
-    ax.plot(forecast_index, arar_forecast.values, label="ARAR Forecast", linestyle="--", color=config["plotting"]["style"]["colors"]["secondary"])
+    fig, ax = plt.subplots(figsize=config)
+    ax.plot(
+        series.index,
+        series.values,
+        label="Historical",
+        color=config["plotting"]["style"]["colors"]["primary"],
+    )
+    ax.plot(
+        forecast_index,
+        arar_forecast.values,
+        label="ARAR Forecast",
+        linestyle="--",
+        color=config["plotting"]["style"]["colors"]["secondary"],
+    )
 
     if arima_forecast is not None:
-        ax.plot(forecast_index, arima_forecast.values, label="ARIMA Forecast", linestyle=":", color=config["plotting"]["style"]["colors"]["accent"])
+        ax.plot(
+            forecast_index,
+            arima_forecast.values,
+            label="ARIMA Forecast",
+            linestyle=":",
+            color=config["plotting"]["style"]["colors"]["accent"],
+        )
 
     title_parts = [f"ARAR MAPE: {metrics['arar']['mape']:.3f}"]
     if "arima" in metrics:
@@ -208,11 +261,11 @@ def plot_comparison(
     ax.set_title("Forecast Comparison\n" + " | ".join(title_parts))
     ax.set_xlabel("Date")
     ax.set_ylabel("Value")
-    apply_legend(ax, config)
+    ax.legend()
 
     plt.tight_layout()
     if config["output"].get("save_plots", True):
-        save_plot(fig, output_dir / config["output"]["plots"]["comparison"], config)
+        fig.savefig(output_dir / config["output"]["plots"]["comparison"], dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
@@ -227,14 +280,18 @@ def main() -> None:
     if horizon < 1:
         raise ValueError("Evaluation horizon must be at least 1.")
     if horizon >= len(series):
-        raise ValueError("Evaluation horizon must be smaller than the length of the series.")
+        raise ValueError(
+            "Evaluation horizon must be smaller than the length of the series."
+        )
 
     train, test = series.iloc[:-horizon], series.iloc[-horizon:]
     if train.empty or test.empty:
         train, test = split_ts(series, train_size=model_cfg.get("train_size", 0.8))
         horizon = len(test)
 
-    transformed_train = difference_series(train) if model_cfg.get("differenced", True) else train
+    transformed_train = (
+        difference_series(train) if model_cfg.get("differenced", True) else train
+    )
     lags = select_lags(transformed_train, model_cfg)
     arar_model = fit_arar(transformed_train, lags)
 
@@ -246,12 +303,18 @@ def main() -> None:
         horizon=horizon,
     )
 
-    forecast_index = test.index if len(test) == horizon else pd.date_range(
-        start=train.index[-1], periods=horizon + 1, freq=detect_frequency(series)
-    )[1:]
+    forecast_index = (
+        test.index
+        if len(test) == horizon
+        else pd.date_range(
+            start=train.index[-1], periods=horizon + 1, freq=detect_frequency(series)
+        )[1:]
+    )
     arar_forecast = pd.Series(forecast_values.values, index=forecast_index)
 
-    metrics: Dict[str, Dict[str, float]] = {"arar": compute_metrics(test.reindex(forecast_index), arar_forecast)}
+    metrics: Dict[str, Dict[str, float]] = {
+        "arar": compute_metrics(test.reindex(forecast_index), arar_forecast)
+    }
 
     compare_cfg = eval_cfg.get("compare_arima", {})
     arima_forecast = None
@@ -267,12 +330,21 @@ def main() -> None:
 
     save_metrics(metrics, output_dir)
     plot_historical_and_diff(train, transformed_train, output_dir, config)
-    plot_forecast_vs_actual(train, test.reindex(forecast_index), arar_forecast, output_dir, config)
-    plot_comparison(series, forecast_index, arar_forecast, metrics, output_dir, config, arima_forecast=arima_forecast)
+    plot_forecast_vs_actual(
+        train, test.reindex(forecast_index), arar_forecast, output_dir, config
+    )
+    plot_comparison(
+        series,
+        forecast_index,
+        arar_forecast,
+        metrics,
+        output_dir,
+        config,
+        arima_forecast=arima_forecast,
+    )
 
     print("✓ ARAR forecasting complete")
 
 
 if __name__ == "__main__":
     main()
-

@@ -93,10 +93,14 @@ def build_model(config: Config) -> timesfm.TimesFm:
 
 def prepare_training_frame(series: pd.Series, end: pd.Timestamp) -> pd.DataFrame:
     train = series.loc[:end]
-    return pd.DataFrame({"unique_id": ["EIA"] * len(train), "ds": train.index, "y": train.values})
+    return pd.DataFrame(
+        {"unique_id": ["EIA"] * len(train), "ds": train.index, "y": train.values}
+    )
 
 
-def run_timesfm_forecast(model: timesfm.TimesFm, df: pd.DataFrame, freq: str) -> pd.Series:
+def run_timesfm_forecast(
+    model: timesfm.TimesFm, df: pd.DataFrame, freq: str
+) -> pd.Series:
     fc = model.forecast_on_df(inputs=df, freq=freq, value_name="y", num_jobs=-1)
     fc = fc[fc["unique_id"] == df["unique_id"].iloc[0]].copy()
     fc = fc.set_index("ds").sort_index()
@@ -106,7 +110,9 @@ def run_timesfm_forecast(model: timesfm.TimesFm, df: pd.DataFrame, freq: str) ->
     numeric_cols = [c for c in fc.columns if pd.api.types.is_numeric_dtype(fc[c])]
     if numeric_cols:
         return fc[numeric_cols[0]]
-    raise RuntimeError(f"No numeric forecast column found in TimesFM output: {list(fc.columns)}")
+    raise RuntimeError(
+        f"No numeric forecast column found in TimesFM output: {list(fc.columns)}"
+    )
 
 
 def compute_metrics(actual: pd.Series, forecast: pd.Series) -> dict:
@@ -116,7 +122,9 @@ def compute_metrics(actual: pd.Series, forecast: pd.Series) -> dict:
     errors = aligned_forecast.values - aligned_actual.values
     mae = float(np.mean(np.abs(errors)))
     rmse = float(np.sqrt(np.mean(errors**2)))
-    denom = np.where(aligned_actual.values == 0, np.finfo(float).eps, aligned_actual.values)
+    denom = np.where(
+        aligned_actual.values == 0, np.finfo(float).eps, aligned_actual.values
+    )
     mape = float(np.mean(np.abs(errors / denom)) * 100)
     return {"MAE": mae, "RMSE": rmse, "MAPE": mape}
 
@@ -130,7 +138,14 @@ def save_metrics(metrics: dict, config: Config) -> None:
     print(f"✓ Metrics saved -> {metrics_path}")
 
 
-def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_series: pd.Series, actual: pd.Series, config: Config, metrics: dict) -> None:
+def plot_tufte(
+    series: pd.Series,
+    history_end: pd.Timestamp,
+    forecast_series: pd.Series,
+    actual: pd.Series,
+    config: Config,
+    metrics: dict,
+) -> None:
     start_2024 = pd.Timestamp("2024-01-01")
     history = series.loc[start_2024:history_end]
 

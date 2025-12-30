@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import timesfm
@@ -93,10 +94,14 @@ def build_model(config: Config) -> timesfm.TimesFm:
 
 def prepare_training_frame(series: pd.Series, end: pd.Timestamp) -> pd.DataFrame:
     train = series.loc[:end]
-    return pd.DataFrame({"unique_id": ["EIA"] * len(train), "ds": train.index, "y": train.values})
+    return pd.DataFrame(
+        {"unique_id": ["EIA"] * len(train), "ds": train.index, "y": train.values}
+    )
 
 
-def run_timesfm_forecast(model: timesfm.TimesFm, df: pd.DataFrame, freq: str) -> pd.DataFrame:
+def run_timesfm_forecast(
+    model: timesfm.TimesFm, df: pd.DataFrame, freq: str
+) -> pd.DataFrame:
     fc = model.forecast_on_df(inputs=df, freq=freq, value_name="y", num_jobs=-1)
     fc = fc[fc["unique_id"] == df["unique_id"].iloc[0]].copy()
     fc = fc.set_index("ds").sort_index()
@@ -110,7 +115,9 @@ def select_forecast_column(df: pd.DataFrame) -> str:
     numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
     if numeric_cols:
         return numeric_cols[0]
-    raise RuntimeError(f"No numeric forecast column found in TimesFM output: {list(df.columns)}")
+    raise RuntimeError(
+        f"No numeric forecast column found in TimesFM output: {list(df.columns)}"
+    )
 
 
 def compute_metrics(actual: pd.Series, forecast: pd.Series) -> Tuple[float, float]:
@@ -123,7 +130,13 @@ def compute_metrics(actual: pd.Series, forecast: pd.Series) -> Tuple[float, floa
     return mae, float(mape)
 
 
-def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_series: pd.Series, actual: pd.Series, config: Config) -> None:
+def plot_tufte(
+    series: pd.Series,
+    history_end: pd.Timestamp,
+    forecast_series: pd.Series,
+    actual: pd.Series,
+    config: Config,
+) -> None:
     start_2024 = pd.Timestamp("2024-01-01")
     history = series.loc[start_2024:history_end]
 
@@ -180,7 +193,7 @@ def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_series: pd
         )
 
     fig.tight_layout()
-    fig.savefig(config.output_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.output_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ TimesFM plot saved -> {config.output_plot}")
 
@@ -195,7 +208,9 @@ def main() -> None:
     model = build_model(config)
     forecast_df = run_timesfm_forecast(model, train_df, config.freq)
     forecast_col = select_forecast_column(forecast_df)
-    forecast_slice = forecast_df.loc[config.forecast_start : config.forecast_end, forecast_col]
+    forecast_slice = forecast_df.loc[
+        config.forecast_start : config.forecast_end, forecast_col
+    ]
 
     mae, mape = compute_metrics(actual, forecast_slice)
     if not np.isnan(mae):
@@ -218,11 +233,15 @@ from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import timesfm
 import yaml
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -236,11 +255,6 @@ def repo_import(module: str):
     return module_obj
 
 
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_plot_style = plotting_utils.apply_plot_style
-apply_legend = plotting_utils.apply_legend
-save_plot = plotting_utils.save_plot
 
 
 @dataclass
@@ -267,26 +281,26 @@ def load_config(config_path: str = "config.yaml") -> Config:
         cfg = yaml.safe_load(f)
 
     repo_root = Path(__file__).resolve().parents[1]
-    data_path = repo_root / "data" / cfg['data']['input_file']
+    data_path = repo_root / "data" / cfg["data"]["input_file"]
     output_dir = Path(__file__).parent / "outputs"
     output_dir.mkdir(exist_ok=True)
 
-    model_cfg = cfg['model']
+    model_cfg = cfg["model"]
     return Config(
         data_path=data_path,
-        date_col=cfg['data']['date_col'],
-        value_col=cfg['data']['value_col'],
-        frequency=cfg['data']['frequency'],
-        prediction_length=cfg['model']['prediction_length'],
-        forecast_column=model_cfg.get('forecast_column', 'timesfm'),
-        model_checkpoint=model_cfg['checkpoint'],
-        per_core_batch_size=model_cfg.get('per_core_batch_size', 32),
-        input_patch_len=model_cfg.get('input_patch_len', 32),
-        output_patch_len=model_cfg.get('output_patch_len', 128),
-        horizon_len=model_cfg.get('horizon_len', 128),
-        num_layers=model_cfg.get('num_layers', 50),
-        model_dims=model_cfg.get('model_dims', 1280),
-        use_positional_embedding=model_cfg.get('use_positional_embedding', False),
+        date_col=cfg["data"]["date_col"],
+        value_col=cfg["data"]["value_col"],
+        frequency=cfg["data"]["frequency"],
+        prediction_length=cfg["model"]["prediction_length"],
+        forecast_column=model_cfg.get("forecast_column", "timesfm"),
+        model_checkpoint=model_cfg["checkpoint"],
+        per_core_batch_size=model_cfg.get("per_core_batch_size", 32),
+        input_patch_len=model_cfg.get("input_patch_len", 32),
+        output_patch_len=model_cfg.get("output_patch_len", 128),
+        horizon_len=model_cfg.get("horizon_len", 128),
+        num_layers=model_cfg.get("num_layers", 50),
+        model_dims=model_cfg.get("model_dims", 1280),
+        use_positional_embedding=model_cfg.get("use_positional_embedding", False),
         output_dir=output_dir,
     )
 
@@ -302,17 +316,21 @@ def load_series(config: Config) -> pd.DataFrame:
     if config.date_col not in df.columns or config.value_col not in df.columns:
         raise ValueError("Specified columns not present in CSV")
 
-    df[config.date_col] = pd.to_datetime(df[config.date_col], errors='coerce')
+    df[config.date_col] = pd.to_datetime(df[config.date_col], errors="coerce")
     df = df.dropna(subset=[config.date_col, config.value_col])
 
     df_grouped = df.groupby(config.date_col)[config.value_col].sum().reset_index()
     df_grouped = df_grouped.sort_values(config.date_col)
-    df_grouped['unique_id'] = 'series_1'
-    df_grouped.rename(columns={config.date_col: 'ds', config.value_col: 'y'}, inplace=True)
-    return df_grouped[['unique_id', 'ds', 'y']]
+    df_grouped["unique_id"] = "series_1"
+    df_grouped.rename(
+        columns={config.date_col: "ds", config.value_col: "y"}, inplace=True
+    )
+    return df_grouped[["unique_id", "ds", "y"]]
 
 
-def split_train_test(df: pd.DataFrame, prediction_length: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+def split_train_test(
+    df: pd.DataFrame, prediction_length: int
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     if len(df) <= prediction_length:
         raise ValueError("Prediction length must be smaller than the series length")
     train = df.iloc[:-prediction_length].copy()
@@ -335,7 +353,9 @@ def build_model(config: Config) -> timesfm.TimesFm:
     return model
 
 
-def run_forecast(model: timesfm.TimesFm, train_df: pd.DataFrame, config: Config) -> pd.DataFrame:
+def run_forecast(
+    model: timesfm.TimesFm, train_df: pd.DataFrame, config: Config
+) -> pd.DataFrame:
     forecast_df = model.forecast_on_df(
         inputs=train_df,
         freq=config.frequency,
@@ -346,61 +366,77 @@ def run_forecast(model: timesfm.TimesFm, train_df: pd.DataFrame, config: Config)
             f"Forecast column '{config.forecast_column}' not found in TimesFM output. "
             f"Available columns: {forecast_df.columns.tolist()}"
         )
-    return forecast_df[['ds', config.forecast_column]].copy()
+    return forecast_df[["ds", config.forecast_column]].copy()
 
 
-def compute_metrics(test_df: pd.DataFrame, forecast_df: pd.DataFrame, prediction_length: int,
-                    config: Config) -> tuple[np.ndarray, dict]:
+def compute_metrics(
+    test_df: pd.DataFrame,
+    forecast_df: pd.DataFrame,
+    prediction_length: int,
+    config: Config,
+) -> tuple[np.ndarray, dict]:
     preds = forecast_df[config.forecast_column].values[-prediction_length:]
-    truth = test_df['y'].values
+    truth = test_df["y"].values
 
     mae = mean_absolute_error(truth, preds)
     rmse = np.sqrt(mean_squared_error(truth, preds))
     mape = np.mean(np.abs((truth - preds) / truth)) * 100
-    metrics = {'MAE': mae, 'RMSE': rmse, 'MAPE': mape}
+    metrics = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
     return preds, metrics
 
 
-def plot_forecast(train_df: pd.DataFrame, test_df: pd.DataFrame, preds: np.ndarray,
-                  metrics: dict, config: Config) -> None:
+def plot_forecast(
+    train_df: pd.DataFrame,
+    test_df: pd.DataFrame,
+    preds: np.ndarray,
+    metrics: dict,
+    config: Config,
+) -> None:
     full_series = pd.concat([train_df, test_df], ignore_index=True)
-    fig, ax = setup_figure((14, 6), 150)
-    apply_plot_style(ax, {'plotting': {
-        'style': {
-            'spines': {'top': False, 'right': False, 'bottom': True, 'left': True},
-            'grid': False
-        }
-    }})
+    fig, ax = plt.subplots(figsize=(14, 6))
+    
+    ax.plot(
+        full_series["ds"], full_series["y"], color="black", label="Actual", linewidth=2
+    )
+    ax.plot(test_df["ds"], preds, color="tomato", label="TimesFM Forecast", linewidth=2)
 
-    ax.plot(full_series['ds'], full_series['y'], color='black', label='Actual', linewidth=2)
-    ax.plot(test_df['ds'], preds, color='tomato', label='TimesFM Forecast', linewidth=2)
+    ax.set_title("TimesFM Forecast", fontsize=14)
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value")
 
-    ax.set_title('TimesFM Forecast', fontsize=14)
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
+    metrics_text = "\n".join(f"{k}: {v:.3f}" for k, v in metrics.items())
+    ax.text(
+        0.02,
+        0.95,
+        metrics_text,
+        transform=ax.transAxes,
+        va="top",
+        fontsize=10,
+        bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"),
+    )
 
-    metrics_text = '\n'.join(f"{k}: {v:.3f}" for k, v in metrics.items())
-    ax.text(0.02, 0.95, metrics_text, transform=ax.transAxes, va='top', fontsize=10,
-            bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
-
-    apply_legend(ax, {'frameon': False, 'loc': 'best'})
-    output_path = config.output_dir / 'timesfm_forecast.png'
-    save_plot(fig, output_path)
+    ax.legend(frameon=False, loc="best")
+    output_path = config.output_dir / "timesfm_forecast.png"
+    fig.savefig(output_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Forecast plot saved -> {output_path}")
 
 
-def save_outputs(test_df: pd.DataFrame, preds: np.ndarray, metrics: dict, config: Config) -> None:
-    forecast_df = pd.DataFrame({
-        'ds': test_df['ds'].values,
-        'actual': test_df['y'].values,
-        'forecast': preds,
-    })
-    forecast_path = config.output_dir / 'timesfm_forecast.csv'
+def save_outputs(
+    test_df: pd.DataFrame, preds: np.ndarray, metrics: dict, config: Config
+) -> None:
+    forecast_df = pd.DataFrame(
+        {
+            "ds": test_df["ds"].values,
+            "actual": test_df["y"].values,
+            "forecast": preds,
+        }
+    )
+    forecast_path = config.output_dir / "timesfm_forecast.csv"
     forecast_df.to_csv(forecast_path, index=False)
 
-    metrics_path = config.output_dir / 'timesfm_metrics.yaml'
-    with open(metrics_path, 'w') as f:
+    metrics_path = config.output_dir / "timesfm_metrics.yaml"
+    with open(metrics_path, "w") as f:
         yaml.safe_dump(metrics, f)
 
     print(f"✓ Forecast data saved -> {forecast_path}")
@@ -415,7 +451,9 @@ def main():
     model = build_model(config)
     forecast_df = run_forecast(model, train_df, config)
 
-    preds, metrics = compute_metrics(test_df, forecast_df, config.prediction_length, config)
+    preds, metrics = compute_metrics(
+        test_df, forecast_df, config.prediction_length, config
+    )
     for k, v in metrics.items():
         print(f"{k}: {v:.3f}")
 

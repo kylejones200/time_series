@@ -1,0 +1,213 @@
+\chapter{Causal Inference in Time Series}
+
+The previous chapters covered forecasting and prediction. Correlation does not imply causation. This chapter addresses causal inference. It identifies whether one variable causes another. This matters for policy evaluation and understanding relationships.
+
+\section{Introduction}
+
+Causal inference in time series identifies whether one variable causes another. It moves beyond correlation to understand true causal relationships. This is particularly challenging in time series data. Variables may be correlated due to common trends, feedback loops, or omitted variables. These are not causal relationships.
+
+Time series causal inference faces unique challenges. Variables may influence each other with lags. This creates complex temporal dependencies. Feedback loops can create bidirectional causality. Common trends can create spurious correlations. These challenges require specialized methods. They account for temporal structure and identify causal relationships.
+
+This chapter explores methods for causal inference in time series. Granger causality and Vector Autoregression to modern techniques like local projections, difference-in-differences, and regression discontinuity design are included. Each method addresses specific challenges and makes different assumptions about the data and relationships.
+
+You will understand how to apply causal inference methods to time series data. Testing Granger causality to estimating causal effects using modern econometric techniques are examples. You will be equipped with tools for moving beyond correlation to understand causation in temporal data.
+
+\section{Granger Causality}
+
+Granger causality tests whether past values of one variable help predict another variable. This goes beyond what can be predicted using only past values of that variable itself. Granger causality is not true causality. It provides a useful framework for understanding predictive relationships in time series.
+
+\subsection{Definition and Interpretation}
+
+Variable \(X\) Granger-causes variable \(Y\) if past values of \(X\) contain information that helps predict \(Y\) beyond the information contained in past values of \(Y\) alone. This is tested by comparing two models:
+
+\begin{itemize}
+\item \textbf{Restricted model}: \(Y_t = \alpha + \sum_{i=1}^{p} \beta_i Y_{t-i} + \epsilon_t\)
+\item \textbf{Unrestricted model}: \(Y_t = \alpha + \sum_{i=1}^{p} \beta_i Y_{t-i} + \sum_{i=1}^{p} \gamma_i X_{t-i} + \epsilon_t\)
+\end{itemize}
+
+If the unrestricted model significantly improves prediction, \(X\) Granger-causes \(Y\).
+
+\subsection{Testing Procedures}
+
+Granger causality is tested using F-tests or likelihood ratio tests. These compare restricted and unrestricted models. The test is typically performed at multiple lag lengths to ensure robustness. Results are sensitive to lag selection. This requires careful model specification.
+
+\subsection{Limitations and Criticisms}
+
+Granger causality has limitations. It is not true causality because Granger causality is about prediction, not causation. Common factors mean variables may be correlated due to common unobserved factors. Instantaneous causality cannot be detected because standard tests cannot identify simultaneous causal relationships. Nonlinear relationships are not captured because standard tests assume linear relationships.
+
+Despite limitations, Granger causality remains widely used in economics and finance for understanding predictive relationships.
+
+\subsection{Applications in Economics}
+
+Granger causality is commonly applied to monetary policy, asking whether money supply Granger-causes inflation. Stock markets analysis examines whether stock prices Granger-cause economic activity. Energy markets research investigates whether oil prices Granger-cause economic growth. Exchange rates studies explore whether exchange rates Granger-cause trade flows.
+
+These applications help understand predictive relationships. Interpretation requires careful consideration of context and assumptions.
+
+\section{Vector Autoregression and Structural VAR}
+
+Vector Autoregression (VAR) models multiple time series simultaneously. It captures dynamic relationships between variables. Structural VAR (SVAR) incorporates economic theory through restrictions. This enables causal interpretation.
+
+\subsection{VAR Models for Causal Analysis}
+
+VAR models specify each variable as a function of lagged values of all variables:
+
+\[
+\mathbf{y}_t = \mathbf{c} + \sum_{i=1}^{p} \mathbf{\Phi}_i \mathbf{y}_{t-i} + \boldsymbol{\epsilon}_t
+\]
+
+where \(\mathbf{y}_t\) is a vector of variables, \(\mathbf{\Phi}_i\) are coefficient matrices, and \(\boldsymbol{\epsilon}_t\) are error terms.
+
+\subsection{Structural Restrictions}
+
+SVAR models impose restrictions based on economic theory. Short-run restrictions identify contemporaneous relationships. Long-run restrictions identify long-term relationships. Sign restrictions constrain signs of responses based on theory.
+
+These restrictions enable causal interpretation of VAR results.
+
+\subsection{Impulse Response Functions}
+
+Impulse response functions trace how variables respond to shocks over time. Shock identification finds structural shocks using restrictions. Response tracing follows how variables respond to shocks. Confidence intervals quantify uncertainty in responses.
+
+Impulse responses reveal dynamic causal relationships between variables.
+
+\subsection{Forecast Error Variance Decomposition}
+
+Forecast error variance decomposition identifies sources of forecast error. Variance attribution assigns forecast error variance to different shocks. Relative importance measures the relative importance of different variables. Horizon dependence analyzes how importance changes over forecast horizons.
+
+This decomposition helps understand which variables drive fluctuations in the system.
+
+\section{Local Projections}
+
+Local projections provide a flexible alternative to VAR for estimating impulse responses. They avoid parametric assumptions about the data generating process.
+
+\subsection{Flexible Alternative to VAR}
+
+Local projections estimate impulse responses by projecting outcomes at different horizons directly on shocks and controls:
+
+\[
+y_{t+h} = \alpha_h + \beta_h \text{shock}_t + \gamma_h \mathbf{X}_t + \epsilon_{t+h}
+\]
+
+for each horizon \(h\). This approach is more flexible than VAR. It can handle nonlinearities and structural breaks.
+
+\subsection{Estimating Impulse Responses}
+
+Local projections estimate impulse responses through horizon-by-horizon estimation, which estimates separate regressions for each horizon. Shock identification uses identified structural shocks. Control variables address confounding. Standard errors use robust standard errors accounting for serial correlation.
+
+This approach provides consistent estimates under weaker assumptions than VAR.
+
+\subsection{Advantages and Applications}
+
+Local projections offer advantages. Flexibility comes from fewer parametric assumptions. Robustness means they are more robust to misspecification. Nonlinearity accommodation allows handling nonlinear relationships. Structural breaks handling enables modeling time-varying relationships.
+
+Local projections are increasingly used in macroeconomics and finance for causal analysis.
+
+\section{Difference-in-Differences}
+
+Difference-in-differences (DiD) estimates causal effects by comparing changes over time between treated and control groups. It controls for common trends.
+
+\subsection{Basic Framework}
+
+DiD estimates the treatment effect as:
+
+\[
+\text{Effect} = (Y_{T,post} - Y_{T,pre}) - (Y_{C,post} - Y_{C,pre})
+\]
+
+where \(T\) and \(C\) denote treated and control groups, and \(pre\) and \(post\) denote periods before and after treatment.
+
+\subsection{Time Series Extensions}
+
+Time series DiD extends the basic framework. Multiple time periods handle multiple pre- and post-treatment periods. Staggered treatment accounts for treatment timing variation. Dynamic effects estimate how effects evolve over time. Event studies analyze effects around treatment events.
+
+These extensions enable more sophisticated analysis of treatment effects in time series contexts.
+
+\subsection{Applications in Policy Evaluation}
+
+DiD is widely used for policy evaluation. Minimum wage studies examine effects of minimum wage increases on employment. Environmental regulations research investigates effects of regulations on emissions. Tax policy analysis explores effects of tax changes on economic activity. Healthcare policy studies examine effects of policy changes on health outcomes.
+
+DiD provides credible causal estimates when treatment assignment is plausibly exogenous.
+
+\section{Regression Discontinuity Design}
+
+Regression discontinuity design (RDD) exploits arbitrary cutoffs in treatment assignment to identify causal effects. It compares observations just above and below the cutoff.
+
+\subsection{Sharp and Fuzzy RDD}
+
+RDD comes in two forms. Sharp RDD assigns treatment deterministically based on a cutoff. Fuzzy RDD changes treatment probability discontinuously at the cutoff.
+
+Both forms enable causal inference by comparing observations near the cutoff.
+
+\subsection{Time Series Considerations}
+
+Time series RDD requires a running variable, which is a continuous variable that determines treatment. Discontinuity means a sharp change in treatment at the cutoff. Local identification means effects are identified locally around the cutoff. Bandwidth selection chooses appropriate bandwidth for estimation.
+
+Time series data may require accounting for temporal dependencies and trends.
+
+\subsection{Applications}
+
+RDD is applied to education research, examining effects of test score cutoffs on educational outcomes. Elections studies explore effects of winning elections on policy outcomes. Program eligibility research investigates effects of eligibility cutoffs on program participation. Regulatory thresholds analysis examines effects of regulatory cutoffs on firm behavior.
+
+RDD provides credible causal estimates when cutoffs are arbitrary and manipulation is unlikely.
+
+\section{Instrumental Variables}
+
+Instrumental variables (IV) address endogeneity by using external variables. These influence the treatment but not the outcome directly. The exception is through the treatment.
+
+\subsection{Addressing Endogeneity}
+
+IV addresses endogeneity when omitted variables confound relationships. Reverse causality occurs when outcomes influence treatments. Measurement error happens when treatment is measured with error.
+
+Valid instruments must be relevant (correlated with treatment) and exogenous (uncorrelated with error term).
+
+\subsection{Time Series Applications}
+
+IV in time series contexts uses lagged instruments, which are lagged values used as instruments. External instruments are external variables used as instruments. Natural experiments exploit natural experiments for identification. Panel data combines IV with panel data methods.
+
+Time series IV requires careful consideration of temporal dependencies and instrument validity.
+
+\subsection{Weak Instruments Problem}
+
+Weak instruments are poorly correlated with treatment. Identification failure occurs when weak instruments lead to poor identification. Bias means IV estimates can be biased with weak instruments. Testing evaluates instrument strength using F-statistics. Solutions include using stronger instruments or alternative methods.
+
+Weak instruments are a common problem in IV applications, requiring careful instrument selection and testing.
+
+\section{Synthetic Control Method}
+
+The synthetic control method constructs a synthetic counterfactual. It weights control units to match pre-treatment characteristics of the treated unit.
+
+\subsection{Constructing Counterfactuals}
+
+Synthetic control uses weight selection to choose weights that match pre-treatment outcomes. Donor pool selection identifies appropriate control units. Pre-treatment fit ensures good pre-treatment match. Post-treatment comparison compares treated to synthetic control.
+
+This approach provides a data-driven counterfactual for causal inference.
+
+\subsection{Applications in Policy Analysis}
+
+Synthetic control is used for policy evaluation, assessing effects of policies on single units. Natural experiments analysis examines effects of natural experiments. Intervention analysis studies effects of interventions. Case studies provide quantitative analysis for case studies.
+
+Synthetic control is particularly useful when traditional control groups are unavailable.
+
+\section{Conclusion}
+
+Causal inference in time series requires specialized methods. They account for temporal structure and address endogeneity. Granger causality provides a framework for understanding predictive relationships. VAR and local projections enable estimation of dynamic causal effects. Difference-in-differences, regression discontinuity, instrumental variables, and synthetic control provide additional tools for causal identification.
+
+This chapter explored various methods for causal inference in time series. Each has different assumptions and applications. Understanding these methods and their assumptions is essential for credible causal analysis in temporal data.
+
+Remember that causal inference requires careful consideration of assumptions, context, and alternative explanations. No method is perfect. Results should be interpreted with appropriate caution and skepticism.
+
+The ability to move beyond correlation to understand causation is invaluable. Policy analysis, scientific research, and decision-making are examples. These methods provide tools for that journey. They require careful application and interpretation.
+
+\section*{Reflection Questions}
+
+\begin{enumerate}
+\item How does Granger causality differ from true causal relationships, and what are its limitations?
+
+\item What are the key assumptions required for causal inference in time series, and how can they be tested?
+
+\item When should local projections be preferred over VAR models for causal analysis?
+
+\item How do difference-in-differences and regression discontinuity design address different causal inference challenges?
+
+\item What role do instrumental variables play in addressing endogeneity in time series data?
+\end{enumerate}
+

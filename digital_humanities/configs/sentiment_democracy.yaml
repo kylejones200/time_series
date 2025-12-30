@@ -1,9 +1,0 @@
-analysis: sentiment
-sentiment:
-  dataset:
-    path: data/raw/Democracy yearly_sentiment 1850-1927.csv
-  date_col: year
-  value_col: composite
-  smoothing_window: 5
-  title: "Democracy sentiment (1850-1927)"
-  output_dir: experiments/sentiment_democracy/outputs

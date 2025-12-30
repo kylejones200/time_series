@@ -8,6 +8,7 @@ import yaml
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import signalplot
 from pathlib import Path
 from importlib import util
 import pybsts
@@ -24,11 +25,6 @@ def repo_import(module: str):
     return module_obj
 
 
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_legend = plotting_utils.apply_legend
-save_plot = plotting_utils.save_plot
-apply_plot_style = plotting_utils.apply_plot_style
 
 ts_utils = repo_import("utils.ts_utils")
 load_ts_data = ts_utils.load_ts_data
@@ -45,145 +41,170 @@ def load_config(config_path="config.yaml"):
 def create_bsts_model(data, config):
     """Create and configure BSTS model."""
     specification = {
-        "ar_order": config['model']['ar_order'],
-        "local_trend": {"local_level": config['model']['local_level']},
+        "ar_order": config["model"]["ar_order"],
+        "local_trend": {"local_level": config["model"]["local_level"]},
         "sigma_prior": np.std(data, ddof=1),
-        "initial_value": data[0]
+        "initial_value": data[0],
     }
-    
-    if config['model'].get('local_slope', False):
+
+    if config["model"].get("local_slope", False):
         specification["local_trend"]["local_slope"] = True
-    
-    if config['model'].get('seasonal_period', None):
-        specification["seasonal"] = {
-            "nseasons": config['model']['seasonal_period']
-        }
-    
+
+    if config["model"].get("seasonal_period", None):
+        specification["seasonal"] = {"nseasons": config["model"]["seasonal_period"]}
+
     model = pybsts.PyBsts(
-        config['model']['distribution'],
+        config["model"]["distribution"],
         specification,
         {
-            "ping": config['model']['ping'],
-            "niter": config['model']['niter'],
-            "burn": config['model']['burn'],
-            "forecast_horizon": config['model']['forecast_horizon'],
-            "seed": config['model'].get('random_seed', 1)
-        }
+            "ping": config["model"]["ping"],
+            "niter": config["model"]["niter"],
+            "burn": config["model"]["burn"],
+            "forecast_horizon": config["model"]["forecast_horizon"],
+            "seed": config["model"].get("random_seed", 1),
+        },
     )
-    
+
     return model
 
 
 def fit_and_forecast(model, data, config):
     """Fit BSTS model and generate forecasts."""
-    model.fit(data, seed=config['model'].get('random_seed', 1))
-    
-    forecast = model.predict(seed=config['model'].get('random_seed', 1))
+    model.fit(data, seed=config["model"].get("random_seed", 1))
+
+    forecast = model.predict(seed=config["model"].get("random_seed", 1))
     forecast_mean = np.mean(forecast, axis=0)
     forecast_std = np.std(forecast, axis=0)
-    
+
     return forecast_mean, forecast_std, forecast
 
 
-def create_visualizations(data, train_data, test_data, forecast_mean, forecast_std, config):
+def create_visualizations(
+    data, train_data, test_data, forecast_mean, forecast_std, config
+):
     """Generate visualizations for BSTS forecast."""
-    output_dir = Path(__file__).parent / config['output']['output_dir']
+    output_dir = Path(__file__).parent / config["output"]["output_dir"]
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=tuple(config["plotting"]["figure_size"]))
     
-    fig, ax = setup_figure(config['plotting']['figure_size'], config['plotting']['dpi'])
-    apply_plot_style(ax, {'plotting': config['plotting']})
-    
-    ax.plot(train_data.index, train_data.values,
-            'k-', linewidth=config['plotting']['linewidth'],
-            alpha=config['plotting']['alpha'], label='Train')
-    
+    ax.plot(
+        train_data.index,
+        train_data.values,
+        "k-",
+        linewidth=config["plotting"]["linewidth"],
+        alpha=config["plotting"]["alpha"],
+        label="Train",
+    )
+
     if test_data is not None:
-        ax.plot(test_data.index, test_data.values,
-                'g-', linewidth=config['plotting']['linewidth'],
-                alpha=config['plotting']['alpha'], label='Test')
-    
+        ax.plot(
+            test_data.index,
+            test_data.values,
+            "g-",
+            linewidth=config["plotting"]["linewidth"],
+            alpha=config["plotting"]["alpha"],
+            label="Test",
+        )
+
     forecast_index = pd.date_range(
         start=train_data.index[-1] + pd.Timedelta(hours=1),
         periods=len(forecast_mean),
-        freq='h'
+        freq="h",
     )
-    
-    ax.plot(forecast_index, forecast_mean,
-            'r--', linewidth=config['plotting']['linewidth'],
-            label='Forecast')
-    
+
+    ax.plot(
+        forecast_index,
+        forecast_mean,
+        "r--",
+        linewidth=config["plotting"]["linewidth"],
+        label="Forecast",
+    )
+
     ax.fill_between(
         forecast_index,
         forecast_mean - 1.96 * forecast_std,
         forecast_mean + 1.96 * forecast_std,
-        color='red', alpha=0.2, label='95% Confidence Interval'
+        color="red",
+        alpha=0.2,
+        label="95% Confidence Interval",
     )
-    
+
     if test_data is not None:
-        ax.axvline(x=train_data.index[-1], color='k', linestyle=':',
-                   linewidth=config['plotting']['linewidth'], label='Train/Test Split')
-    
-    ax.set_title(config['plot_titles']['forecast'])
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    apply_legend(ax, config['plotting']['legend'])
-    
+        ax.axvline(
+            x=train_data.index[-1],
+            color="k",
+            linestyle=":",
+            linewidth=config["plotting"]["linewidth"],
+            label="Train/Test Split",
+        )
+
+    ax.set_title(config["plot_titles"]["forecast"])
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value")
+    ax.legend()
+
     output_path = output_dir / "pybsts_forecast.png"
-    save_plot(fig, output_path)
+    fig.savefig(output_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.show()
 
 
 def main():
     """Main execution function."""
     config = load_config()
-    
+
     df = load_ts_data(
-        data_path=Path(__file__).parent.parent / 'data' / config['data']['input_file'],
-        date_col=config['data']['date_col'],
-        value_col=config['data']['value_col']
+        data_path=Path(__file__).parent.parent / "data" / config["data"]["input_file"],
+        date_col=config["data"]["date_col"],
+        value_col=config["data"]["value_col"],
     )
-    df = ensure_datetime_index(df, time_col=config['data']['date_col'])
-    
-    train_df, test_df = split_ts(df, test_size=config['data']['test_size'])
-    
-    model = create_bsts_model(train_df[config['data']['value_col']].values, config)
-    
+    df = ensure_datetime_index(df, time_col=config["data"]["date_col"])
+
+    train_df, test_df = split_ts(df, test_size=config["data"]["test_size"])
+
+    model = create_bsts_model(train_df[config["data"]["value_col"]].values, config)
+
     print("\nFitting BSTS model...")
     print(f"Iterations: {config['model']['niter']}")
     print(f"Burn-in: {config['model']['burn']}")
-    
+
     forecast_mean, forecast_std, forecast_samples = fit_and_forecast(
-        model, train_df[config['data']['value_col']].values, config
+        model, train_df[config["data"]["value_col"]].values, config
     )
-    
+
     print("\nBSTS Forecast Results:")
     print("=" * 70)
     print(f"Forecast horizon: {config['model']['forecast_horizon']}")
     print(f"Forecast mean (first 5): {forecast_mean[:5]}")
     print(f"Forecast std (first 5): {forecast_std[:5]}")
-    
+
     if test_df is not None and len(test_df) >= len(forecast_mean):
         from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-        
-        test_values = test_df[config['data']['value_col']].values[:len(forecast_mean)]
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
+
+        test_values = test_df[config["data"]["value_col"]].values[: len(forecast_mean)]
         mae = mean_absolute_error(test_values, forecast_mean)
         rmse = np.sqrt(mean_squared_error(test_values, forecast_mean))
         r2 = r2_score(test_values, forecast_mean)
-        
+
         print(f"\nModel Evaluation (on test set):")
         print(f"MAE: {mae:.4f}")
         print(f"RMSE: {rmse:.4f}")
         print(f"R²: {r2:.4f}")
-    
+
     create_visualizations(
-        df, train_df[config['data']['value_col']],
-        test_df[config['data']['value_col']] if test_df is not None else None,
-        forecast_mean, forecast_std, config
+        df,
+        train_df[config["data"]["value_col"]],
+        test_df[config["data"]["value_col"]] if test_df is not None else None,
+        forecast_mean,
+        forecast_std,
+        config,
     )
-    
+
     print("✓ BSTS forecasting complete")
 
 
 if __name__ == "__main__":
     main()
-

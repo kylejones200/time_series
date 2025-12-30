@@ -1,0 +1,74 @@
+\chapter{Uncertainty Quantification in Forecasting}
+
+The previous chapters focused on point forecasts. Forecasts are uncertain. This chapter addresses uncertainty quantification. It provides confidence intervals and prediction intervals. Understanding uncertainty supports better decision-making.
+
+\section{Introduction}
+
+Forecasting is uncertain. A point forecast is a single predicted value. It tells only part of the story. Understanding and quantifying uncertainty is crucial for making informed decisions, managing risk, and communicating forecast reliability. This chapter explores methods for quantifying uncertainty in time series forecasts. Confidence intervals, prediction intervals, and bootstrap methods are examples.
+
+Point forecasts alone are insufficient. Decisions often depend on worst-case or best-case scenarios. Understanding uncertainty helps manage risk. Uncertainty informs capacity planning and inventory management. Stakeholders need to understand forecast reliability. Uncertainty measures help evaluate model quality. This chapter provides comprehensive coverage of uncertainty quantification methods. It equips you with the tools to provide not just point forecasts but also measures of forecast reliability and risk.
+
+\section{Forecast Intervals}
+
+\subsection{Types of Forecast Intervals}
+
+Confidence intervals represent uncertainty about the forecast mean—the expected value of the forecast. They answer: "What is the range of likely values for the forecast mean?" Prediction intervals represent uncertainty about individual future observations. They answer: "What is the range of likely values for actual future observations?"
+
+The key difference is that confidence intervals are narrower and represent uncertainty about the mean, while prediction intervals are wider and include both model uncertainty and observation noise. In practice, prediction intervals are more useful for most applications because they account for both model uncertainty and the inherent variability in future observations.
+
+The coverage probability (or confidence level) indicates the probability that the true value falls within the interval. Common choices include 90\% (wider intervals, more conservative), 95\% (standard choice, balances precision and coverage), and 99\% (very wide intervals, very conservative).
+
+\subsection{Confidence Intervals for ARIMA Models}
+
+ARIMA models provide built-in methods for computing confidence intervals based on the model's estimated variance. The process involves fitting an ARIMA model, using the \texttt{get\_forecast()} method to obtain forecasts with confidence intervals, and extracting the predicted mean and confidence interval bounds.
+
+Key points for ARIMA confidence intervals include preventing data leakage by splitting data before scaling (fit scaler on training data only), using Auto ARIMA to automatically select optimal ARIMA parameters, leveraging built-in confidence intervals from ARIMA's \texttt{get\_forecast()} method, and inverse transforming scaled forecasts back to original scale.
+
+Visualization best practices include showing historical data for context, clearly marking the train/test split, using fill\_between for easy interpretation of confidence intervals, and labeling all components clearly in the legend.
+
+\subsection{Bootstrap Methods for Uncertainty Quantification}
+
+Bootstrap methods provide an alternative approach to uncertainty quantification that doesn't rely on model assumptions. They work by resampling (creating many bootstrap samples from the training data), refitting (fitting the model to each bootstrap sample), forecasting (generating forecasts from each fitted model), and aggregating (computing intervals from the distribution of forecasts).
+
+Advantages of bootstrap include being model-free (doesn't rely on distributional assumptions), flexible (works with any model), robust (handles non-normal errors), and intuitive (easy to understand and explain). Disadvantages include computational cost (requires refitting models many times), time series challenges (standard bootstrap doesn't preserve temporal structure), and sample size requirements (needs sufficient data for reliable estimates).
+
+For time series, standard bootstrap (sampling with replacement) breaks the temporal structure. Consider block bootstrap (sampling blocks of consecutive observations), residual bootstrap (bootstrapping residuals, then reconstructing series), or moving block bootstrap (overlapping blocks). These methods preserve temporal dependencies while providing uncertainty estimates.
+
+\subsection{Comparing Methods}
+
+ARIMA confidence intervals are fast, built into the model, and based on model assumptions. However, they rely on model assumptions (normality, homoscedasticity). Use ARIMA intervals when model assumptions are reasonable and speed is important.
+
+Bootstrap intervals are model-free, robust to assumptions, and flexible. However, they are computationally expensive and require many iterations. Use bootstrap intervals when model assumptions are questionable and you want robustness.
+
+Visual comparison allows you to see how different methods compare on the same data, helping you choose the most appropriate method for your specific application.
+
+\subsection{Evaluating Forecast Intervals}
+
+Coverage measures the proportion of actual values that fall within the forecast intervals. For 95\% intervals, coverage should be close to 95\%. Under-coverage (< 95\%) indicates intervals are too narrow, while over-coverage (> 95\%) indicates intervals are too wide.
+
+Mean interval width measures the average width of forecast intervals. There's a trade-off: narrow intervals are more precise but may have lower coverage, while wide intervals have higher coverage but are less informative. The goal is to balance precision and coverage appropriately.
+
+\subsection{Best Practices}
+
+For data preprocessing, always split data before fitting scalers to avoid leakage, interpolate or impute missing values appropriately, and ensure data is stationary or use appropriate differencing. For model selection, use automatic model selection when appropriate, check residuals for normality and homoscedasticity, and use time series cross-validation for model evaluation.
+
+For uncertainty quantification, choose the method based on your needs (ARIMA intervals for speed, bootstrap for robustness), use adequate bootstrap samples (at least 100-1000), and compare different methods when possible. For visualization, label all components clearly, always indicate the confidence level, show historical data for context, and compare multiple methods when relevant.
+
+For communication, help stakeholders understand what intervals mean, report actual coverage (not just nominal coverage), and acknowledge assumptions and limitations. Effective communication of uncertainty is crucial for decision-making.
+
+\subsection{Real-World Applications}
+
+Energy companies need uncertainty estimates for capacity planning (ensuring sufficient generation capacity), risk management (understanding worst-case scenarios), and pricing (setting prices that account for uncertainty). Retailers use uncertainty for inventory management (stock levels based on uncertainty), supply chain (order quantities considering uncertainty), and promotions (planning promotions accounting for forecast uncertainty).
+
+Financial applications require uncertainty for risk assessment (quantifying financial risk), portfolio management (diversifying based on uncertainty), and regulatory compliance (meeting risk reporting requirements). In all these applications, understanding and quantifying uncertainty is essential for making informed decisions and managing risk effectively.
+
+
+
+\section{Conclusion}
+
+Uncertainty quantification is essential for practical forecasting. Key concepts include confidence intervals, prediction intervals, bootstrap methods, coverage, and interval width. Confidence intervals represent uncertainty about forecast mean. Prediction intervals represent uncertainty about future observations. Bootstrap methods provide model-free uncertainty quantification. Coverage is the proportion of actual values within intervals. Interval width is a measure of forecast precision.
+
+Methods include ARIMA intervals and bootstrap intervals. ARIMA intervals are fast, model-based, and assumption-dependent. Bootstrap intervals are robust, model-free, and computationally expensive. Best practices include always splitting data before scaling, using appropriate bootstrap methods for time series, evaluating intervals using coverage metrics, visualizing uncertainty clearly, and communicating uncertainty effectively.
+
+By mastering uncertainty quantification, you can provide not just point forecasts but also measures of forecast reliability and risk. This enables better decision-making, improved risk management, and more effective communication with stakeholders. Understanding uncertainty is crucial for building trust in forecasts and making informed decisions based on time series predictions.
+

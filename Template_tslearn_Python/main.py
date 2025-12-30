@@ -8,6 +8,7 @@ import yaml
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import signalplot
 from pathlib import Path
 from importlib import util
 from tslearn.clustering import TimeSeriesKMeans
@@ -15,6 +16,9 @@ from tslearn.preprocessing import TimeSeriesScalerMeanVariance
 from tslearn.utils import to_time_series_dataset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import silhouette_score
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -28,11 +32,6 @@ def repo_import(module: str):
     return module_obj
 
 
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_legend = plotting_utils.apply_legend
-save_plot = plotting_utils.save_plot
-apply_plot_style = plotting_utils.apply_plot_style
 
 ts_utils = repo_import("utils.ts_utils")
 load_ts_data = ts_utils.load_ts_data
@@ -47,59 +46,64 @@ def load_config(config_path="config.yaml"):
 
 def main():
     config = load_config()
-    
+
     df = load_ts_data(
-        data_path=Path(__file__).parent.parent / 'data' / config['data']['input_file'],
-        date_col=config['data']['date_col'],
-        value_col=config['data']['value_col']
+        data_path=Path(__file__).parent.parent / "data" / config["data"]["input_file"],
+        date_col=config["data"]["date_col"],
+        value_col=config["data"]["value_col"],
     )
-    df = ensure_datetime_index(df, time_col=config['data']['date_col'])
-    
-    data = df[config['data']['value_col']].values.reshape(-1, 1)
-    
+    df = ensure_datetime_index(df, time_col=config["data"]["date_col"])
+
+    data = df[config["data"]["value_col"]].values.reshape(-1, 1)
+
+    # NOTE: For clustering (unsupervised learning), scaling the entire dataset is acceptable
+    # since there's no train/test split. However, if this code is adapted for prediction,
+    # the data should be split first, then the scaler should be fit on training data only.
     scaler = TimeSeriesScalerMeanVariance()
     data_scaled = scaler.fit_transform(to_time_series_dataset(data))
-    
+
     model = TimeSeriesKMeans(
-        n_clusters=config['model']['n_clusters'],
-        metric=config['model']['metric'],
-        max_iter=config['model']['max_iter'],
-        random_state=42
+        n_clusters=config["model"]["n_clusters"],
+        metric=config["model"]["metric"],
+        max_iter=config["model"]["max_iter"],
+        random_state=42,
     )
-    
+
     labels = model.fit_predict(data_scaled)
-    
+
     silhouette = silhouette_score(data_scaled.reshape(len(data_scaled), -1), labels)
     print(f"\nClustering Results:")
     print(f"Silhouette Score: {silhouette:.4f}")
     print(f"Number of clusters: {config['model']['n_clusters']}")
+
+    fig, ax = plt.subplots(figsize=tuple(config["plotting"]["figure_size"]))
     
-    fig, ax = setup_figure(config['plotting']['figure_size'], config['plotting']['dpi'])
-    apply_plot_style(ax, {'plotting': config['plotting']})
-    
-    colors = plt.cm.tab10(np.linspace(0, 1, config['model']['n_clusters']))
-    
-    for cluster_id in range(config['model']['n_clusters']):
+    colors = plt.cm.tab10(np.linspace(0, 1, config["model"]["n_clusters"]))
+
+    for cluster_id in range(config["model"]["n_clusters"]):
         cluster_mask = labels == cluster_id
         cluster_data = data[cluster_mask.flatten()]
         cluster_dates = df.index[cluster_mask.flatten()]
-        
-        ax.plot(cluster_dates, cluster_data,
-                'o', color=colors[cluster_id],
-                markersize=config['plotting']['markersize'],
-                alpha=config['plotting']['alpha'],
-                label=f'Cluster {cluster_id + 1}')
-    
-    ax.set_title(config['plot_titles']['tslearn_clustering'])
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    apply_legend(ax, config['plotting']['legend'])
-    
+
+        ax.plot(
+            cluster_dates,
+            cluster_data,
+            "o",
+            color=colors[cluster_id],
+            markersize=config["plotting"]["markersize"],
+            alpha=config["plotting"]["alpha"],
+            label=f"Cluster {cluster_id + 1}",
+        )
+
+    ax.set_title(config["plot_titles"]["tslearn_clustering"])
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value")
+    ax.legend()
+
     output_path = Path(__file__).parent / "outputs" / "tslearn_clustering.png"
-    save_plot(fig, output_path)
+    fig.savefig(output_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.show()
 
 
 if __name__ == "__main__":
     main()
-

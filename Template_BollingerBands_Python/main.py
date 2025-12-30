@@ -8,8 +8,12 @@ import yaml
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import signalplot
 from pathlib import Path
 from importlib import util
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -22,12 +26,6 @@ def repo_import(module: str):
     spec.loader.exec_module(module_obj)
     return module_obj
 
-
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_legend = plotting_utils.apply_legend
-save_plot = plotting_utils.save_plot
-apply_plot_style = plotting_utils.apply_plot_style
 
 ts_utils = repo_import("utils.ts_utils")
 load_ts_data = ts_utils.load_ts_data
@@ -43,51 +41,64 @@ def load_config(config_path="config.yaml"):
 def calculate_bollinger_bands(data, window, num_std):
     """Calculate Bollinger Bands."""
     df = data.copy()
-    df['MA'] = df.rolling(window=window).mean()
-    df['std'] = df.rolling(window=window).std()
-    df['upper'] = df['MA'] + (df['std'] * num_std)
-    df['lower'] = df['MA'] - (df['std'] * num_std)
+    df["MA"] = df.rolling(window=window).mean()
+    df["std"] = df.rolling(window=window).std()
+    df["upper"] = df["MA"] + (df["std"] * num_std)
+    df["lower"] = df["MA"] - (df["std"] * num_std)
     return df
 
 
 def main():
     config = load_config()
-    
+
     df = load_ts_data(
-        data_path=Path(__file__).parent.parent / 'data' / config['data']['input_file'],
-        date_col=config['data']['date_col'],
-        value_col=config['data']['value_col']
+        data_path=Path(__file__).parent.parent / "data" / config["data"]["input_file"],
+        date_col=config["data"]["date_col"],
+        value_col=config["data"]["value_col"],
     )
-    df = ensure_datetime_index(df, time_col=config['data']['date_col'])
-    
+    df = ensure_datetime_index(df, time_col=config["data"]["date_col"])
+
     df_bb = calculate_bollinger_bands(
-        df[config['data']['value_col']],
-        config['model']['window'],
-        config['model']['num_std']
+        df[config["data"]["value_col"]],
+        config["model"]["window"],
+        config["model"]["num_std"],
     )
-    
-    fig, ax = setup_figure(config['plotting']['figure_size'], config['plotting']['dpi'])
-    apply_plot_style(ax, {'plotting': config['plotting']})
-    
-    ax.plot(df.index, df[config['data']['value_col']].values,
-            'k-', linewidth=config['plotting']['linewidth'],
-            alpha=config['plotting']['alpha'], label='Price')
-    ax.plot(df_bb.index, df_bb['MA'].values,
-            'b-', linewidth=config['plotting']['linewidth'],
-            label='Moving Average')
-    ax.fill_between(df_bb.index, df_bb['lower'].values, df_bb['upper'].values,
-                     color='b', alpha=0.2, label='Bollinger Bands')
-    
-    ax.set_title(config['plot_titles']['bollinger_bands'])
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    apply_legend(ax, config['plotting']['legend'])
-    
+
+    fig, ax = plt.subplots(figsize=tuple(config["plotting"]["figure_size"]))
+
+    ax.plot(
+        df.index,
+        df[config["data"]["value_col"]].values,
+        "k-",
+        linewidth=config["plotting"]["linewidth"],
+        alpha=config["plotting"]["alpha"],
+        label="Price",
+    )
+    ax.plot(
+        df_bb.index,
+        df_bb["MA"].values,
+        "b-",
+        linewidth=config["plotting"]["linewidth"],
+        label="Moving Average",
+    )
+    ax.fill_between(
+        df_bb.index,
+        df_bb["lower"].values,
+        df_bb["upper"].values,
+        color="b",
+        alpha=0.2,
+        label="Bollinger Bands",
+    )
+
+    ax.set_title(config["plot_titles"]["bollinger_bands"])
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value")
+    ax.legend()
+
     output_path = Path(__file__).parent / "outputs" / "bollinger_bands.png"
-    save_plot(fig, output_path)
+    fig.savefig(output_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.show()
 
 
 if __name__ == "__main__":
     main()
-

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import torch
@@ -17,6 +18,9 @@ import yaml
 from chronos import ChronosPipeline
 from matplotlib.ticker import MaxNLocator, StrMethodFormatter
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -30,11 +34,6 @@ def repo_import(module: str):
     return module_obj
 
 
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_plot_style = plotting_utils.apply_plot_style
-apply_legend = plotting_utils.apply_legend
-save_plot = plotting_utils.save_plot
 
 np.random.seed(42)
 plt.rcParams.update(
@@ -123,7 +122,9 @@ def load_series(config: Config) -> pd.Series:
     return series
 
 
-def prepare_tensors(series: pd.Series, config: Config) -> tuple[torch.Tensor, torch.Tensor, pd.Index]:
+def prepare_tensors(
+    series: pd.Series, config: Config
+) -> tuple[torch.Tensor, torch.Tensor, pd.Index]:
     pred_len = config.prediction_length
     context_len = config.context_length or len(series) - pred_len
     context_len = min(context_len, len(series) - pred_len)
@@ -157,9 +158,13 @@ def load_pipeline(config: Config) -> ChronosPipeline:
     return pipeline
 
 
-def generate_forecast(pipeline: ChronosPipeline, context: torch.Tensor, config: Config) -> np.ndarray:
+def generate_forecast(
+    pipeline: ChronosPipeline, context: torch.Tensor, config: Config
+) -> np.ndarray:
     with torch.no_grad():
-        forecast = pipeline.predict(context, config.prediction_length, num_samples=config.num_samples)
+        forecast = pipeline.predict(
+            context, config.prediction_length, num_samples=config.num_samples
+        )
     return forecast.cpu().numpy()
 
 
@@ -188,22 +193,17 @@ def plot_forecast(
     history_window = 7 * config.prediction_length
     history = series.iloc[-history_window:]
 
-    fig, ax = setup_figure((14, 6), 150)
-    apply_plot_style(
-        ax,
-        {
-            "plotting": {
-                "style": {
-                    "spines": {"top": False, "right": False, "bottom": True, "left": True},
-                    "grid": False,
-                }
-            }
-        },
-    )
+    fig, ax = plt.subplots(figsize=(14, 6))
 
-    ax.plot(history.index, history.values, color="royalblue", linewidth=2, label="History")
-    ax.plot(forecast_index, median, color="tomato", linewidth=2, label="Chronos Forecast")
-    ax.fill_between(forecast_index, low, high, color="tomato", alpha=0.3, label="80% interval")
+    ax.plot(
+        history.index, history.values, color="royalblue", linewidth=2, label="History"
+    )
+    ax.plot(
+        forecast_index, median, color="tomato", linewidth=2, label="Chronos Forecast"
+    )
+    ax.fill_between(
+        forecast_index, low, high, color="tomato", alpha=0.3, label="80% interval"
+    )
 
     plot_title = config.forecast_plot_cfg.get("title", "Chronos Forecast")
     ax.set_title(plot_title, fontsize=14)
@@ -221,16 +221,18 @@ def plot_forecast(
         bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"),
     )
 
-    apply_legend(ax, {"frameon": False, "loc": "best"})
+    ax.legend(frameon=False, loc="best")
 
     output_name = config.forecast_plot_cfg.get("output_plot", "chronos_forecast.png")
     output_path = config.output_dir / output_name
-    save_plot(fig, output_path)
+    fig.savefig(output_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Forecast plot saved -> {output_path}")
 
 
-def plot_tufte_style(series: pd.Series, forecast_index: pd.Index, median: np.ndarray, config: Config) -> None:
+def plot_tufte_style(
+    series: pd.Series, forecast_index: pd.Index, median: np.ndarray, config: Config
+) -> None:
     if not config.tufte_cfg:
         return
 
@@ -238,15 +240,21 @@ def plot_tufte_style(series: pd.Series, forecast_index: pd.Index, median: np.nda
     history = series.loc[tufte_cfg["history_start"] : tufte_cfg["history_end"]]
     actual = series.loc[tufte_cfg["actual_start"] : tufte_cfg["actual_end"]]
     forecast_series = pd.Series(median, index=forecast_index)
-    forecast_filtered = forecast_series.loc[tufte_cfg["actual_start"] : tufte_cfg["actual_end"]]
+    forecast_filtered = forecast_series.loc[
+        tufte_cfg["actual_start"] : tufte_cfg["actual_end"]
+    ]
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(history.index, history.values, color="#888888", lw=1.5)
-    ax.axvline(pd.Timestamp(tufte_cfg["actual_start"]), color="#666666", linestyle="--", lw=1)
+    ax.axvline(
+        pd.Timestamp(tufte_cfg["actual_start"]), color="#666666", linestyle="--", lw=1
+    )
     if not actual.empty:
         ax.plot(actual.index, actual.values, color="#444444", lw=1.8)
     if not forecast_filtered.empty:
-        ax.plot(forecast_filtered.index, forecast_filtered.values, color="#000000", lw=2.0)
+        ax.plot(
+            forecast_filtered.index, forecast_filtered.values, color="#000000", lw=2.0
+        )
 
     ax.yaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))

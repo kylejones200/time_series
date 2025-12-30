@@ -9,11 +9,15 @@ from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 import yaml
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -27,10 +31,6 @@ def repo_import(module: str):
     return module_obj
 
 
-plotting_utils = repo_import("utils.plotting_utils")
-setup_figure = plotting_utils.setup_figure
-apply_plot_style = plotting_utils.apply_plot_style
-save_plot = plotting_utils.save_plot
 
 
 @dataclass
@@ -51,15 +51,15 @@ def load_config(config_path: str = "config.yaml") -> Config:
     output_dir = Path(__file__).parent / "outputs"
     output_dir.mkdir(exist_ok=True)
 
-    sim_cfg = cfg['simulation']
-    gp_cfg = cfg['gaussian_process']
+    sim_cfg = cfg["simulation"]
+    gp_cfg = cfg["gaussian_process"]
     return Config(
-        resample_rule=cfg['resample']['rule'],
-        start=sim_cfg['start'],
-        freq=sim_cfg['freq'],
-        n_points=sim_cfg['n_points'],
-        gap_prob=sim_cfg['gap_probability'],
-        gp_length_scale=gp_cfg['length_scale'],
+        resample_rule=cfg["resample"]["rule"],
+        start=sim_cfg["start"],
+        freq=sim_cfg["freq"],
+        n_points=sim_cfg["n_points"],
+        gap_prob=sim_cfg["gap_probability"],
+        gp_length_scale=gp_cfg["length_scale"],
         output_dir=output_dir,
     )
 
@@ -72,7 +72,7 @@ def simulate_irregular_series(config: Config) -> pd.Series:
     observed_index = full_index[mask]
     values = np.cumsum(rng.normal(loc=0.0, scale=1.0, size=mask.sum())) + 10
 
-    series = pd.Series(values, index=observed_index, name='value')
+    series = pd.Series(values, index=observed_index, name="value")
     return series
 
 
@@ -81,10 +81,12 @@ def resample_series(series: pd.Series, rule: str) -> pd.Series:
 
 
 def interpolate_series(series: pd.Series, rule: str) -> pd.Series:
-    return series.resample(rule).interpolate(method='linear')
+    return series.resample(rule).interpolate(method="linear")
 
 
-def gaussian_process_fill(series: pd.Series, config: Config) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def gaussian_process_fill(
+    series: pd.Series, config: Config
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     series_sorted = series.sort_index()
     x = (series_sorted.index.view(int) / 1e9).to_numpy().reshape(-1, 1)
     y = series_sorted.values
@@ -93,44 +95,72 @@ def gaussian_process_fill(series: pd.Series, config: Config) -> tuple[np.ndarray
     gp = GaussianProcessRegressor(kernel=kernel, alpha=1.0)
     gp.fit(x, y)
 
-    full_index = pd.date_range(series_sorted.index.min(), series_sorted.index.max(), freq=config.resample_rule)
+    full_index = pd.date_range(
+        series_sorted.index.min(), series_sorted.index.max(), freq=config.resample_rule
+    )
     x_new = (full_index.view(int) / 1e9).reshape(-1, 1)
     y_pred, std = gp.predict(x_new, return_std=True)
     return full_index, y_pred, std
 
 
-def plot_results(original: pd.Series, resampled: pd.Series, interpolated: pd.Series,
-                 gp_index: np.ndarray, gp_mean: np.ndarray, gp_std: np.ndarray,
-                 config: Config) -> None:
-    fig, ax = setup_figure((12, 6), 150)
-    apply_plot_style(ax, {'plotting': {
-        'style': {'spines': {'top': False, 'right': False, 'bottom': True, 'left': True}, 'grid': False}
-    }})
+def plot_results(
+    original: pd.Series,
+    resampled: pd.Series,
+    interpolated: pd.Series,
+    gp_index: np.ndarray,
+    gp_mean: np.ndarray,
+    gp_std: np.ndarray,
+    config: Config,
+) -> None:
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    ax.scatter(
+        original.index, original.values, label="Original Irregular", color="black"
+    )
+    ax.plot(
+        resampled.index, resampled.values, label="Resampled (ffill)", color="royalblue"
+    )
+    ax.plot(
+        interpolated.index,
+        interpolated.values,
+        label="Interpolated (linear)",
+        color="seagreen",
+    )
+    ax.plot(gp_index, gp_mean, label="GP mean", color="tomato")
+    ax.fill_between(
+        gp_index,
+        gp_mean - 1.96 * gp_std,
+        gp_mean + 1.96 * gp_std,
+        color="tomato",
+        alpha=0.2,
+        label="GP 95% interval",
+    )
 
-    ax.scatter(original.index, original.values, label='Original Irregular', color='black')
-    ax.plot(resampled.index, resampled.values, label='Resampled (ffill)', color='royalblue')
-    ax.plot(interpolated.index, interpolated.values, label='Interpolated (linear)', color='seagreen')
-    ax.plot(gp_index, gp_mean, label='GP mean', color='tomato')
-    ax.fill_between(gp_index, gp_mean - 1.96 * gp_std, gp_mean + 1.96 * gp_std,
-                    color='tomato', alpha=0.2, label='GP 95% interval')
+    ax.set_title("Handling Irregular Time Series")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Value")
+    ax.legend(frameon=False, loc="best")
 
-    ax.set_title('Handling Irregular Time Series')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Value')
-    apply_legend(ax, {'frameon': False, 'loc': 'best'})
-
-    output_path = config.output_dir / 'irregular_time_series.png'
-    save_plot(fig, output_path)
+    output_path = config.output_dir / "irregular_time_series.png"
+    fig.savefig(output_path, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Plot saved -> {output_path}")
 
 
-def save_series(resampled: pd.Series, interpolated: pd.Series, gp_index: np.ndarray,
-                gp_mean: np.ndarray, gp_std: np.ndarray, config: Config) -> None:
-    resampled.to_frame(name='resampled').to_csv(config.output_dir / 'resampled.csv')
-    interpolated.to_frame(name='interpolated').to_csv(config.output_dir / 'interpolated.csv')
-    gp_df = pd.DataFrame({'timestamp': gp_index, 'gp_mean': gp_mean, 'gp_std': gp_std})
-    gp_df.to_csv(config.output_dir / 'gaussian_process.csv', index=False)
+def save_series(
+    resampled: pd.Series,
+    interpolated: pd.Series,
+    gp_index: np.ndarray,
+    gp_mean: np.ndarray,
+    gp_std: np.ndarray,
+    config: Config,
+) -> None:
+    resampled.to_frame(name="resampled").to_csv(config.output_dir / "resampled.csv")
+    interpolated.to_frame(name="interpolated").to_csv(
+        config.output_dir / "interpolated.csv"
+    )
+    gp_df = pd.DataFrame({"timestamp": gp_index, "gp_mean": gp_mean, "gp_std": gp_std})
+    gp_df.to_csv(config.output_dir / "gaussian_process.csv", index=False)
     print("✓ CSV outputs saved")
 
 

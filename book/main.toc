@@ -1,0 +1,468 @@
+\contentsline {chapter}{\numberline {1}Introduction to Time Series}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}What is Time Series Data?}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Definition and Characteristics}{1}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Time Series vs. Cross-Sectional Data}{2}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Regular vs. Irregular Time Series}{2}{subsection.1.1.3}%
+\contentsline {section}{\numberline {1.2}Fundamental Components of Time Series}{2}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Trend}{2}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Seasonality}{3}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Cyclicality}{3}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}Noise}{4}{subsection.1.2.4}%
+\contentsline {section}{\numberline {1.3}Types of Time Series}{4}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Univariate Time Series}{4}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Multivariate Time Series}{4}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Panel Data and Hierarchical Time Series}{5}{subsection.1.3.3}%
+\contentsline {section}{\numberline {1.4}Challenges in Time Series Analysis}{5}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Non-Stationarity}{5}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Missing Values}{5}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.3}Outliers}{5}{subsection.1.4.3}%
+\contentsline {subsection}{\numberline {1.4.4}Temporal Dependencies}{6}{subsection.1.4.4}%
+\contentsline {subsection}{\numberline {1.4.5}Structural Breaks}{6}{subsection.1.4.5}%
+\contentsline {section}{\numberline {1.5}Applications of Time Series Analysis}{6}{section.1.5}%
+\contentsline {subsection}{\numberline {1.5.1}Finance}{6}{subsection.1.5.1}%
+\contentsline {subsection}{\numberline {1.5.2}Economics}{6}{subsection.1.5.2}%
+\contentsline {subsection}{\numberline {1.5.3}Healthcare}{7}{subsection.1.5.3}%
+\contentsline {subsection}{\numberline {1.5.4}Engineering}{7}{subsection.1.5.4}%
+\contentsline {subsection}{\numberline {1.5.5}Marketing}{7}{subsection.1.5.5}%
+\contentsline {section}{\numberline {1.6}Conclusion}{7}{section.1.6}%
+\contentsline {chapter}{\numberline {2}Data Processing and Exploratory Data Analysis (EDA)}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Data Cleaning and Preprocessing}{9}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Handling Missing Values}{10}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Outlier Detection and Treatment}{10}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Resampling and Regularization}{11}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Time Zone and Temporal Alignment}{11}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Data Transformations}{11}{subsection.2.1.5}%
+\contentsline {section}{\numberline {2.2}Feature Engineering for Time Series}{12}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Lag Features}{12}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Rolling Statistics}{12}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Date and Time Features}{13}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Seasonal Indicators}{13}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Interaction Features}{13}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}Target Encoding}{13}{subsection.2.2.6}%
+\contentsline {section}{\numberline {2.3}Exploratory Data Analysis}{14}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Time Series Plotting}{14}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Decomposition Analysis}{14}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Autocorrelation Analysis}{14}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}Distribution Analysis}{14}{subsection.2.3.4}%
+\contentsline {subsection}{\numberline {2.3.5}Seasonal Analysis}{15}{subsection.2.3.5}%
+\contentsline {subsection}{\numberline {2.3.6}Anomaly Detection Visualization}{15}{subsection.2.3.6}%
+\contentsline {subsection}{\numberline {2.3.7}Correlation Analysis}{15}{subsection.2.3.7}%
+\contentsline {section}{\numberline {2.4}Conclusion}{15}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Time Series Forecasting}{17}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Introduction}{18}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Forecasting Fundamentals}{18}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Short-term vs. Long-term Forecasting}{18}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Point Forecasts vs. Interval Forecasts}{19}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Forecast Horizon and Granularity}{19}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}Naive and Benchmark Models}{19}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Naive Method}{20}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Seasonal Naive Method}{20}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Drift Method}{20}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Mean and Median Forecasts}{21}{subsection.3.3.4}%
+\contentsline {section}{\numberline {3.4}Evaluation Metrics}{21}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Mean Absolute Error (MAE)}{21}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Mean Squared Error (MSE)}{21}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Mean Absolute Percentage Error (MAPE)}{22}{subsection.3.4.3}%
+\contentsline {subsection}{\numberline {3.4.4}Other Evaluation Metrics}{22}{subsection.3.4.4}%
+\contentsline {subsection}{\numberline {3.4.5}Cross-Validation Techniques for Time Series}{22}{subsection.3.4.5}%
+\contentsline {section}{\numberline {3.5}Getting Unstuck}{23}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Choosing the Right Forecasting Horizon}{23}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Troubleshooting High Error Metrics}{23}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Avoiding Overfitting in Forecasting Models}{23}{subsection.3.5.3}%
+\contentsline {section}{\numberline {3.6}Conclusion}{24}{section.3.6}%
+\contentsline {chapter}{\numberline {4}ARIMA and Statistical Models}{27}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Introduction}{27}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Understanding ARIMA Components}{28}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Autoregressive (AR) Component}{28}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Integration (I) Component}{28}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Moving Average (MA) Component}{28}{subsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.2.4}Combining Components: ARIMA}{29}{subsection.4.2.4}%
+\contentsline {section}{\numberline {4.3}Model Identification and Selection}{29}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Testing for Stationarity}{29}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Interpreting ACF and PACF Plots}{29}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Information Criteria for Model Selection}{30}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Automatic Model Selection}{30}{subsection.4.3.4}%
+\contentsline {section}{\numberline {4.4}Model Estimation}{30}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Maximum Likelihood Estimation}{30}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Parameter Interpretation}{31}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Confidence Intervals}{31}{subsection.4.4.3}%
+\contentsline {section}{\numberline {4.5}Model Diagnostics}{31}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Residual Analysis}{31}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Autocorrelation in Residuals}{32}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.3}Model Comparison}{32}{subsection.4.5.3}%
+\contentsline {section}{\numberline {4.6}Seasonal ARIMA (SARIMA)}{32}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Seasonal Components}{32}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Identifying Seasonal Patterns}{32}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Estimating SARIMA Models}{33}{subsection.4.6.3}%
+\contentsline {section}{\numberline {4.7}ARIMAX Models}{33}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Exogenous Variables}{33}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}Model Specification}{33}{subsection.4.7.2}%
+\contentsline {subsection}{\numberline {4.7.3}Forecasting with ARIMAX}{33}{subsection.4.7.3}%
+\contentsline {section}{\numberline {4.8}Conclusion}{33}{section.4.8}%
+\contentsline {chapter}{\numberline {5}Advanced Models - Hierarchical Time Series and Bayesian Models}{35}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Introduction}{35}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Hierarchical Time Series Models}{36}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Understanding Hierarchical Structures}{36}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}The Reconciliation Problem}{36}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Bottom-Up Forecasting}{36}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Top-Down Forecasting}{37}{subsection.5.2.4}%
+\contentsline {subsection}{\numberline {5.2.5}Optimal Reconciliation Methods}{37}{subsection.5.2.5}%
+\contentsline {subsection}{\numberline {5.2.6}Temporal Hierarchies}{38}{subsection.5.2.6}%
+\contentsline {subsection}{\numberline {5.2.7}Forecast Combination in Hierarchies}{38}{subsection.5.2.7}%
+\contentsline {section}{\numberline {5.3}Bayesian Time Series Models}{38}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Bayesian Inference Fundamentals}{38}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Bayesian Structural Time Series (BSTS)}{39}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}State Space Models}{39}{subsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.3.4}Markov Chain Monte Carlo (MCMC)}{40}{subsection.5.3.4}%
+\contentsline {subsection}{\numberline {5.3.5}Uncertainty Quantification}{40}{subsection.5.3.5}%
+\contentsline {section}{\numberline {5.4}Conclusion}{40}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Machine Learning for Time Series}{43}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Introduction}{43}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Main Content}{44}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Overview of Machine Learning Algorithms}{44}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}Feature Engineering for Machine Learning}{44}{subsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.2.3}Model Training and Tuning}{45}{subsection.6.2.3}%
+\contentsline {subsection}{\numberline {6.2.4}Forecasting with Machine Learning Models}{46}{subsection.6.2.4}%
+\contentsline {subsection}{\numberline {6.2.5}Model Evaluation and Diagnostics}{46}{subsection.6.2.5}%
+\contentsline {section}{\numberline {6.3}Conclusion}{47}{section.6.3}%
+\contentsline {chapter}{\numberline {7}Deep Learning for Time Series}{49}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Introduction}{49}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Main Content}{50}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Convolutional Neural Networks for Time Series}{51}{subsection.7.2.1}%
+\contentsline {subsection}{\numberline {7.2.2}Attention Mechanisms and Transformers}{51}{subsection.7.2.2}%
+\contentsline {subsection}{\numberline {7.2.3}Advanced Deep Learning Techniques}{52}{subsection.7.2.3}%
+\contentsline {section}{\numberline {7.3}Conclusion}{52}{section.7.3}%
+\contentsline {chapter}{\numberline {8}Ethics in Time Series Analysis}{55}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Data Privacy and Security}{56}{section.8.1}%
+\contentsline {subsection}{\numberline {8.1.1}Unique Privacy Challenges in Time Series}{56}{subsection.8.1.1}%
+\contentsline {subsection}{\numberline {8.1.2}Anonymization Techniques}{56}{subsection.8.1.2}%
+\contentsline {subsection}{\numberline {8.1.3}Differential Privacy}{56}{subsection.8.1.3}%
+\contentsline {subsection}{\numberline {8.1.4}Federated Learning}{57}{subsection.8.1.4}%
+\contentsline {subsection}{\numberline {8.1.5}Data Security Measures}{57}{subsection.8.1.5}%
+\contentsline {section}{\numberline {8.2}Bias and Fairness}{57}{section.8.2}%
+\contentsline {subsection}{\numberline {8.2.1}Types of Bias in Time Series}{58}{subsection.8.2.1}%
+\contentsline {subsection}{\numberline {8.2.2}Fairness Metrics for Time Series}{58}{subsection.8.2.2}%
+\contentsline {subsection}{\numberline {8.2.3}Algorithmic Fairness Techniques}{58}{subsection.8.2.3}%
+\contentsline {subsection}{\numberline {8.2.4}Addressing Temporal Bias}{58}{subsection.8.2.4}%
+\contentsline {section}{\numberline {8.3}Transparency and Accountability}{59}{section.8.3}%
+\contentsline {subsection}{\numberline {8.3.1}Model Interpretability}{59}{subsection.8.3.1}%
+\contentsline {subsection}{\numberline {8.3.2}Explainability Tools}{59}{subsection.8.3.2}%
+\contentsline {subsection}{\numberline {8.3.3}Ethical Model Audits}{59}{subsection.8.3.3}%
+\contentsline {subsection}{\numberline {8.3.4}Accountability Frameworks}{60}{subsection.8.3.4}%
+\contentsline {section}{\numberline {8.4}Ethical Implications of Predictive Modeling}{60}{section.8.4}%
+\contentsline {subsection}{\numberline {8.4.1}Feedback Loops}{60}{subsection.8.4.1}%
+\contentsline {subsection}{\numberline {8.4.2}Social and Economic Impacts}{60}{subsection.8.4.2}%
+\contentsline {subsection}{\numberline {8.4.3}Regulatory Compliance}{60}{subsection.8.4.3}%
+\contentsline {subsection}{\numberline {8.4.4}Ethical Guidelines}{61}{subsection.8.4.4}%
+\contentsline {section}{\numberline {8.5}Conclusion}{61}{section.8.5}%
+\contentsline {chapter}{\numberline {9}Time Series for Finance and Economics}{63}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Financial Time Series Fundamentals}{63}{section.9.1}%
+\contentsline {subsection}{\numberline {9.1.1}Characteristics of Financial Time Series}{63}{subsection.9.1.1}%
+\contentsline {subsection}{\numberline {9.1.2}Stock Prices and Market Indices}{64}{subsection.9.1.2}%
+\contentsline {subsection}{\numberline {9.1.3}Exchange Rates and Currency Markets}{64}{subsection.9.1.3}%
+\contentsline {subsection}{\numberline {9.1.4}Commodity Prices}{64}{subsection.9.1.4}%
+\contentsline {subsection}{\numberline {9.1.5}Interest Rates and Bond Yields}{64}{subsection.9.1.5}%
+\contentsline {section}{\numberline {9.2}Monte Carlo Simulation for Financial Forecasting}{64}{section.9.2}%
+\contentsline {subsection}{\numberline {9.2.1}Geometric Brownian Motion}{65}{subsection.9.2.1}%
+\contentsline {subsection}{\numberline {9.2.2}Black-Scholes Model}{65}{subsection.9.2.2}%
+\contentsline {subsection}{\numberline {9.2.3}Implementing Monte Carlo Simulations}{65}{subsection.9.2.3}%
+\contentsline {subsection}{\numberline {9.2.4}Interpreting Simulation Results}{65}{subsection.9.2.4}%
+\contentsline {section}{\numberline {9.3}Technical Analysis with Time Series}{65}{section.9.3}%
+\contentsline {subsection}{\numberline {9.3.1}Moving Averages}{66}{subsection.9.3.1}%
+\contentsline {subsection}{\numberline {9.3.2}Bollinger Bands}{66}{subsection.9.3.2}%
+\contentsline {subsection}{\numberline {9.3.3}Volatility Indicators}{66}{subsection.9.3.3}%
+\contentsline {section}{\numberline {9.4}Volatility Modeling}{66}{section.9.4}%
+\contentsline {subsection}{\numberline {9.4.1}Understanding Volatility Clustering}{66}{subsection.9.4.1}%
+\contentsline {subsection}{\numberline {9.4.2}ARCH Models}{67}{subsection.9.4.2}%
+\contentsline {subsection}{\numberline {9.4.3}GARCH Models}{67}{subsection.9.4.3}%
+\contentsline {subsection}{\numberline {9.4.4}Applications in Risk Management}{67}{subsection.9.4.4}%
+\contentsline {section}{\numberline {9.5}Economic Time Series Analysis}{67}{section.9.5}%
+\contentsline {subsection}{\numberline {9.5.1}Gross Domestic Product (GDP) Forecasting}{67}{subsection.9.5.1}%
+\contentsline {subsection}{\numberline {9.5.2}Inflation and Consumer Price Index (CPI)}{68}{subsection.9.5.2}%
+\contentsline {subsection}{\numberline {9.5.3}Employment and Unemployment Rates}{68}{subsection.9.5.3}%
+\contentsline {subsection}{\numberline {9.5.4}Economic Indicators and Business Cycles}{68}{subsection.9.5.4}%
+\contentsline {section}{\numberline {9.6}Econometric Methods for Policy Analysis}{68}{section.9.6}%
+\contentsline {subsection}{\numberline {9.6.1}Vector Autoregression (VAR)}{68}{subsection.9.6.1}%
+\contentsline {subsection}{\numberline {9.6.2}Cointegration Analysis}{69}{subsection.9.6.2}%
+\contentsline {subsection}{\numberline {9.6.3}Causal Inference in Economic Data}{69}{subsection.9.6.3}%
+\contentsline {subsection}{\numberline {9.6.4}Policy Impact Evaluation}{69}{subsection.9.6.4}%
+\contentsline {section}{\numberline {9.7}Risk Management and Portfolio Optimization}{69}{section.9.7}%
+\contentsline {subsection}{\numberline {9.7.1}Value at Risk (VaR)}{69}{subsection.9.7.1}%
+\contentsline {subsection}{\numberline {9.7.2}Expected Shortfall (CVaR)}{70}{subsection.9.7.2}%
+\contentsline {subsection}{\numberline {9.7.3}Portfolio Optimization Strategies}{70}{subsection.9.7.3}%
+\contentsline {subsection}{\numberline {9.7.4}Stress Testing and Scenario Analysis}{70}{subsection.9.7.4}%
+\contentsline {section}{\numberline {9.8}Algorithmic Trading and High-Frequency Data}{70}{section.9.8}%
+\contentsline {subsection}{\numberline {9.8.1}High-Frequency Trading}{70}{subsection.9.8.1}%
+\contentsline {section}{\numberline {9.9}Conclusion}{70}{section.9.9}%
+\contentsline {chapter}{\numberline {10}Time Series Applications in Energy and Environment}{73}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Energy Demand Forecasting}{73}{section.10.1}%
+\contentsline {subsection}{\numberline {10.1.1}Power Demand Patterns and Seasonality}{74}{subsection.10.1.1}%
+\contentsline {subsection}{\numberline {10.1.2}Load Forecasting Methods}{74}{subsection.10.1.2}%
+\contentsline {subsection}{\numberline {10.1.3}Renewable Energy Integration}{74}{subsection.10.1.3}%
+\contentsline {subsection}{\numberline {10.1.4}Grid Stability and Planning}{74}{subsection.10.1.4}%
+\contentsline {section}{\numberline {10.2}Natural Gas and Commodity Price Forecasting}{75}{section.10.2}%
+\contentsline {subsection}{\numberline {10.2.1}Natural Gas Price Dynamics}{75}{subsection.10.2.1}%
+\contentsline {subsection}{\numberline {10.2.2}Seasonal Patterns in Energy Markets}{75}{subsection.10.2.2}%
+\contentsline {subsection}{\numberline {10.2.3}Geopolitical Factors and Volatility}{75}{subsection.10.2.3}%
+\contentsline {subsection}{\numberline {10.2.4}Forecasting Methods for Energy Commodities}{75}{subsection.10.2.4}%
+\contentsline {section}{\numberline {10.3}Renewable Energy Forecasting}{76}{section.10.3}%
+\contentsline {subsection}{\numberline {10.3.1}Solar Power Production Forecasting}{76}{subsection.10.3.1}%
+\contentsline {subsection}{\numberline {10.3.2}Wind Energy Prediction}{76}{subsection.10.3.2}%
+\contentsline {subsection}{\numberline {10.3.3}Hydropower and Water Resources}{76}{subsection.10.3.3}%
+\contentsline {subsection}{\numberline {10.3.4}Integration Challenges}{76}{subsection.10.3.4}%
+\contentsline {section}{\numberline {10.4}Predictive Maintenance in Energy Systems}{77}{section.10.4}%
+\contentsline {subsection}{\numberline {10.4.1}Equipment Failure Prediction}{77}{subsection.10.4.1}%
+\contentsline {subsection}{\numberline {10.4.2}Principal Component Analysis for Anomaly Detection}{77}{subsection.10.4.2}%
+\contentsline {subsection}{\numberline {10.4.3}Condition-Based Maintenance}{77}{subsection.10.4.3}%
+\contentsline {subsection}{\numberline {10.4.4}Cost Optimization Strategies}{77}{subsection.10.4.4}%
+\contentsline {section}{\numberline {10.5}Environmental Monitoring and Climate Analysis}{78}{section.10.5}%
+\contentsline {subsection}{\numberline {10.5.1}Temperature and Weather Pattern Analysis}{78}{subsection.10.5.1}%
+\contentsline {subsection}{\numberline {10.5.2}Air Quality Monitoring}{78}{subsection.10.5.2}%
+\contentsline {subsection}{\numberline {10.5.3}Carbon Emissions Tracking}{78}{subsection.10.5.3}%
+\contentsline {subsection}{\numberline {10.5.4}Climate Change Indicators}{78}{subsection.10.5.4}%
+\contentsline {section}{\numberline {10.6}Edge Computing and Real-Time Processing}{78}{section.10.6}%
+\contentsline {subsection}{\numberline {10.6.1}Real-Time Data Collection}{79}{subsection.10.6.1}%
+\contentsline {subsection}{\numberline {10.6.2}Edge Analytics for Energy Systems}{79}{subsection.10.6.2}%
+\contentsline {subsection}{\numberline {10.6.3}IoT Sensors and Time Series Data}{79}{subsection.10.6.3}%
+\contentsline {subsection}{\numberline {10.6.4}Distributed Processing Architectures}{79}{subsection.10.6.4}%
+\contentsline {section}{\numberline {10.7}Generative AI for Environmental Analysis}{79}{section.10.7}%
+\contentsline {subsection}{\numberline {10.7.1}AI-Assisted Trend Assessment}{79}{subsection.10.7.1}%
+\contentsline {subsection}{\numberline {10.7.2}Pattern Recognition in Climate Data}{80}{subsection.10.7.2}%
+\contentsline {subsection}{\numberline {10.7.3}Predictive Modeling with Generative AI}{80}{subsection.10.7.3}%
+\contentsline {subsection}{\numberline {10.7.4}Applications in Geoscience}{80}{subsection.10.7.4}%
+\contentsline {section}{\numberline {10.8}Conclusion}{80}{section.10.8}%
+\contentsline {chapter}{\numberline {11}Time Series Applications in Earth and Environmental Science}{83}{chapter.11}%
+\contentsline {section}{\numberline {11.1}Introduction}{83}{section.11.1}%
+\contentsline {section}{\numberline {11.2}Wildfire Analysis and Prediction}{84}{section.11.2}%
+\contentsline {subsection}{\numberline {11.2.1}Fire Behavior Patterns}{84}{subsection.11.2.1}%
+\contentsline {subsection}{\numberline {11.2.2}Weather and Climate Factors}{84}{subsection.11.2.2}%
+\contentsline {subsection}{\numberline {11.2.3}Time Series Analysis of Fire Events}{84}{subsection.11.2.3}%
+\contentsline {subsection}{\numberline {11.2.4}Early Warning Systems}{84}{subsection.11.2.4}%
+\contentsline {section}{\numberline {11.3}Flood Analysis and Stream Discharge}{84}{section.11.3}%
+\contentsline {subsection}{\numberline {11.3.1}Stream Discharge Patterns}{85}{subsection.11.3.1}%
+\contentsline {subsection}{\numberline {11.3.2}Flood Event Detection}{85}{subsection.11.3.2}%
+\contentsline {subsection}{\numberline {11.3.3}Forecasting Stream Discharge}{85}{subsection.11.3.3}%
+\contentsline {subsection}{\numberline {11.3.4}Case Study: 2013 Colorado Flood}{85}{subsection.11.3.4}%
+\contentsline {section}{\numberline {11.4}Climate Modeling and Trend Analysis}{85}{section.11.4}%
+\contentsline {subsection}{\numberline {11.4.1}Temperature Trends}{86}{subsection.11.4.1}%
+\contentsline {subsection}{\numberline {11.4.2}Precipitation Patterns}{86}{subsection.11.4.2}%
+\contentsline {subsection}{\numberline {11.4.3}Climate Change Indicators}{86}{subsection.11.4.3}%
+\contentsline {subsection}{\numberline {11.4.4}Long-Term Forecasting}{86}{subsection.11.4.4}%
+\contentsline {section}{\numberline {11.5}Earth Observation and Remote Sensing}{86}{section.11.5}%
+\contentsline {subsection}{\numberline {11.5.1}Satellite Time Series Data}{86}{subsection.11.5.1}%
+\contentsline {subsection}{\numberline {11.5.2}Land Use and Land Cover Change}{87}{subsection.11.5.2}%
+\contentsline {subsection}{\numberline {11.5.3}Vegetation Monitoring}{87}{subsection.11.5.3}%
+\contentsline {subsection}{\numberline {11.5.4}Applications of Generative AI}{87}{subsection.11.5.4}%
+\contentsline {section}{\numberline {11.6}Seismic and Geologic Time Series}{87}{section.11.6}%
+\contentsline {subsection}{\numberline {11.6.1}Earthquake Detection and Analysis}{87}{subsection.11.6.1}%
+\contentsline {subsection}{\numberline {11.6.2}Seismic Pattern Recognition}{87}{subsection.11.6.2}%
+\contentsline {subsection}{\numberline {11.6.3}Geological Process Modeling}{88}{subsection.11.6.3}%
+\contentsline {subsection}{\numberline {11.6.4}Resource Exploration}{88}{subsection.11.6.4}%
+\contentsline {section}{\numberline {11.7}Environmental Monitoring Systems}{88}{section.11.7}%
+\contentsline {subsection}{\numberline {11.7.1}Air Quality Time Series}{88}{subsection.11.7.1}%
+\contentsline {subsection}{\numberline {11.7.2}Water Quality Monitoring}{88}{subsection.11.7.2}%
+\contentsline {subsection}{\numberline {11.7.3}Ecosystem Health Indicators}{89}{subsection.11.7.3}%
+\contentsline {subsection}{\numberline {11.7.4}Biodiversity Tracking}{89}{subsection.11.7.4}%
+\contentsline {section}{\numberline {11.8}Conclusion}{89}{section.11.8}%
+\contentsline {chapter}{\numberline {12}Time Series Applications in Music and Audio Analysis}{91}{chapter.12}%
+\contentsline {section}{\numberline {12.1}Introduction}{91}{section.12.1}%
+\contentsline {section}{\numberline {12.2}Fundamentals of Audio Time Series}{91}{section.12.2}%
+\contentsline {subsection}{\numberline {12.2.1}Digital Audio Representation}{92}{subsection.12.2.1}%
+\contentsline {subsection}{\numberline {12.2.2}Sampling and Time Domain Analysis}{92}{subsection.12.2.2}%
+\contentsline {subsection}{\numberline {12.2.3}Frequency Domain Analysis}{92}{subsection.12.2.3}%
+\contentsline {subsection}{\numberline {12.2.4}Audio Features and Characteristics}{92}{subsection.12.2.4}%
+\contentsline {section}{\numberline {12.3}Pitch and Melody Analysis}{92}{section.12.3}%
+\contentsline {subsection}{\numberline {12.3.1}Pitch Detection and Tracking}{92}{subsection.12.3.1}%
+\contentsline {subsection}{\numberline {12.3.2}Melodic Contour Analysis}{93}{subsection.12.3.2}%
+\contentsline {subsection}{\numberline {12.3.3}Harmonic Analysis}{93}{subsection.12.3.3}%
+\contentsline {subsection}{\numberline {12.3.4}Tonal Center Identification}{93}{subsection.12.3.4}%
+\contentsline {section}{\numberline {12.4}Rhythm and Tempo Analysis}{93}{section.12.4}%
+\contentsline {subsection}{\numberline {12.4.1}Beat Detection and Tracking}{93}{subsection.12.4.1}%
+\contentsline {subsection}{\numberline {12.4.2}Tempo Estimation}{93}{subsection.12.4.2}%
+\contentsline {subsection}{\numberline {12.4.3}Rhythm Pattern Recognition}{94}{subsection.12.4.3}%
+\contentsline {subsection}{\numberline {12.4.4}Meter and Time Signature Detection}{94}{subsection.12.4.4}%
+\contentsline {section}{\numberline {12.5}Musical Performance Analysis}{94}{section.12.5}%
+\contentsline {subsection}{\numberline {12.5.1}Performance Timing and Expression}{94}{subsection.12.5.1}%
+\contentsline {subsection}{\numberline {12.5.2}Dynamic Analysis}{94}{subsection.12.5.2}%
+\contentsline {subsection}{\numberline {12.5.3}Articulation and Phrasing}{94}{subsection.12.5.3}%
+\contentsline {subsection}{\numberline {12.5.4}Comparative Performance Analysis}{95}{subsection.12.5.4}%
+\contentsline {section}{\numberline {12.6}Algorithmic Composition and Generative Music}{95}{section.12.6}%
+\contentsline {subsection}{\numberline {12.6.1}Markov Models for Music Generation}{95}{subsection.12.6.1}%
+\contentsline {subsection}{\numberline {12.6.2}Recurrent Neural Networks for Composition}{95}{subsection.12.6.2}%
+\contentsline {subsection}{\numberline {12.6.3}Style Transfer and Imitation}{95}{subsection.12.6.3}%
+\contentsline {subsection}{\numberline {12.6.4}Interactive Music Systems}{95}{subsection.12.6.4}%
+\contentsline {section}{\numberline {12.7}Music Information Retrieval}{96}{section.12.7}%
+\contentsline {subsection}{\numberline {12.7.1}Music Similarity and Recommendation}{96}{subsection.12.7.1}%
+\contentsline {subsection}{\numberline {12.7.2}Genre Classification}{96}{subsection.12.7.2}%
+\contentsline {subsection}{\numberline {12.7.3}Mood and Emotion Recognition}{96}{subsection.12.7.3}%
+\contentsline {subsection}{\numberline {12.7.4}Music Structure Analysis}{96}{subsection.12.7.4}%
+\contentsline {section}{\numberline {12.8}Audio Processing and Enhancement}{96}{section.12.8}%
+\contentsline {subsection}{\numberline {12.8.1}Noise Reduction}{96}{subsection.12.8.1}%
+\contentsline {subsection}{\numberline {12.8.2}Audio Restoration}{97}{subsection.12.8.2}%
+\contentsline {subsection}{\numberline {12.8.3}Time-Scale Modification}{97}{subsection.12.8.3}%
+\contentsline {subsection}{\numberline {12.8.4}Pitch Shifting}{97}{subsection.12.8.4}%
+\contentsline {section}{\numberline {12.9}Conclusion}{97}{section.12.9}%
+\contentsline {chapter}{\numberline {13}Time Series Applications in Digital Humanities}{99}{chapter.13}%
+\contentsline {section}{\numberline {13.1}Introduction}{99}{section.13.1}%
+\contentsline {section}{\numberline {13.2}Time Series Data in Digital Humanities}{99}{section.13.2}%
+\contentsline {subsection}{\numberline {13.2.1}Characteristics of Humanities Time Series}{100}{subsection.13.2.1}%
+\contentsline {subsection}{\numberline {13.2.2}Types of Historical and Cultural Data}{100}{subsection.13.2.2}%
+\contentsline {subsection}{\numberline {13.2.3}Data Collection and Sources}{100}{subsection.13.2.3}%
+\contentsline {subsection}{\numberline {13.2.4}Challenges in Humanities Data}{100}{subsection.13.2.4}%
+\contentsline {section}{\numberline {13.3}Linguistic Evolution and Language Change}{100}{section.13.3}%
+\contentsline {subsection}{\numberline {13.3.1}Word Frequency Analysis Over Time}{100}{subsection.13.3.1}%
+\contentsline {subsection}{\numberline {13.3.2}Semantic Change Detection}{101}{subsection.13.3.2}%
+\contentsline {subsection}{\numberline {13.3.3}Google Books Ngram Viewer}{101}{subsection.13.3.3}%
+\contentsline {subsection}{\numberline {13.3.4}Time-Aware Word Embeddings}{101}{subsection.13.3.4}%
+\contentsline {section}{\numberline {13.4}Cultural Trends and Sentiment Analysis}{101}{section.13.4}%
+\contentsline {subsection}{\numberline {13.4.1}Sentiment Analysis Over Time}{101}{subsection.13.4.1}%
+\contentsline {subsection}{\numberline {13.4.2}Cultural Movement Tracking}{101}{subsection.13.4.2}%
+\contentsline {subsection}{\numberline {13.4.3}Public Opinion Evolution}{102}{subsection.13.4.3}%
+\contentsline {subsection}{\numberline {13.4.4}Media Narrative Analysis}{102}{subsection.13.4.4}%
+\contentsline {section}{\numberline {13.5}Historical Event Analysis}{102}{section.13.5}%
+\contentsline {subsection}{\numberline {13.5.1}Event Detection in Historical Texts}{102}{subsection.13.5.1}%
+\contentsline {subsection}{\numberline {13.5.2}Temporal Patterns in Historical Events}{102}{subsection.13.5.2}%
+\contentsline {subsection}{\numberline {13.5.3}Causal Analysis in History}{102}{subsection.13.5.3}%
+\contentsline {subsection}{\numberline {13.5.4}Periodization and Era Identification}{103}{subsection.13.5.4}%
+\contentsline {section}{\numberline {13.6}Text Analysis and Literary Studies}{103}{section.13.6}%
+\contentsline {subsection}{\numberline {13.6.1}Stylistic Evolution}{103}{subsection.13.6.1}%
+\contentsline {subsection}{\numberline {13.6.2}Author Attribution Over Time}{103}{subsection.13.6.2}%
+\contentsline {subsection}{\numberline {13.6.3}Genre Development}{103}{subsection.13.6.3}%
+\contentsline {subsection}{\numberline {13.6.4}Literary Movement Analysis}{103}{subsection.13.6.4}%
+\contentsline {section}{\numberline {13.7}Archives and Historical Collections}{104}{section.13.7}%
+\contentsline {subsection}{\numberline {13.7.1}Chronicling America and Newspaper Archives}{104}{subsection.13.7.1}%
+\contentsline {subsection}{\numberline {13.7.2}Bias Measurement in Digitized Collections}{104}{subsection.13.7.2}%
+\contentsline {subsection}{\numberline {13.7.3}Representativeness Analysis}{104}{subsection.13.7.3}%
+\contentsline {subsection}{\numberline {13.7.4}Temporal Coverage Assessment}{104}{subsection.13.7.4}%
+\contentsline {section}{\numberline {13.8}Visualization and Communication}{104}{section.13.8}%
+\contentsline {subsection}{\numberline {13.8.1}Time Series Visualization for Humanities}{105}{subsection.13.8.1}%
+\contentsline {subsection}{\numberline {13.8.2}Narrative Construction from Data}{105}{subsection.13.8.2}%
+\contentsline {subsection}{\numberline {13.8.3}Interactive Timelines}{105}{subsection.13.8.3}%
+\contentsline {subsection}{\numberline {13.8.4}Communicating Historical Insights}{105}{subsection.13.8.4}%
+\contentsline {section}{\numberline {13.9}Conclusion}{105}{section.13.9}%
+\contentsline {chapter}{\numberline {14}Time Series Deployment and Infrastructure}{107}{chapter.14}%
+\contentsline {section}{\numberline {14.1}Introduction}{107}{section.14.1}%
+\contentsline {section}{\numberline {14.2}Time Series Databases}{107}{section.14.2}%
+\contentsline {subsection}{\numberline {14.2.1}Characteristics of Time Series Data Storage}{108}{subsection.14.2.1}%
+\contentsline {subsection}{\numberline {14.2.2}Popular Time Series Databases}{108}{subsection.14.2.2}%
+\contentsline {subsection}{\numberline {14.2.3}Data Modeling for Time Series}{108}{subsection.14.2.3}%
+\contentsline {subsection}{\numberline {14.2.4}Query Optimization}{108}{subsection.14.2.4}%
+\contentsline {section}{\numberline {14.3}Streaming Time Series Processing}{108}{section.14.3}%
+\contentsline {subsection}{\numberline {14.3.1}Real-Time Data Ingestion}{108}{subsection.14.3.1}%
+\contentsline {subsection}{\numberline {14.3.2}Apache Kafka for Time Series}{109}{subsection.14.3.2}%
+\contentsline {subsection}{\numberline {14.3.3}Apache Flink for Stream Processing}{109}{subsection.14.3.3}%
+\contentsline {subsection}{\numberline {14.3.4}Event Time and Watermarks}{109}{subsection.14.3.4}%
+\contentsline {section}{\numberline {14.4}Model Deployment Strategies}{109}{section.14.4}%
+\contentsline {subsection}{\numberline {14.4.1}Containerization with Docker}{109}{subsection.14.4.1}%
+\contentsline {subsection}{\numberline {14.4.2}Model Serving Architectures}{109}{subsection.14.4.2}%
+\contentsline {subsection}{\numberline {14.4.3}RESTful APIs and HTTPS Endpoints}{109}{subsection.14.4.3}%
+\contentsline {subsection}{\numberline {14.4.4}Microservices for Time Series}{110}{subsection.14.4.4}%
+\contentsline {section}{\numberline {14.5}Scalability and Performance}{110}{section.14.5}%
+\contentsline {subsection}{\numberline {14.5.1}Horizontal Scaling}{110}{subsection.14.5.1}%
+\contentsline {subsection}{\numberline {14.5.2}Load Balancing}{110}{subsection.14.5.2}%
+\contentsline {subsection}{\numberline {14.5.3}Caching Strategies}{110}{subsection.14.5.3}%
+\contentsline {subsection}{\numberline {14.5.4}Performance Optimization}{110}{subsection.14.5.4}%
+\contentsline {section}{\numberline {14.6}Monitoring and Observability}{110}{section.14.6}%
+\contentsline {subsection}{\numberline {14.6.1}Model Performance Monitoring}{111}{subsection.14.6.1}%
+\contentsline {subsection}{\numberline {14.6.2}System Health Monitoring}{111}{subsection.14.6.2}%
+\contentsline {subsection}{\numberline {14.6.3}Alerting and Anomaly Detection}{111}{subsection.14.6.3}%
+\contentsline {subsection}{\numberline {14.6.4}Logging and Debugging}{111}{subsection.14.6.4}%
+\contentsline {section}{\numberline {14.7}Reliability and Fault Tolerance}{111}{section.14.7}%
+\contentsline {subsection}{\numberline {14.7.1}High Availability Architectures}{111}{subsection.14.7.1}%
+\contentsline {subsection}{\numberline {14.7.2}Data Replication and Backup}{111}{subsection.14.7.2}%
+\contentsline {subsection}{\numberline {14.7.3}Failure Recovery}{112}{subsection.14.7.3}%
+\contentsline {subsection}{\numberline {14.7.4}Disaster Recovery Planning}{112}{subsection.14.7.4}%
+\contentsline {section}{\numberline {14.8}Security and Compliance}{112}{section.14.8}%
+\contentsline {subsection}{\numberline {14.8.1}Data Security in Time Series Systems}{112}{subsection.14.8.1}%
+\contentsline {subsection}{\numberline {14.8.2}API Security and Authentication}{112}{subsection.14.8.2}%
+\contentsline {subsection}{\numberline {14.8.3}Compliance Requirements}{112}{subsection.14.8.3}%
+\contentsline {subsection}{\numberline {14.8.4}Privacy Considerations}{112}{subsection.14.8.4}%
+\contentsline {section}{\numberline {14.9}Conclusion}{113}{section.14.9}%
+\contentsline {chapter}{\numberline {15}Causal Inference in Time Series}{115}{chapter.15}%
+\contentsline {section}{\numberline {15.1}Introduction}{115}{section.15.1}%
+\contentsline {section}{\numberline {15.2}Granger Causality}{115}{section.15.2}%
+\contentsline {subsection}{\numberline {15.2.1}Definition and Interpretation}{115}{subsection.15.2.1}%
+\contentsline {subsection}{\numberline {15.2.2}Testing Procedures}{116}{subsection.15.2.2}%
+\contentsline {subsection}{\numberline {15.2.3}Limitations and Criticisms}{116}{subsection.15.2.3}%
+\contentsline {subsection}{\numberline {15.2.4}Applications in Economics}{116}{subsection.15.2.4}%
+\contentsline {section}{\numberline {15.3}Vector Autoregression and Structural VAR}{116}{section.15.3}%
+\contentsline {subsection}{\numberline {15.3.1}VAR Models for Causal Analysis}{116}{subsection.15.3.1}%
+\contentsline {subsection}{\numberline {15.3.2}Structural Restrictions}{116}{subsection.15.3.2}%
+\contentsline {subsection}{\numberline {15.3.3}Impulse Response Functions}{117}{subsection.15.3.3}%
+\contentsline {subsection}{\numberline {15.3.4}Forecast Error Variance Decomposition}{117}{subsection.15.3.4}%
+\contentsline {section}{\numberline {15.4}Local Projections}{117}{section.15.4}%
+\contentsline {subsection}{\numberline {15.4.1}Flexible Alternative to VAR}{117}{subsection.15.4.1}%
+\contentsline {subsection}{\numberline {15.4.2}Estimating Impulse Responses}{117}{subsection.15.4.2}%
+\contentsline {subsection}{\numberline {15.4.3}Advantages and Applications}{117}{subsection.15.4.3}%
+\contentsline {section}{\numberline {15.5}Difference-in-Differences}{117}{section.15.5}%
+\contentsline {subsection}{\numberline {15.5.1}Basic Framework}{118}{subsection.15.5.1}%
+\contentsline {subsection}{\numberline {15.5.2}Time Series Extensions}{118}{subsection.15.5.2}%
+\contentsline {subsection}{\numberline {15.5.3}Applications in Policy Evaluation}{118}{subsection.15.5.3}%
+\contentsline {section}{\numberline {15.6}Regression Discontinuity Design}{118}{section.15.6}%
+\contentsline {subsection}{\numberline {15.6.1}Sharp and Fuzzy RDD}{118}{subsection.15.6.1}%
+\contentsline {subsection}{\numberline {15.6.2}Time Series Considerations}{118}{subsection.15.6.2}%
+\contentsline {subsection}{\numberline {15.6.3}Applications}{118}{subsection.15.6.3}%
+\contentsline {section}{\numberline {15.7}Instrumental Variables}{119}{section.15.7}%
+\contentsline {subsection}{\numberline {15.7.1}Addressing Endogeneity}{119}{subsection.15.7.1}%
+\contentsline {subsection}{\numberline {15.7.2}Time Series Applications}{119}{subsection.15.7.2}%
+\contentsline {subsection}{\numberline {15.7.3}Weak Instruments Problem}{119}{subsection.15.7.3}%
+\contentsline {section}{\numberline {15.8}Synthetic Control Method}{119}{section.15.8}%
+\contentsline {subsection}{\numberline {15.8.1}Constructing Counterfactuals}{119}{subsection.15.8.1}%
+\contentsline {subsection}{\numberline {15.8.2}Applications in Policy Analysis}{119}{subsection.15.8.2}%
+\contentsline {section}{\numberline {15.9}Conclusion}{120}{section.15.9}%
+\contentsline {chapter}{\numberline {16}Modern Forecasting Frameworks: The Nixtla Suite}{121}{chapter.16}%
+\contentsline {section}{\numberline {16.1}Introduction}{121}{section.16.1}%
+\contentsline {section}{\numberline {16.2}The Nixtla Ecosystem}{121}{section.16.2}%
+\contentsline {subsection}{\numberline {16.2.1}Introduction to the Nixtla Ecosystem}{121}{subsection.16.2.1}%
+\contentsline {subsection}{\numberline {16.2.2}StatsForecast: Statistical Forecasting}{122}{subsection.16.2.2}%
+\contentsline {subsection}{\numberline {16.2.3}MLForecast: Machine Learning for Time Series}{122}{subsection.16.2.3}%
+\contentsline {subsection}{\numberline {16.2.4}NeuralForecast: Deep Learning for Time Series}{123}{subsection.16.2.4}%
+\contentsline {subsection}{\numberline {16.2.5}HierarchicalForecast: Coherent Hierarchical Forecasting}{123}{subsection.16.2.5}%
+\contentsline {subsection}{\numberline {16.2.6}Parallel Computing and Scalability}{123}{subsection.16.2.6}%
+\contentsline {subsection}{\numberline {16.2.7}Choosing the Right Tool}{124}{subsection.16.2.7}%
+\contentsline {section}{\numberline {16.3}Conclusion}{124}{section.16.3}%
+\contentsline {chapter}{\numberline {17}Time Series Similarity and Clustering}{125}{chapter.17}%
+\contentsline {section}{\numberline {17.1}Introduction}{125}{section.17.1}%
+\contentsline {section}{\numberline {17.2}Time Series Distance Metrics}{125}{section.17.2}%
+\contentsline {subsection}{\numberline {17.2.1}Introduction to Time Series Distance Metrics}{125}{subsection.17.2.1}%
+\contentsline {subsection}{\numberline {17.2.2}Dynamic Time Warping (DTW)}{126}{subsection.17.2.2}%
+\contentsline {subsection}{\numberline {17.2.3}Time Series Preprocessing}{126}{subsection.17.2.3}%
+\contentsline {subsection}{\numberline {17.2.4}Time Series Clustering}{126}{subsection.17.2.4}%
+\contentsline {subsection}{\numberline {17.2.5}Time Series Classification}{126}{subsection.17.2.5}%
+\contentsline {subsection}{\numberline {17.2.6}Feature Extraction: Symbolic Aggregate Approximation (SAX)}{127}{subsection.17.2.6}%
+\contentsline {subsection}{\numberline {17.2.7}Practical Applications}{127}{subsection.17.2.7}%
+\contentsline {subsection}{\numberline {17.2.8}Best Practices}{127}{subsection.17.2.8}%
+\contentsline {section}{\numberline {17.3}Conclusion}{128}{section.17.3}%
+\contentsline {chapter}{\numberline {18}Uncertainty Quantification in Forecasting}{129}{chapter.18}%
+\contentsline {section}{\numberline {18.1}Introduction}{129}{section.18.1}%
+\contentsline {section}{\numberline {18.2}Forecast Intervals}{129}{section.18.2}%
+\contentsline {subsection}{\numberline {18.2.1}Types of Forecast Intervals}{129}{subsection.18.2.1}%
+\contentsline {subsection}{\numberline {18.2.2}Confidence Intervals for ARIMA Models}{130}{subsection.18.2.2}%
+\contentsline {subsection}{\numberline {18.2.3}Bootstrap Methods for Uncertainty Quantification}{130}{subsection.18.2.3}%
+\contentsline {subsection}{\numberline {18.2.4}Comparing Methods}{130}{subsection.18.2.4}%
+\contentsline {subsection}{\numberline {18.2.5}Evaluating Forecast Intervals}{130}{subsection.18.2.5}%
+\contentsline {subsection}{\numberline {18.2.6}Best Practices}{131}{subsection.18.2.6}%
+\contentsline {subsection}{\numberline {18.2.7}Real-World Applications}{131}{subsection.18.2.7}%
+\contentsline {section}{\numberline {18.3}Conclusion}{131}{section.18.3}%
+\contentsline {chapter}{\numberline {19}Advanced Financial Time Series Analysis}{133}{chapter.19}%
+\contentsline {section}{\numberline {19.1}Introduction}{133}{section.19.1}%
+\contentsline {section}{\numberline {19.2}Cointegration Analysis}{133}{section.19.2}%
+\contentsline {subsection}{\numberline {19.2.1}Understanding Cointegration}{133}{subsection.19.2.1}%
+\contentsline {subsection}{\numberline {19.2.2}Testing for Cointegration}{134}{subsection.19.2.2}%
+\contentsline {subsection}{\numberline {19.2.3}Error Correction Models}{134}{subsection.19.2.3}%
+\contentsline {section}{\numberline {19.3}Vector Autoregression (VAR)}{134}{section.19.3}%
+\contentsline {subsection}{\numberline {19.3.1}VAR Model Specification}{134}{subsection.19.3.1}%
+\contentsline {subsection}{\numberline {19.3.2}Granger Causality in VAR}{135}{subsection.19.3.2}%
+\contentsline {subsection}{\numberline {19.3.3}Impulse Response Functions}{135}{subsection.19.3.3}%
+\contentsline {subsection}{\numberline {19.3.4}Forecast Error Variance Decomposition}{135}{subsection.19.3.4}%
+\contentsline {section}{\numberline {19.4}Copula Modeling}{135}{section.19.4}%
+\contentsline {subsection}{\numberline {19.4.1}Understanding Copulas}{135}{subsection.19.4.1}%
+\contentsline {subsection}{\numberline {19.4.2}Types of Copulas}{136}{subsection.19.4.2}%
+\contentsline {subsection}{\numberline {19.4.3}Applications of Copulas}{136}{subsection.19.4.3}%
+\contentsline {subsection}{\numberline {19.4.4}Working with FRED Economic Data}{136}{subsection.19.4.4}%
+\contentsline {section}{\numberline {19.5}Best Practices and Common Pitfalls}{136}{section.19.5}%
+\contentsline {subsection}{\numberline {19.5.1}Data Preprocessing}{136}{subsection.19.5.1}%
+\contentsline {subsection}{\numberline {19.5.2}Model Selection}{137}{subsection.19.5.2}%
+\contentsline {subsection}{\numberline {19.5.3}Interpretation}{137}{subsection.19.5.3}%
+\contentsline {subsection}{\numberline {19.5.4}Common Pitfalls}{137}{subsection.19.5.4}%
+\contentsline {section}{\numberline {19.6}Conclusion}{137}{section.19.6}%

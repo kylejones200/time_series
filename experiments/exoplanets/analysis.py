@@ -31,6 +31,7 @@ from sklearn.preprocessing import StandardScaler
 # Configuration helpers
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Paths:
     repo_root: Path
@@ -55,6 +56,7 @@ def build_paths(repo_root: Optional[Path] = None) -> Paths:
 # Data loading and inspection
 # ---------------------------------------------------------------------------
 
+
 def load_dataset(csv_path: Path) -> pd.DataFrame:
     if not csv_path.exists():
         raise FileNotFoundError(
@@ -71,7 +73,7 @@ def summarize_dataset(df: pd.DataFrame, name: str) -> None:
     print(f"\n{name} summary")
     print("-" * (len(name) + 8))
     print(f"Shape: {df.shape}")
-    print("Label distribution:\n" + str(df['LABEL'].value_counts()))
+    print("Label distribution:\n" + str(df["LABEL"].value_counts()))
     print(f"First five flux columns statistics:\n{df[flux_cols[:5]].describe()}\n")
 
 
@@ -79,51 +81,50 @@ def summarize_dataset(df: pd.DataFrame, name: str) -> None:
 # Time-series conversion and resampling
 # ---------------------------------------------------------------------------
 
+
 def convert_to_weekly_timeseries(df: pd.DataFrame, output_dir: Path) -> pd.DataFrame:
     flux_cols = [c for c in df.columns if c != "LABEL"]
 
     # Add deterministic UUIDs for reproducibility
     uuids = [f"star_{i:05d}" for i in range(len(df))]
     df_ts = df.copy()
-    df_ts['uuid'] = uuids
+    df_ts["uuid"] = uuids
 
     scaler = StandardScaler()
     scaled = scaler.fit_transform(df_ts[flux_cols])
     df_scaled = pd.DataFrame(scaled, columns=flux_cols)
-    df_scaled['uuid'] = uuids
+    df_scaled["uuid"] = uuids
 
-    df_long = df_scaled.melt(id_vars='uuid', var_name='flux_index', value_name='flux')
-    df_long['flux_index'] = (
-        df_long['flux_index']
-        .str.replace('FLUX.', '', regex=False)
-        .astype(int)
+    df_long = df_scaled.melt(id_vars="uuid", var_name="flux_index", value_name="flux")
+    df_long["flux_index"] = (
+        df_long["flux_index"].str.replace("FLUX.", "", regex=False).astype(int)
     )
 
     # Create artificial daily timeline
-    start_date = pd.Timestamp('2000-01-01')
-    df_long['date'] = start_date + pd.to_timedelta(df_long['flux_index'], unit='D')
+    start_date = pd.Timestamp("2000-01-01")
+    df_long["date"] = start_date + pd.to_timedelta(df_long["flux_index"], unit="D")
 
-    df_pivot = df_long.pivot(index='date', columns='uuid', values='flux').sort_index()
-    df_weekly = df_pivot.resample('W').mean()
+    df_pivot = df_long.pivot(index="date", columns="uuid", values="flux").sort_index()
+    df_weekly = df_pivot.resample("W").mean()
 
     df_weekly_export = df_weekly.T
-    df_weekly_export['LABEL'] = df['LABEL'].values
+    df_weekly_export["LABEL"] = df["LABEL"].values
 
-    output_path = output_dir / 'exoplanet_weekly_timeseries.csv'
+    output_path = output_dir / "exoplanet_weekly_timeseries.csv"
     df_weekly_export.to_csv(output_path)
     print(f"✓ Weekly time series exported -> {output_path}")
 
     # Create illustrative plot for the first few stars
     sample_uuids = uuids[:5]
-    df_sample = df_long[df_long['uuid'].isin(sample_uuids)]
+    df_sample = df_long[df_long["uuid"].isin(sample_uuids)]
 
     plt.figure(figsize=(14, 6))
-    sns.lineplot(data=df_sample, x='flux_index', y='flux', hue='uuid')
-    plt.title('Sample light curves (standardised)', fontsize=14)
-    plt.xlabel('Flux measurement index')
-    plt.ylabel('Scaled flux')
+    sns.lineplot(data=df_sample, x="flux_index", y="flux", hue="uuid")
+    plt.title("Sample light curves (standardised)", fontsize=14)
+    plt.xlabel("Flux measurement index")
+    plt.ylabel("Scaled flux")
     plt.tight_layout()
-    plot_path = output_dir / 'sample_light_curves.png'
+    plot_path = output_dir / "sample_light_curves.png"
     plt.savefig(plot_path, dpi=200)
     plt.close()
     print(f"✓ Sample light curve plot saved -> {plot_path}")
@@ -135,8 +136,9 @@ def convert_to_weekly_timeseries(df: pd.DataFrame, output_dir: Path) -> pd.DataF
 # PCA pipeline
 # ---------------------------------------------------------------------------
 
+
 def perform_pca(df: pd.DataFrame, n_components: int, output_dir: Path) -> pd.DataFrame:
-    flux_cols = [c for c in df.columns if c != 'LABEL']
+    flux_cols = [c for c in df.columns if c != "LABEL"]
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(df[flux_cols])
@@ -146,12 +148,11 @@ def perform_pca(df: pd.DataFrame, n_components: int, output_dir: Path) -> pd.Dat
     explained = pca.explained_variance_ratio_.sum()
 
     pca_df = pd.DataFrame(
-        components,
-        columns=[f"PC{i+1}" for i in range(components.shape[1])]
+        components, columns=[f"PC{i+1}" for i in range(components.shape[1])]
     )
-    pca_df['LABEL'] = df['LABEL'].values
+    pca_df["LABEL"] = df["LABEL"].values
 
-    output_path = output_dir / 'exoplanet_pca_components.csv'
+    output_path = output_dir / "exoplanet_pca_components.csv"
     pca_df.to_csv(output_path, index=False)
     print(f"✓ PCA components exported -> {output_path}")
     print(f"  Total variance explained: {explained:.4f}")
@@ -162,6 +163,7 @@ def perform_pca(df: pd.DataFrame, n_components: int, output_dir: Path) -> pd.Dat
 # ---------------------------------------------------------------------------
 # Main orchestration
 # ---------------------------------------------------------------------------
+
 
 def run(paths: Paths, pca_components: int = 200) -> None:
     print("=== Exoplanet analysis experiments ===")

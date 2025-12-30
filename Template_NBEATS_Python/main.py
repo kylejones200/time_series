@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
@@ -90,7 +91,9 @@ def build_model(config: Config) -> NBEATSModel:
     )
 
 
-def rolling_origin_nbeats(series: TimeSeries, config: Config) -> Tuple[float, TimeSeries, TimeSeries]:
+def rolling_origin_nbeats(
+    series: TimeSeries, config: Config
+) -> Tuple[float, TimeSeries, TimeSeries]:
     values = series.to_series()
     idx = np.arange(len(values))
     splitter = TimeSeriesSplit(n_splits=config.n_splits)
@@ -102,14 +105,18 @@ def rolling_origin_nbeats(series: TimeSeries, config: Config) -> Tuple[float, Ti
         end = train_idx[-1]
         train_ts = series.drop_after(series.time_index[end])
         future = series.split_after(series.time_index[end])[1]
-        horizon_series = future.drop_after(future.time_index[min(config.horizon - 1, len(future) - 1)])
+        horizon_series = future.drop_after(
+            future.time_index[min(config.horizon - 1, len(future) - 1)]
+        )
         if len(horizon_series) == 0:
             continue
 
         model = build_model(config)
         model.fit(train_ts)
         forecast = model.predict(len(horizon_series))
-        mae = mean_absolute_error(horizon_series.values().ravel(), forecast.values().ravel())
+        mae = mean_absolute_error(
+            horizon_series.values().ravel(), forecast.values().ravel()
+        )
         maes.append(mae)
         last_true = horizon_series
         last_pred = forecast
@@ -137,6 +144,9 @@ def plot_tufte(series: TimeSeries, config: Config, forecast: TimeSeries) -> None
     ax.plot(forecast.time_index, forecast.values().ravel(), color="#000000", lw=2.0)
 
     from matplotlib.ticker import MaxNLocator, StrMethodFormatter
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
     ax.yaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
@@ -180,7 +190,7 @@ def plot_tufte(series: TimeSeries, config: Config, forecast: TimeSeries) -> None
     )
 
     fig.tight_layout()
-    fig.savefig(config.output_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.output_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ N-BEATS plot saved -> {config.output_plot}")
 
@@ -195,4 +205,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

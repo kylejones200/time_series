@@ -89,9 +89,16 @@ def build_moirai(config: Config) -> MoiraiForecast:
     return forecast_model
 
 
-def generate_forecast(model: MoiraiForecast, train_series: pd.Series, config: Config) -> np.ndarray:
+def generate_forecast(
+    model: MoiraiForecast, train_series: pd.Series, config: Config
+) -> np.ndarray:
     dataset = ListDataset(
-        [{"target": train_series.values.astype(np.float32), "start": train_series.index[0]}],
+        [
+            {
+                "target": train_series.values.astype(np.float32),
+                "start": train_series.index[0],
+            }
+        ],
         freq=config.freq,
     )
     predictor = model.create_predictor(batch_size=1, device="cpu")
@@ -111,16 +118,24 @@ def generate_forecast(model: MoiraiForecast, train_series: pd.Series, config: Co
     return np.asarray(forecast_array).reshape(-1)
 
 
-def compute_metrics(actual: pd.Series, forecast_values: np.ndarray, config: Config) -> tuple[pd.Series, dict]:
-    forecast_index = pd.period_range(config.forecast_start, config.forecast_end, freq="M").to_timestamp()
-    forecast_series = pd.Series(forecast_values[: len(forecast_index)], index=forecast_index)
+def compute_metrics(
+    actual: pd.Series, forecast_values: np.ndarray, config: Config
+) -> tuple[pd.Series, dict]:
+    forecast_index = pd.period_range(
+        config.forecast_start, config.forecast_end, freq="M"
+    ).to_timestamp()
+    forecast_series = pd.Series(
+        forecast_values[: len(forecast_index)], index=forecast_index
+    )
     aligned_actual, aligned_forecast = actual.align(forecast_series, join="inner")
     metrics = {}
     if not aligned_actual.empty:
         errors = aligned_forecast.values - aligned_actual.values
         mae = float(np.mean(np.abs(errors)))
         rmse = float(np.sqrt(np.mean(errors**2)))
-        denom = np.where(aligned_actual.values == 0, np.finfo(float).eps, aligned_actual.values)
+        denom = np.where(
+            aligned_actual.values == 0, np.finfo(float).eps, aligned_actual.values
+        )
         mape = float(np.mean(np.abs(errors / denom)) * 100)
         metrics = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
     return forecast_series, metrics
@@ -135,7 +150,14 @@ def save_metrics(metrics: dict, config: Config) -> None:
     print(f"✓ Metrics saved -> {metrics_path}")
 
 
-def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_series: pd.Series, actual: pd.Series, config: Config, metrics: dict) -> None:
+def plot_tufte(
+    series: pd.Series,
+    history_end: pd.Timestamp,
+    forecast_series: pd.Series,
+    actual: pd.Series,
+    config: Config,
+    metrics: dict,
+) -> None:
     start_2024 = pd.Timestamp("2024-01-01")
     history = series.loc[start_2024:history_end]
 
@@ -227,4 +249,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

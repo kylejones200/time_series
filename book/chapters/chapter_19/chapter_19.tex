@@ -1,0 +1,84 @@
+\chapter{Time Series Similarity and Clustering}
+
+The previous chapters focused on forecasting. This chapter addresses a different problem: similarity and clustering. Time series have temporal structure. This requires specialized methods. Similarity measures identify similar patterns. Clustering groups related time series.
+
+\section{Introduction}
+
+Traditional machine learning assumes data points are independent. Time series data has a temporal structure. This requires specialized approaches. This chapter explores methods for measuring similarity between time series, clustering time series data, and classifying time series using distance-based methods. These techniques are fundamental to many applications. Anomaly detection, pattern recognition, and recommendation systems are examples.
+
+Time series similarity is fundamental to many applications. Anomaly detection finds time series that are dissimilar to normal patterns. This helps identify unusual events or system failures. Clustering groups similar time series together. This enables pattern discovery and segmentation. Classification assigns labels to time series based on similarity to labeled examples. This is useful for automated categorization. Pattern recognition identifies recurring patterns in historical data. Recommendation systems find similar time series for recommendations.
+
+This chapter provides a comprehensive guide to time series similarity and clustering. Dynamic Time Warping (DTW), K-Shape clustering, DTW-based K-Means, k-Nearest Neighbors classification, and Symbolic Aggregate Approximation (SAX) for feature extraction are covered. You will understand how to measure similarity, cluster time series, classify sequences, and extract meaningful features from temporal data.
+
+\section{Time Series Distance Metrics}
+
+\subsection{Introduction to Time Series Distance Metrics}
+
+Traditional distance metrics like Euclidean distance assume that time series are aligned. The value at time $t$ in one series corresponds to the value at time $t$ in another series. However, time series often have different speeds, phase shifts, or different lengths. One pattern might occur faster than another. Similar patterns might be offset in time. Time series might have different durations. These characteristics make Euclidean distance inadequate for many time series applications.
+
+Dynamic Time Warping (DTW) addresses these challenges. It finds the optimal alignment between two time series. This allows for non-linear warping of the time axis. Unlike Euclidean distance, DTW can match points that are not at the same time index. This makes it robust to temporal misalignments and variable-speed patterns.
+
+\subsection{Dynamic Time Warping (DTW)}
+
+DTW is a technique for measuring similarity between two time series that may vary in speed or timing. It finds the optimal alignment between sequences by "warping" the time axis, allowing non-linear matching of points between the two series.
+
+DTW works by finding the optimal alignment between two time series, allowing non-linear warping of the time axis. Unlike Euclidean distance, DTW can match points that are not at the same time index. The distance is computed as the sum of distances between aligned points, where the alignment is chosen to minimize this sum.
+
+Key properties of DTW include symmetry (the distance from A to B equals the distance from B to A), non-negativity (always returns a non-negative value), and computational cost of O(n×m) where n and m are series lengths. However, DTW is not a true metric because it doesn't always satisfy the triangle inequality.
+
+DTW is particularly useful when patterns occur at different speeds, when similar patterns are offset in time (phase shifts), when time series have different durations, or when you care about shape rather than exact timing. However, DTW has limitations: it can be slow for long time series, is sensitive to noise and outliers, and the warping path is not always intuitive or interpretable.
+
+\subsection{Time Series Preprocessing}
+
+Before applying similarity measures or clustering, we often need to preprocess time series data. Resampling adjusts time series to a consistent length, which is essential when series have different sampling rates or durations. Resampling can normalize all series to the same length, downsample to reduce computational cost, or upsample to increase resolution for analysis.
+
+Normalization standardizes time series to have zero mean and unit variance. This is crucial for making distance measures independent of scale, allowing comparison of series with different magnitudes, and ensuring clustering algorithms that are sensitive to scale work correctly. Normalization is essential for meaningful clustering and classification results.
+
+\subsection{Time Series Clustering}
+
+Clustering groups similar time series together without labeled data, which is useful for pattern discovery (finding common patterns in historical data), segmentation (dividing time series into groups), and anomaly detection (identifying series that don't fit any cluster).
+
+K-Shape is a clustering algorithm specifically designed for time series that clusters based on shape similarity rather than point-wise similarity. K-Shape focuses on shape similarity (not exact values), is scale invariant (works well with normalized data), and provides interpretable centroids that represent typical patterns in each cluster. Use K-Shape when you care about shape rather than magnitude, when time series are normalized, and when you need interpretable cluster centroids.
+
+DTW-based K-Means uses Dynamic Time Warping as the distance metric in K-Means clustering. DTW K-Means uses DTW distance and is good for variable-speed patterns, while K-Shape uses shape-based distance and is good for normalized shape patterns. DTW K-Means is typically slower due to the computational cost of DTW. Choose K-Shape when series are normalized and you care about shape, and choose DTW K-Means when series have different speeds or phase shifts.
+
+\subsection{Time Series Classification}
+
+Time series classification assigns labels to time series based on their characteristics. k-Nearest Neighbors (kNN) with DTW is a simple but effective approach that classifies time series based on similarity to training examples.
+
+Key points for kNN classification include using time-based splits (always split chronologically for time series, never randomly), using DTW distance to find nearest neighbors, and providing interpretability (easy to understand why a classification was made). Use kNN with DTW for small datasets (works well with limited training data), when you need interpretability, as a baseline for time series classification, or when patterns have variable timing.
+
+Limitations of kNN include computational cost (slow for large datasets as it must compute DTW for all pairs), memory requirements (stores all training examples), and sensitivity to the choice of k (number of neighbors affects performance).
+
+\subsection{Feature Extraction: Symbolic Aggregate Approximation (SAX)}
+
+SAX converts time series into symbolic representations, making them easier to work with for some algorithms. SAX works by normalizing the time series (standardizing it), performing piecewise aggregation (dividing into segments and computing averages), and creating symbolic representation (converting averages to symbols, typically letters).
+
+Benefits of SAX include dimensionality reduction (reduces time series to a small number of symbols), noise reduction (aggregation smooths out noise), interpretability (symbolic representation is human-readable), and efficiency (faster to process than raw time series). Use cases include pattern mining (finding recurring patterns in symbolic form), indexing (creating indexes for fast similarity search), visualization (visualizing time series patterns), and feature engineering (creating features for machine learning).
+
+\subsection{Practical Applications}
+
+Anomaly detection uses clustering to identify anomalous time series. By clustering time series and finding series that don't fit well into any cluster (indicated by high distance to nearest centroid), you can identify anomalies. This is useful for detecting unusual patterns, system failures, or fraudulent behavior.
+
+Pattern discovery uses clustering to discover common patterns. By clustering time series and visualizing cluster centroids, you can identify typical patterns in each cluster. This helps understand the structure of your data and identify recurring behaviors.
+
+Similarity search finds time series similar to a query. By computing DTW distance to all other series and finding the k most similar, you can implement recommendation systems, find similar historical patterns, or identify related time series.
+
+\subsection{Best Practices}
+
+For preprocessing, always normalize before clustering or classification, ensure consistent lengths when needed through resampling, and handle missing values appropriately (impute or remove). For distance metrics, use DTW for variable-speed or phase-shifted patterns, Euclidean for aligned same-length series, and shape-based metrics for normalized shape patterns.
+
+For clustering, choose k carefully using domain knowledge or the elbow method, normalize first (essential for meaningful clusters), and visualize centroids to understand what each cluster represents. For classification, never use random splits for time series (always use time-based splits), use time series cross-validation (e.g., TimeSeriesSplit), and consider SAX or other feature extraction methods.
+
+For computational efficiency, use DTW constraints (window constraints to speed up DTW), downsample long time series when appropriate, and use parallel computation for large datasets.
+
+
+
+\section{Conclusion}
+
+This chapter introduced key concepts for time series similarity and clustering. Dynamic Time Warping (DTW) measures similarity allowing for time warping. This makes it robust to temporal misalignments. K-Shape clustering provides shape-based clustering for time series. DTW K-Means uses DTW distance in K-Means clustering. kNN classification uses DTW-based nearest neighbors for interpretable classification. SAX provides symbolic representation for feature extraction.
+
+The choice of method depends on your specific needs. Use DTW for variable-speed patterns, phase shifts, or different lengths. Use K-Shape for normalized shape patterns when you need interpretable clusters. Use DTW K-Means for variable-speed patterns with a K-Means approach. Use kNN with DTW for classification with interpretable results. Use SAX for dimensionality reduction, pattern mining, or indexing.
+
+Best practices include always normalizing before clustering, using time-based splits for classification, visualizing clusters to understand patterns, and considering computational cost when choosing methods. By mastering these techniques, you can effectively measure similarity, discover patterns, classify time series, and extract meaningful features from temporal data. This enables a wide range of applications. Anomaly detection to recommendation systems are examples.
+

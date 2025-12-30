@@ -1,7 +1,0 @@
-analysis: ngram
-ngram:
-  path: data/raw/sample_ngram.csv
-  date_col: year
-  value_col: frequency
-  smoothing_window: 3
-  output_dir: experiments/linguistic_change/outputs

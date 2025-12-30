@@ -75,8 +75,10 @@ def load_series(config: Config) -> pd.Series:
     return series.asfreq(config.freq).astype(float)
 
 
-def build_input_context(series: pd.Series, end_timestamp: pd.Timestamp, context_length: int) -> torch.Tensor:
-    context_values = series.loc[: end_timestamp].values.astype(np.float32)
+def build_input_context(
+    series: pd.Series, end_timestamp: pd.Timestamp, context_length: int
+) -> torch.Tensor:
+    context_values = series.loc[:end_timestamp].values.astype(np.float32)
     if len(context_values) >= context_length:
         context_values = context_values[-context_length:]
     else:
@@ -85,7 +87,9 @@ def build_input_context(series: pd.Series, end_timestamp: pd.Timestamp, context_
     return torch.tensor(context_values, dtype=torch.float32).view(1, context_length, 1)
 
 
-def generate_granite_forecast(series: pd.Series, config: Config) -> Tuple[pd.DatetimeIndex, np.ndarray]:
+def generate_granite_forecast(
+    series: pd.Series, config: Config
+) -> Tuple[pd.DatetimeIndex, np.ndarray]:
     model = get_model(
         config.checkpoint,
         context_length=config.context_length,
@@ -96,7 +100,9 @@ def generate_granite_forecast(series: pd.Series, config: Config) -> Tuple[pd.Dat
     if hasattr(model, "prediction_filter_length"):
         model.prediction_filter_length = config.horizon
 
-    context_tensor = build_input_context(series, config.history_end, config.context_length)
+    context_tensor = build_input_context(
+        series, config.history_end, config.context_length
+    )
 
     preprocessor = TimeSeriesPreprocessor(
         freq="W",
@@ -118,11 +124,18 @@ def generate_granite_forecast(series: pd.Series, config: Config) -> Tuple[pd.Dat
             forecast = output
 
     forecast = np.asarray(forecast).reshape(-1)[: config.horizon]
-    forecast_index = pd.period_range(config.forecast_start, config.forecast_end, freq="M").to_timestamp()
+    forecast_index = pd.period_range(
+        config.forecast_start, config.forecast_end, freq="M"
+    ).to_timestamp()
     return forecast_index, forecast
 
 
-def compute_metrics(series: pd.Series, forecast_index: pd.DatetimeIndex, forecast_values: np.ndarray, config: Config) -> tuple[pd.Series, dict]:
+def compute_metrics(
+    series: pd.Series,
+    forecast_index: pd.DatetimeIndex,
+    forecast_values: np.ndarray,
+    config: Config,
+) -> tuple[pd.Series, dict]:
     forecast_series = pd.Series(forecast_values, index=forecast_index)
     actual = series.loc[config.forecast_start : config.forecast_end]
     aligned_actual, aligned_forecast = actual.align(forecast_series, join="inner")
@@ -131,7 +144,9 @@ def compute_metrics(series: pd.Series, forecast_index: pd.DatetimeIndex, forecas
         errors = aligned_forecast.values - aligned_actual.values
         mae = float(np.mean(np.abs(errors)))
         rmse = float(np.sqrt(np.mean(errors**2)))
-        denom = np.where(aligned_actual.values == 0, np.finfo(float).eps, aligned_actual.values)
+        denom = np.where(
+            aligned_actual.values == 0, np.finfo(float).eps, aligned_actual.values
+        )
         mape = float(np.mean(np.abs(errors / denom)) * 100)
         metrics = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
     return forecast_series, metrics
@@ -146,7 +161,13 @@ def save_metrics(metrics: dict, config: Config) -> None:
     print(f"✓ Metrics saved -> {metrics_path}")
 
 
-def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_series: pd.Series, config: Config, metrics: dict) -> None:
+def plot_tufte(
+    series: pd.Series,
+    history_end: pd.Timestamp,
+    forecast_series: pd.Series,
+    config: Config,
+    metrics: dict,
+) -> None:
     start_2024 = pd.Timestamp("2024-01-01")
     history = series.loc[start_2024:history_end]
     actual = series.loc[config.forecast_start : config.forecast_end]
@@ -227,11 +248,12 @@ def main() -> None:
     series = load_series(config)
 
     forecast_index, forecast_values = generate_granite_forecast(series, config)
-    forecast_series, metrics = compute_metrics(series, forecast_index, forecast_values, config)
+    forecast_series, metrics = compute_metrics(
+        series, forecast_index, forecast_values, config
+    )
     save_metrics(metrics, config)
     plot_tufte(series, config.history_end, forecast_series, config, metrics)
 
 
 if __name__ == "__main__":
     main()
-

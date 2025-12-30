@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import torch
@@ -75,8 +76,10 @@ def load_series(config: Config) -> pd.Series:
     return series.asfreq(config.freq).astype(float)
 
 
-def build_input_context(series: pd.Series, end_timestamp: pd.Timestamp, context_length: int) -> torch.Tensor:
-    context_values = series.loc[: end_timestamp].values.astype(np.float32)
+def build_input_context(
+    series: pd.Series, end_timestamp: pd.Timestamp, context_length: int
+) -> torch.Tensor:
+    context_values = series.loc[:end_timestamp].values.astype(np.float32)
     if len(context_values) >= context_length:
         context_values = context_values[-context_length:]
     else:
@@ -85,7 +88,9 @@ def build_input_context(series: pd.Series, end_timestamp: pd.Timestamp, context_
     return torch.tensor(context_values, dtype=torch.float32).view(1, context_length, 1)
 
 
-def generate_granite_forecast(series: pd.Series, config: Config) -> Tuple[pd.DatetimeIndex, np.ndarray]:
+def generate_granite_forecast(
+    series: pd.Series, config: Config
+) -> Tuple[pd.DatetimeIndex, np.ndarray]:
     model = get_model(
         config.checkpoint,
         context_length=config.context_length,
@@ -96,7 +101,9 @@ def generate_granite_forecast(series: pd.Series, config: Config) -> Tuple[pd.Dat
     if hasattr(model, "prediction_filter_length"):
         model.prediction_filter_length = config.horizon
 
-    context_tensor = build_input_context(series, config.history_end, config.context_length)
+    context_tensor = build_input_context(
+        series, config.history_end, config.context_length
+    )
 
     preprocessor = TimeSeriesPreprocessor(
         freq="W",
@@ -118,11 +125,19 @@ def generate_granite_forecast(series: pd.Series, config: Config) -> Tuple[pd.Dat
             forecast = output
 
     forecast = np.asarray(forecast).reshape(-1)[: config.horizon]
-    forecast_index = pd.period_range(config.forecast_start, config.forecast_end, freq="M").to_timestamp()
+    forecast_index = pd.period_range(
+        config.forecast_start, config.forecast_end, freq="M"
+    ).to_timestamp()
     return forecast_index, forecast
 
 
-def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_index: pd.DatetimeIndex, forecast_values: np.ndarray, config: Config) -> None:
+def plot_tufte(
+    series: pd.Series,
+    history_end: pd.Timestamp,
+    forecast_index: pd.DatetimeIndex,
+    forecast_values: np.ndarray,
+    config: Config,
+) -> None:
     start_2024 = pd.Timestamp("2024-01-01")
     history = series.loc[start_2024:history_end]
     actual = series.loc[config.forecast_start : config.forecast_end]
@@ -136,6 +151,9 @@ def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_index: pd.
     ax.plot(forecast_series.index, forecast_series.values, color="#000000", lw=2.0)
 
     from matplotlib.ticker import MaxNLocator, StrMethodFormatter
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
     ax.yaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
@@ -179,7 +197,7 @@ def plot_tufte(series: pd.Series, history_end: pd.Timestamp, forecast_index: pd.
     )
 
     fig.tight_layout()
-    fig.savefig(config.output_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.output_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Granite TTM plot saved -> {config.output_plot}")
 
@@ -197,4 +215,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

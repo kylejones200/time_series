@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
@@ -18,6 +19,9 @@ from sklearn.model_selection import TimeSeriesSplit
 
 from darts import TimeSeries
 from darts.models import ARIMA, ExponentialSmoothing, NaiveSeasonal, Theta
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 def repo_import(module: str):
@@ -113,9 +117,7 @@ def rolling_origin_eval(
         forecast = model.predict(len(test_ts))
 
         maes.append(
-            mean_absolute_error(
-                test_ts.values().ravel(), forecast.values().ravel()
-            )
+            mean_absolute_error(test_ts.values().ravel(), forecast.values().ravel())
         )
         last_true, last_pred = test_ts, forecast
 
@@ -160,7 +162,9 @@ def plot_tufte_view(
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(history.index, history.values, color="#888888", lw=1.5)
-    ax.axvline(pd.Timestamp(eval_cfg["actual_start"]), color="#666666", linestyle="--", lw=1)
+    ax.axvline(
+        pd.Timestamp(eval_cfg["actual_start"]), color="#666666", linestyle="--", lw=1
+    )
 
     if not actual.empty:
         ax.plot(actual.index, actual.values, color="#444444", lw=1.8)
@@ -175,8 +179,12 @@ def plot_tufte_view(
         )
         if mask.any():
             filtered = forecast_series.loc[mask]
-            ax.plot(filtered.index, filtered.values, color="#000000", lw=2.0, alpha=0.85)
-            end_labels.append((filtered.index[-1], filtered.values[-1], result.model_name))
+            ax.plot(
+                filtered.index, filtered.values, color="#000000", lw=2.0, alpha=0.85
+            )
+            end_labels.append(
+                (filtered.index[-1], filtered.values[-1], result.model_name)
+            )
 
     if tbats_df is not None and not tbats_df.empty:
         tbats_filtered = tbats_df.loc[
@@ -184,7 +192,13 @@ def plot_tufte_view(
             & (tbats_df["date"] <= eval_cfg["actual_end"])
         ]
         if not tbats_filtered.empty:
-            ax.plot(tbats_filtered["date"], tbats_filtered["pred"], color="#000000", lw=1.6, alpha=0.6)
+            ax.plot(
+                tbats_filtered["date"],
+                tbats_filtered["pred"],
+                color="#000000",
+                lw=1.6,
+                alpha=0.6,
+            )
             end_labels.append(
                 (
                     tbats_filtered["date"].iloc[-1],
@@ -240,10 +254,14 @@ def plot_tufte_view(
     print(f"✓ Tufte plot saved -> {output_path}")
 
 
-def plot_overview(series: TimeSeries, results: List[EvalResult], output_cfg: dict, output_dir: Path) -> None:
+def plot_overview(
+    series: TimeSeries, results: List[EvalResult], output_cfg: dict, output_dir: Path
+) -> None:
     fig, ax = plt.subplots(figsize=(9, 4))
     series_df = series.pd_dataframe()
-    ax.plot(series_df.index, series_df.values, label="History", alpha=0.6, color="#444444")
+    ax.plot(
+        series_df.index, series_df.values, label="History", alpha=0.6, color="#444444"
+    )
 
     for result in results:
         forecast_series = to_series(result.y_pred)
@@ -267,7 +285,9 @@ def plot_overview(series: TimeSeries, results: List[EvalResult], output_cfg: dic
     print(f"✓ Overview plot saved -> {output_path}")
 
 
-def save_predictions(results: List[EvalResult], output_dir: Path, filename: str) -> None:
+def save_predictions(
+    results: List[EvalResult], output_dir: Path, filename: str
+) -> None:
     rows: List[pd.DataFrame] = []
     for result in results:
         y_true = to_series(result.y_true)
@@ -305,12 +325,26 @@ def main() -> None:
     output_dir = Path(__file__).parent / config["output"]["output_dir"]
     output_dir.mkdir(exist_ok=True)
 
-    tufte_results = evaluate_group(ts, config["models"]["tufte_last_fold"], config["evaluations"]["tufte_last_fold"])
-    overview_results = evaluate_group(ts, config["models"]["overview_last_fold"], config["evaluations"]["overview_last_fold"])
+    tufte_results = evaluate_group(
+        ts,
+        config["models"]["tufte_last_fold"],
+        config["evaluations"]["tufte_last_fold"],
+    )
+    overview_results = evaluate_group(
+        ts,
+        config["models"]["overview_last_fold"],
+        config["evaluations"]["overview_last_fold"],
+    )
 
-    plot_tufte_view(series, tufte_results, config["evaluations"]["tufte_last_fold"], output_dir)
-    plot_overview(ts, overview_results, config["evaluations"]["overview_last_fold"], output_dir)
-    save_predictions(tufte_results, output_dir, config["output"]["save_predictions_csv"])
+    plot_tufte_view(
+        series, tufte_results, config["evaluations"]["tufte_last_fold"], output_dir
+    )
+    plot_overview(
+        ts, overview_results, config["evaluations"]["overview_last_fold"], output_dir
+    )
+    save_predictions(
+        tufte_results, output_dir, config["output"]["save_predictions_csv"]
+    )
 
     print_metrics(
         {
@@ -323,4 +357,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,0 +1,193 @@
+Here is a clean, direct, *Cursor-ready* instruction file. You can copy this straight into `.cursor/rules` or paste it into a Cursor agent prompt. It gives Cursor the exact steps to transform the manuscript into a complete, publishable book, without losing any of your content or voice.
+
+No bullets. No gerunds. No subordinate clauses. Clear sentences. Strunk & White style.
+
+---
+
+# **CURSOR BOOK-DEVELOPMENT INSTRUCTIONS**
+
+**Project: Time Series Analysis Book**
+**Source: main.pdf** 
+
+Cursor must apply these rules to the entire manuscript. Cursor must preserve all content unless duplicate. Cursor must expand every section into full prose with examples, code, and narrative. Cursor must follow Kyle’s writing style: short sentences, direct voice, no gerunds, no subordinate clauses, no negative framing, no long abstract phrases.
+
+Cursor must rewrite nothing from scratch. Cursor must expand, refine, complete, and connect the material that already exists.
+
+---
+
+# **1. Global Rules for the Whole Manuscript**
+
+The book must speak in direct sentences.
+The book must avoid intro clauses.
+The book must avoid “is not X, is Y.”
+The book must avoid words ending in “ing” when possible.
+The book must avoid “just,” “delve,” “crucial,” “powerful,” “empowers,” “not only.”
+The book must use examples and code for every major concept.
+The book must use Python only.
+The book must include clean Matplotlib figures with minimalist style.
+The book must include one dataset per chapter to anchor concepts.
+The book must remove duplication between Chapters 9 and 10.
+The book must complete all incomplete sections such as Synthetic Control.
+The book must maintain a single consistent narrative voice.
+
+Cursor must apply these transformations across all chapters.
+
+---
+
+# **2. Structural Fixes**
+
+Cursor must merge Chapters 9 and 10 into one chapter titled “Finance and Economics.”
+Cursor must move overlapping content from both chapters into a unified sequence with no repetition.
+Cursor must convert Chapters 11, 12, 13, and 14 from outlines to full narrative chapters.
+Cursor must keep the chapter order but add transitions at the start and end of every chapter to maintain flow.
+Cursor must explain why each domain matters to time series and give a clear example.
+
+Cursor must create a new introduction that explains the purpose of the book, the audience, the datasets, and the philosophy of the writing style.
+
+Cursor must produce a short concluding chapter that ties together the themes.
+
+---
+
+# **3. Rules for Expanding All Chapters**
+
+Cursor must take every section header and write short, direct paragraphs under it.
+Cursor must avoid lists unless the structure demands a sequence.
+Cursor must give one real dataset for each chapter.
+Cursor must show Python code that loads, cleans, analyzes, and visualizes the dataset.
+Cursor must add at least one graph per chapter.
+Cursor must place code blocks after the paragraph that explains the idea.
+Cursor must include commentary that explains what each code block does.
+Cursor must avoid abstraction.
+Cursor must show every idea with an example.
+
+Cursor must keep content succinct and concrete.
+
+---
+
+# **4. Chapter-Specific Instructions**
+
+## **Chapter 1**
+
+Cursor must add a real example.
+Cursor must show one plot that displays trend and seasonality.
+Cursor must add a short story about why time series analysis matters in everyday decisions.
+
+## **Chapter 2**
+
+Cursor must run full exploratory plots: ACF, PACF, seasonal plots, histograms.
+Cursor must add code that handles missing values and outliers.
+
+## **Chapter 3**
+
+Cursor must show naive, seasonal naive, and drift forecasts.
+Cursor must add a walk-forward validation example.
+
+## **Chapter 4**
+
+Cursor must add a worked ARIMA example with identification, estimation, and diagnostics.
+Cursor must add a clean final forecast plot.
+
+## **Chapter 5**
+
+Cursor must give an example of a hierarchical dataset such as energy load by region.
+Cursor must show reconciliation.
+Cursor must add a Bayesian example using a simple state space model.
+
+## **Chapter 6 and 7**
+
+Cursor must expand both chapters.
+Cursor must compare ML and deep learning models with the same dataset.
+Cursor must include one LSTM example with a short sequence model.
+
+## **Chapter 8**
+
+Cursor must add direct examples of bias and privacy in time series.
+Cursor must anchor this chapter with one real problem in healthcare or energy.
+
+## **Finance and Economics (Merged Chapter 9–10)**
+
+Cursor must consolidate all overlapping content.
+Cursor must include one financial dataset such as S&P 500 or crude oil futures.
+Cursor must show volatility modeling and VAR.
+Cursor must show a Monte Carlo option pricing example.
+Cursor must remove duplicates.
+
+## **Chapter 11**
+
+Cursor must anchor the energy chapter with ERCOT data or natural gas storage data.
+Cursor must add one load forecast and one price forecast example.
+
+## **Chapter 12**
+
+Cursor must expand wildfire, flood, and climate examples with one dataset each.
+Cursor must show NDVI or NOAA temperature.
+Cursor must show decomposition and anomaly detection.
+
+## **Chapter 13**
+
+Cursor must add real audio time series examples.
+Cursor must show a spectrogram.
+Cursor must use Librosa code.
+
+## **Chapter 14**
+
+Cursor must add examples drawn from Google Books Ngram and Chronicling America.
+Cursor must add one semantic drift example.
+Cursor must link plots to real historical events.
+
+## **Chapter 15**
+
+Cursor must add a complete deployment story from notebook to API.
+Cursor must give a small working Flask or FastAPI example.
+Cursor must connect Kafka and Flink steps.
+
+## **Chapter 16**
+
+Cursor must expand the causal inference chapter.
+Cursor must add code for Granger causality, VAR IRFs, and local projections.
+Cursor must complete all incomplete sections, especially Synthetic Control.
+
+---
+
+# **5. Code and Visualization Rules**
+
+Cursor must use clean, short, readable Python code.
+Cursor must use Matplotlib with your preferred Tufte-inspired minimalist style.
+Cursor must include `plt.savefig()` before `plt.show()`.
+Cursor must remove grids.
+Cursor must remove top and right spines.
+Cursor must set left and bottom spines slightly outward.
+Cursor must use serif font.
+Cursor must avoid multi-level columns.
+Cursor must use single-layer DataFrame columns.
+Cursor must annotate graphs lightly.
+
+---
+
+# **6. Consistency and Editing Rules**
+
+Cursor must correct grammar.
+Cursor must correct spelling.
+Cursor must break long sentences.
+Cursor must maintain S-V-O structure.
+Cursor must remove filler phrases.
+Cursor must remove duplicates across chapters.
+
+Cursor must preserve all technical content while improving clarity.
+
+---
+
+# **7. Output Format**
+
+Cursor must update the manuscript in place.
+Cursor must not rewrite from scratch.
+Cursor must expand what exists.
+Cursor must maintain the chapter numbering and section structure.
+Cursor must keep all content unless duplicate.
+
+---
+
+If you want, I can now generate a second file:
+**“cursor_instructions_per_chapter.md”** which gives chapter-by-chapter prompts you can paste as you work.
+
+Say “give me the per-chapter file” and I will produce it.

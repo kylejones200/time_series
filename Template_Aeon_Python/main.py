@@ -8,12 +8,16 @@ from pathlib import Path
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
 from aeon.clustering import TimeSeriesKMeans
 from aeon.distances import dtw_distance
 from sklearn.metrics import silhouette_score
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 @dataclass
@@ -81,7 +85,9 @@ def load_series(config: Config) -> pd.Series:
     return series.astype(float)
 
 
-def prepare_annual_sequences(series: pd.Series, season_length: int) -> Tuple[np.ndarray, List[int]]:
+def prepare_annual_sequences(
+    series: pd.Series, season_length: int
+) -> Tuple[np.ndarray, List[int]]:
     df = series.to_frame("value")
     df["year"] = df.index.year
     df["month"] = df.index.month
@@ -141,7 +147,20 @@ def plot_cluster_summary(
     dtw_matrix: np.ndarray,
 ) -> None:
     months = np.arange(1, sequences.shape[2] + 1)
-    month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    month_names = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ]
     fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
 
     ax1 = plt.subplot(2, 3, 1)
@@ -255,7 +274,9 @@ def main() -> None:
     unique, counts = np.unique(labels, return_counts=True)
     for cluster, count in zip(unique, counts):
         pct = count / len(labels) * 100
-        associated_years = [years[idx] for idx in range(len(years)) if labels[idx] == cluster]
+        associated_years = [
+            years[idx] for idx in range(len(years)) if labels[idx] == cluster
+        ]
         print(f"Cluster {cluster}: {count} years ({pct:.1f}%) → {associated_years}")
 
     plot_cluster_summary(config, years, sequences, labels, model, dtw_matrix)
@@ -263,4 +284,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

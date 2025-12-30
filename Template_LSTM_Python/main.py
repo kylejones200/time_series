@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
@@ -95,7 +96,9 @@ def build_model(config: Config) -> RNNModel:
     )
 
 
-def rolling_origin_lstm(series: TimeSeries, config: Config) -> Tuple[float, TimeSeries, TimeSeries]:
+def rolling_origin_lstm(
+    series: TimeSeries, config: Config
+) -> Tuple[float, TimeSeries, TimeSeries]:
     values = series.to_series()
     idx = np.arange(len(values))
     splitter = TimeSeriesSplit(n_splits=config.n_splits)
@@ -107,7 +110,9 @@ def rolling_origin_lstm(series: TimeSeries, config: Config) -> Tuple[float, Time
         end = train_idx[-1]
         train_ts = series.drop_after(series.time_index[end])
         future = series.split_after(series.time_index[end])[1]
-        horizon_ts = future.drop_after(future.time_index[min(config.horizon - 1, len(future) - 1)])
+        horizon_ts = future.drop_after(
+            future.time_index[min(config.horizon - 1, len(future) - 1)]
+        )
         if len(horizon_ts) == 0:
             continue
 
@@ -117,7 +122,9 @@ def rolling_origin_lstm(series: TimeSeries, config: Config) -> Tuple[float, Time
         model.fit(train_scaled)
         forecast_scaled = model.predict(len(horizon_ts))
         forecast = scaler.inverse_transform(forecast_scaled)
-        mae = mean_absolute_error(horizon_ts.values().ravel(), forecast.values().ravel())
+        mae = mean_absolute_error(
+            horizon_ts.values().ravel(), forecast.values().ravel()
+        )
         maes.append(mae)
         last_true = horizon_ts
         last_pred = forecast
@@ -152,9 +159,14 @@ def plot_tufte(series: TimeSeries, config: Config, forecast: TimeSeries) -> None
         alpha=0.06,
         linewidth=0,
     )
-    ax.plot(plt_forecast.time_index, plt_forecast.values().ravel(), color="#000000", lw=2.0)
+    ax.plot(
+        plt_forecast.time_index, plt_forecast.values().ravel(), color="#000000", lw=2.0
+    )
 
     from matplotlib.ticker import MaxNLocator, StrMethodFormatter
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
     ax.yaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
@@ -198,7 +210,7 @@ def plot_tufte(series: TimeSeries, config: Config, forecast: TimeSeries) -> None
     )
 
     fig.tight_layout()
-    fig.savefig(config.output_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.output_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ LSTM plot saved -> {config.output_plot}")
 
@@ -213,4 +225,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

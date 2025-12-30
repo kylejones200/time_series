@@ -7,10 +7,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
 from statsmodels.tsa.seasonal import seasonal_decompose
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 @dataclass
@@ -78,7 +82,7 @@ def plot_decomposition(series: pd.Series, config: Config) -> None:
     axes[3].set_title("Residual")
 
     fig.tight_layout()
-    fig.savefig(config.decomposition_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.decomposition_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Decomposition plot saved -> {config.decomposition_plot}")
 
@@ -98,7 +102,7 @@ def plot_seasonal_subseries(series: pd.Series, config: Config) -> None:
     ax.set_title("Seasonal subseries by month")
     ax.legend(ncol=3, fontsize=8)
     fig.tight_layout()
-    fig.savefig(config.seasonal_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.seasonal_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Seasonal subseries plot saved -> {config.seasonal_plot}")
 
@@ -112,4 +116,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

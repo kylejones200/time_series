@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
@@ -17,6 +18,9 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import TimeSeriesSplit
 import statsmodels.api as sm
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 @dataclass
@@ -87,7 +91,9 @@ def make_calendar_features(index: pd.DatetimeIndex) -> pd.DataFrame:
     return df
 
 
-def rolling_origin_uni_vs_multi(series: pd.Series, config: Config) -> Tuple[float, float, pd.Series, pd.Series, pd.Series]:
+def rolling_origin_uni_vs_multi(
+    series: pd.Series, config: Config
+) -> Tuple[float, float, pd.Series, pd.Series, pd.Series]:
     idx = np.arange(len(series))
     splitter = TimeSeriesSplit(n_splits=config.n_splits)
     uni_maes = []
@@ -133,7 +139,13 @@ def rolling_origin_uni_vs_multi(series: pd.Series, config: Config) -> Tuple[floa
     return np.mean(uni_maes), np.mean(mul_maes), last_true, last_uni, last_mul
 
 
-def plot_uni_vs_multi(series: pd.Series, config: Config, future: pd.Series, uni: pd.Series, multi: pd.Series) -> None:
+def plot_uni_vs_multi(
+    series: pd.Series,
+    config: Config,
+    future: pd.Series,
+    uni: pd.Series,
+    multi: pd.Series,
+) -> None:
     fig, ax = plt.subplots(figsize=(9, 4))
     ax.plot(series.index, series.values, label="History", alpha=0.6)
     ax.plot(uni.index, uni.values, label="Univariate SARIMAX last fold")
@@ -142,12 +154,14 @@ def plot_uni_vs_multi(series: pd.Series, config: Config, future: pd.Series, uni:
     ax.set_title("Univariate vs exogenous SARIMAX — last fold")
     ax.set_xlabel("")
     fig.tight_layout()
-    fig.savefig(config.uni_multi_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.uni_multi_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Univariate vs exogenous plot saved -> {config.uni_multi_plot}")
 
 
-def rolling_origin_linear_baseline(series: pd.Series, config: Config) -> Tuple[float, pd.Series]:
+def rolling_origin_linear_baseline(
+    series: pd.Series, config: Config
+) -> Tuple[float, pd.Series]:
     idx = np.arange(len(series))
     splitter = TimeSeriesSplit(n_splits=config.n_splits)
     maes = []
@@ -182,17 +196,21 @@ def plot_baseline(series: pd.Series, config: Config, predictions: pd.Series) -> 
     fig, ax = plt.subplots(figsize=(9, 4))
     ax.plot(series.index, series.values, label="History", alpha=0.6)
     if predictions is not None:
-        ax.plot(predictions.index, predictions.values, label="Linear baseline last fold")
+        ax.plot(
+            predictions.index, predictions.values, label="Linear baseline last fold"
+        )
     ax.legend(frameon=False)
     ax.set_title("Linear calendar baseline — last fold")
     ax.set_xlabel("")
     fig.tight_layout()
-    fig.savefig(config.baseline_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.baseline_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Baseline plot saved -> {config.baseline_plot}")
 
 
-def rolling_origin_ensemble(series: pd.Series, config: Config) -> Tuple[float, float, float, pd.Series, dict]:
+def rolling_origin_ensemble(
+    series: pd.Series, config: Config
+) -> Tuple[float, float, float, pd.Series, dict]:
     idx = np.arange(len(series))
     splitter = TimeSeriesSplit(n_splits=config.n_splits)
     ets_maes, sar_maes, ens_maes = [], [], []
@@ -206,7 +224,9 @@ def rolling_origin_ensemble(series: pd.Series, config: Config) -> Tuple[float, f
         if future.empty:
             continue
 
-        ets = ExponentialSmoothing(train, trend="add", seasonal="add", seasonal_periods=config.season).fit(optimized=True)
+        ets = ExponentialSmoothing(
+            train, trend="add", seasonal="add", seasonal_periods=config.season
+        ).fit(optimized=True)
         ets_fore = ets.forecast(len(future))
         sar = sm.tsa.statespace.SARIMAX(
             train,
@@ -231,10 +251,18 @@ def rolling_origin_ensemble(series: pd.Series, config: Config) -> Tuple[float, f
     print(f"ETS MAE: {np.mean(ets_maes):.3f}")
     print(f"SARIMAX MAE: {np.mean(sar_maes):.3f}")
     print(f"Ensemble MAE: {np.mean(ens_maes):.3f}")
-    return np.mean(ets_maes), np.mean(sar_maes), np.mean(ens_maes), last_true, last_components
+    return (
+        np.mean(ets_maes),
+        np.mean(sar_maes),
+        np.mean(ens_maes),
+        last_true,
+        last_components,
+    )
 
 
-def plot_ensemble(series: pd.Series, config: Config, future: pd.Series, components: dict) -> None:
+def plot_ensemble(
+    series: pd.Series, config: Config, future: pd.Series, components: dict
+) -> None:
     fig, ax = plt.subplots(figsize=(9, 4))
     ax.plot(series.index, series.values, label="History", alpha=0.6)
     for name, preds in components.items():
@@ -243,12 +271,14 @@ def plot_ensemble(series: pd.Series, config: Config, future: pd.Series, componen
     ax.set_title("ETS vs SARIMAX vs ensemble — last fold")
     ax.set_xlabel("")
     fig.tight_layout()
-    fig.savefig(config.ensemble_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.ensemble_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Ensemble plot saved -> {config.ensemble_plot}")
 
 
-def online_sarimax_forecast(series: pd.Series, config: Config) -> Tuple[pd.Series, pd.Series, pd.Series]:
+def online_sarimax_forecast(
+    series: pd.Series, config: Config
+) -> Tuple[pd.Series, pd.Series, pd.Series]:
     history_window = deque(maxlen=60)
     times, y_true, y_hat = [], [], []
 
@@ -275,7 +305,9 @@ def online_sarimax_forecast(series: pd.Series, config: Config) -> Tuple[pd.Serie
     )
 
 
-def plot_streaming(series: pd.Series, config: Config, truth: pd.Series, preds: pd.Series) -> None:
+def plot_streaming(
+    series: pd.Series, config: Config, truth: pd.Series, preds: pd.Series
+) -> None:
     history_start = pd.Timestamp("2024-01-01")
     history_end = pd.Timestamp("2024-12-01")
     history = series.loc[history_start:history_end]
@@ -292,7 +324,14 @@ def plot_streaming(series: pd.Series, config: Config, truth: pd.Series, preds: p
     ax.axvline(pd.Timestamp("2025-01-01"), color="#666666", linestyle="--", lw=1)
     if not actual.empty:
         ax.plot(actual.index, actual.values, color="#444444", lw=1.8)
-    ax.fill_between(preds.index, lower.values, upper.values, color="#000000", alpha=0.06, linewidth=0)
+    ax.fill_between(
+        preds.index,
+        lower.values,
+        upper.values,
+        color="#000000",
+        alpha=0.06,
+        linewidth=0,
+    )
     ax.plot(preds.index, preds.values, color="#000000", lw=2.0)
 
     from matplotlib.ticker import MaxNLocator, StrMethodFormatter
@@ -306,7 +345,7 @@ def plot_streaming(series: pd.Series, config: Config, truth: pd.Series, preds: p
     ax.set_title("Online SARIMAX one-step forecast Jan–Aug 2025")
 
     fig.tight_layout()
-    fig.savefig(config.streaming_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.streaming_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Streaming plot saved -> {config.streaming_plot}")
 
@@ -333,4 +372,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

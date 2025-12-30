@@ -8,11 +8,15 @@ from pathlib import Path
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
+import signalplot
 import numpy as np
 import pandas as pd
 import yaml
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import TimeSeriesSplit
+
+# Apply SignalPlot's clean defaults
+signalplot.apply()
 
 
 @dataclass
@@ -84,7 +88,9 @@ def seasonal_naive_forecast(train: pd.Series, horizon: int, season: int) -> np.n
     return np.asarray(forecast, dtype=float)
 
 
-def rolling_origin_metrics(series: pd.Series, config: Config) -> Tuple[List[dict], pd.Series, pd.Series]:
+def rolling_origin_metrics(
+    series: pd.Series, config: Config
+) -> Tuple[List[dict], pd.Series, pd.Series]:
     idx = np.arange(len(series))
     splitter = TimeSeriesSplit(n_splits=config.n_splits)
     metrics: List[dict] = []
@@ -104,7 +110,14 @@ def rolling_origin_metrics(series: pd.Series, config: Config) -> Tuple[List[dict
         y = future.values.astype(float)
         denom = np.where(y == 0, np.finfo(float).eps, y)
         mape = np.mean(np.abs((y - forecast) / denom)) * 100.0
-        smape = np.mean(2 * np.abs(forecast - y) / (np.abs(y) + np.abs(forecast) + np.finfo(float).eps)) * 100.0
+        smape = (
+            np.mean(
+                2
+                * np.abs(forecast - y)
+                / (np.abs(y) + np.abs(forecast) + np.finfo(float).eps)
+            )
+            * 100.0
+        )
         mase = np.mean(np.abs(y - forecast)) / mase_denominator(train, config.season)
 
         metrics.append({"MAE": mae, "MAPE": mape, "SMAPE": smape, "MASE": mase})
@@ -114,17 +127,24 @@ def rolling_origin_metrics(series: pd.Series, config: Config) -> Tuple[List[dict
     return metrics, last_truth, last_forecast
 
 
-def plot_last_fold(series: pd.Series, truth: pd.Series, forecast: pd.Series, config: Config) -> None:
+def plot_last_fold(
+    series: pd.Series, truth: pd.Series, forecast: pd.Series, config: Config
+) -> None:
     fig, ax = plt.subplots(figsize=(9, 4))
     ax.plot(series.index, series.values, label="History", alpha=0.6)
     if truth is not None and forecast is not None:
         ax.plot(truth.index, truth.values, label="Actual", color="#444444")
-        ax.plot(forecast.index, forecast.values, label="Seasonal naive forecast", color="#d62728")
+        ax.plot(
+            forecast.index,
+            forecast.values,
+            label="Seasonal naive forecast",
+            color="#d62728",
+        )
     ax.legend(frameon=False)
     ax.set_title("Seasonal naive — last fold errors")
     ax.set_xlabel("")
     fig.tight_layout()
-    fig.savefig(config.error_plot, dpi=150, bbox_inches="tight")
+    fig.savefig(config.error_plot, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"✓ Error plot saved -> {config.error_plot}")
 
@@ -144,4 +164,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

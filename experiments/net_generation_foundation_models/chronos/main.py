@@ -123,7 +123,9 @@ def load_series(config: Config) -> pd.Series:
     return series
 
 
-def prepare_tensors(series: pd.Series, config: Config) -> tuple[torch.Tensor, torch.Tensor, pd.Index]:
+def prepare_tensors(
+    series: pd.Series, config: Config
+) -> tuple[torch.Tensor, torch.Tensor, pd.Index]:
     pred_len = config.prediction_length
     context_len = config.context_length or len(series) - pred_len
     context_len = min(context_len, len(series) - pred_len)
@@ -157,9 +159,13 @@ def load_pipeline(config: Config) -> ChronosPipeline:
     return pipeline
 
 
-def generate_forecast(pipeline: ChronosPipeline, context: torch.Tensor, config: Config) -> np.ndarray:
+def generate_forecast(
+    pipeline: ChronosPipeline, context: torch.Tensor, config: Config
+) -> np.ndarray:
     with torch.no_grad():
-        forecast = pipeline.predict(context, config.prediction_length, num_samples=config.num_samples)
+        forecast = pipeline.predict(
+            context, config.prediction_length, num_samples=config.num_samples
+        )
     return forecast.cpu().numpy()
 
 
@@ -194,16 +200,27 @@ def plot_forecast(
         {
             "plotting": {
                 "style": {
-                    "spines": {"top": False, "right": False, "bottom": True, "left": True},
+                    "spines": {
+                        "top": False,
+                        "right": False,
+                        "bottom": True,
+                        "left": True,
+                    },
                     "grid": False,
                 }
             }
         },
     )
 
-    ax.plot(history.index, history.values, color="royalblue", linewidth=2, label="History")
-    ax.plot(forecast_index, median, color="tomato", linewidth=2, label="Chronos Forecast")
-    ax.fill_between(forecast_index, low, high, color="tomato", alpha=0.3, label="80% interval")
+    ax.plot(
+        history.index, history.values, color="royalblue", linewidth=2, label="History"
+    )
+    ax.plot(
+        forecast_index, median, color="tomato", linewidth=2, label="Chronos Forecast"
+    )
+    ax.fill_between(
+        forecast_index, low, high, color="tomato", alpha=0.3, label="80% interval"
+    )
 
     plot_title = config.forecast_plot_cfg.get("title", "Chronos Forecast")
     ax.set_title(plot_title, fontsize=14)
@@ -230,7 +247,9 @@ def plot_forecast(
     print(f"✓ Forecast plot saved -> {output_path}")
 
 
-def plot_tufte_style(series: pd.Series, forecast_index: pd.Index, median: np.ndarray, config: Config) -> None:
+def plot_tufte_style(
+    series: pd.Series, forecast_index: pd.Index, median: np.ndarray, config: Config
+) -> None:
     if not config.tufte_cfg:
         return
 
@@ -238,15 +257,21 @@ def plot_tufte_style(series: pd.Series, forecast_index: pd.Index, median: np.nda
     history = series.loc[tufte_cfg["history_start"] : tufte_cfg["history_end"]]
     actual = series.loc[tufte_cfg["actual_start"] : tufte_cfg["actual_end"]]
     forecast_series = pd.Series(median, index=forecast_index)
-    forecast_filtered = forecast_series.loc[tufte_cfg["actual_start"] : tufte_cfg["actual_end"]]
+    forecast_filtered = forecast_series.loc[
+        tufte_cfg["actual_start"] : tufte_cfg["actual_end"]
+    ]
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(history.index, history.values, color="#888888", lw=1.5)
-    ax.axvline(pd.Timestamp(tufte_cfg["actual_start"]), color="#666666", linestyle="--", lw=1)
+    ax.axvline(
+        pd.Timestamp(tufte_cfg["actual_start"]), color="#666666", linestyle="--", lw=1
+    )
     if not actual.empty:
         ax.plot(actual.index, actual.values, color="#444444", lw=1.8)
     if not forecast_filtered.empty:
-        ax.plot(forecast_filtered.index, forecast_filtered.values, color="#000000", lw=2.0)
+        ax.plot(
+            forecast_filtered.index, forecast_filtered.values, color="#000000", lw=2.0
+        )
 
     ax.yaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
