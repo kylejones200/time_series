@@ -1,0 +1,46 @@
+data:
+  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
+  date_col: "date"
+  value_col: "value"
+  freq: "MS"
+
+evaluations:
+  tufte_last_fold:
+    horizon: 8
+    n_splits: 5
+    history_start: "2024-01-01"
+    history_end: "2024-12-01"
+    actual_start: "2025-01-01"
+    actual_end: "2025-08-01"
+    output_plot: "eia_darts_tbats_last_fold.png"
+    tbats_csv: "Darts_Python/data/eia_preds_tbats.csv"
+  overview_last_fold:
+    horizon: 12
+    n_splits: 5
+    output_plot: "eia_darts_overview_last_fold.png"
+
+models:
+  tufte_last_fold:
+    - name: "ARIMA"
+      type: "ARIMA"
+      params:
+        p: 1
+        d: 1
+        q: 1
+    - name: "Theta"
+      type: "Theta"
+      params: {}
+  overview_last_fold:
+    - name: "ETS"
+      type: "ExponentialSmoothing"
+      params:
+        seasonal_periods: 12
+    - name: "NaiveSeasonal"
+      type: "NaiveSeasonal"
+      params:
+        K: 12
+
+output:
+  save_predictions_csv: "eia_preds_darts.csv"
+  output_dir: "outputs"
+

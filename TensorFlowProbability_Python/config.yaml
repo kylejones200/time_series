@@ -1,0 +1,27 @@
+data:
+  input_file: "reference/example_series.csv"
+  date_column: "date"
+  value_column: "value"
+
+model:
+  num_seasons: 12                    # Seasonal periods (12 for monthly, 4 for quarterly)
+  include_trend: true                # Local linear trend component
+  include_seasonal: true             # Seasonal component
+  include_autoregressive: false     # Autoregressive component
+  ar_order: 1                        # AR order (if autoregressive enabled)
+  num_variational_steps: 200         # Optimization steps for variational inference
+  learning_rate: 0.1                 # Learning rate for optimizer
+  num_samples: 50                    # Number of posterior samples
+  forecast_samples: 20               # Number of forecast scenarios
+
+evaluation:
+  test_size: 0.2
+  forecast_horizon: 24               # Forecast steps ahead
+
+output:
+  output_dir: "outputs"
+  plot_file: "tfp_forecast.png"
+  forecast_file: "tfp_forecast.csv"
+  metrics_file: "tfp_metrics.csv"
+  dpi: 300
+

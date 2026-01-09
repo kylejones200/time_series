@@ -244,7 +244,7 @@ def plot_forecast(
     output_path = config.output_dir / output_name
     save_plot(fig, output_path)
     plt.close(fig)
-    print(f"✓ Forecast plot saved -> {output_path}")
+    print(f" Forecast plot saved -> {output_path}")
 
 
 def plot_tufte_style(
@@ -318,7 +318,7 @@ def plot_tufte_style(
     fig.tight_layout()
     fig.savefig(output_path, bbox_inches="tight")
     plt.close(fig)
-    print(f"✓ Tufte-style plot saved -> {output_path}")
+    print(f" Tufte-style plot saved -> {output_path}")
 
 
 def save_forecast(
@@ -341,8 +341,8 @@ def save_forecast(
     metrics_path = config.output_dir / "chronos_metrics.yaml"
     with open(metrics_path, "w") as f:
         yaml.safe_dump(metrics, f)
-    print(f"✓ Forecast data saved -> {forecast_df.shape}")
-    print(f"✓ Metrics saved -> {metrics_path}")
+    print(f" Forecast data saved -> {forecast_df.shape}")
+    print(f" Metrics saved -> {metrics_path}")
 
 
 def main():

@@ -90,7 +90,7 @@ def main() -> None:
         "load_difference.png",
     )
 
-    print("✓ ERCOT preprocessing complete")
+    print(" ERCOT preprocessing complete")
     print(f"Filtered series saved to: {filtered_output}")
 
 

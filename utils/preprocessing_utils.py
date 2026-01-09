@@ -19,7 +19,7 @@ def handle_missing_values(data: pd.DataFrame, method: str = "ffill"):
     """
     Handles missing values using forward fill, backward fill, or interpolation.
 
-    ⚠️ WARNING: For predictive modeling, avoid 'bfill' (backward fill) as it uses
+    ️ WARNING: For predictive modeling, avoid 'bfill' (backward fill) as it uses
     future values to fill past data, causing data leakage. Use 'ffill' (forward fill)
     or 'interpolate' instead.
     """

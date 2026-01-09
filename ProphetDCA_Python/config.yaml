@@ -1,0 +1,22 @@
+data:
+  input_file: "production/well_production.csv"  # Production data with oil_rate
+  date_column: "date"
+  value_column: "oil_rate"  # or "gas_rate", "water_rate"
+
+prophet:
+  seasonality_mode: "multiplicative"  # "multiplicative" or "additive"
+
+dca:
+  type: "hyperbolic"  # "hyperbolic", "exponential", or "harmonic"
+
+evaluation:
+  test_size: 0.2
+  forecast_horizon: 24  # Forecast periods ahead
+
+output:
+  output_dir: "outputs"
+  plot_file: "prophet_dca_comparison.png"
+  forecast_file: "prophet_dca_forecast.csv"
+  metrics_file: "prophet_dca_metrics.csv"
+  dpi: 300
+

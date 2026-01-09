@@ -1,0 +1,27 @@
+data:
+  # Option 1: Single file with multiple value columns
+  input_file: "reference/granger_example.csv"
+  date_column: "date"
+  value_columns: ["target", "predictor"]  # Specify multiple columns
+  series_names: ["target", "predictor"]  # Names for the series
+  
+  # Option 2: Multiple files (uncomment to use)
+  # input_files:
+  #   - "reference/example_series.csv"
+  #   - "reference/example_series.csv"  # Second series
+  # series_names: ["target", "predictor"]
+
+granger:
+  max_lag: 5  # Maximum lag to test for Granger causality
+
+evaluation:
+  test_size: 0.2
+  forecast_horizon: 24  # Forecast steps ahead
+
+output:
+  output_dir: "outputs"
+  plot_file: "granger_forecast.png"
+  forecast_file: "granger_forecast.csv"
+  summary_file: "granger_summary.csv"
+  dpi: 300
+

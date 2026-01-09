@@ -112,7 +112,7 @@ def convert_to_weekly_timeseries(df: pd.DataFrame, output_dir: Path) -> pd.DataF
 
     output_path = output_dir / "exoplanet_weekly_timeseries.csv"
     df_weekly_export.to_csv(output_path)
-    print(f"✓ Weekly time series exported -> {output_path}")
+    print(f" Weekly time series exported -> {output_path}")
 
     # Create illustrative plot for the first few stars
     sample_uuids = uuids[:5]
@@ -127,7 +127,7 @@ def convert_to_weekly_timeseries(df: pd.DataFrame, output_dir: Path) -> pd.DataF
     plot_path = output_dir / "sample_light_curves.png"
     plt.savefig(plot_path, dpi=200)
     plt.close()
-    print(f"✓ Sample light curve plot saved -> {plot_path}")
+    print(f" Sample light curve plot saved -> {plot_path}")
 
     return df_weekly_export
 
@@ -154,7 +154,7 @@ def perform_pca(df: pd.DataFrame, n_components: int, output_dir: Path) -> pd.Dat
 
     output_path = output_dir / "exoplanet_pca_components.csv"
     pca_df.to_csv(output_path, index=False)
-    print(f"✓ PCA components exported -> {output_path}")
+    print(f" PCA components exported -> {output_path}")
     print(f"  Total variance explained: {explained:.4f}")
 
     return pca_df

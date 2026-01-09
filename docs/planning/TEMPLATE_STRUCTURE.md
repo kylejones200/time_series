@@ -8,7 +8,7 @@ Each concept/library has its own folder:
 
 ```
 _Templates/
-├── Template_Orbit_Python/          # Orbit - Bayesian forecasting
+├── Orbit_Python/          # Orbit - Bayesian forecasting
 │   ├── main.py
 │   ├── config.yaml
 │   ├── requirements.txt            # orbit-ml, pandas, numpy, matplotlib, pyyaml
@@ -17,7 +17,7 @@ _Templates/
 │   ├── data/
 │   └── outputs/
 │
-├── Template_Aeon_Python/            # Aeon - TS toolkit
+├── Aeon_Python/            # Aeon - TS toolkit
 │   ├── main.py
 │   ├── config.yaml
 │   ├── requirements.txt            # aeon-toolkit, pandas, numpy, matplotlib, pyyaml
@@ -26,7 +26,7 @@ _Templates/
 │   ├── data/
 │   └── outputs/
 │
-├── Template_Kalman_Python/          # Kalman filters
+├── Kalman_Python/          # Kalman filters
 │   ├── main.py
 │   ├── config.yaml
 │   ├── requirements.txt            # filterpy, pandas, numpy, matplotlib, pyyaml
@@ -35,7 +35,7 @@ _Templates/
 │   ├── data/
 │   └── outputs/
 │
-└── Template_Merlion_Python/          # Merlion - forecasting & anomaly
+└── Merlion_Python/          # Merlion - forecasting & anomaly
     ├── main.py
     ├── config.yaml
     ├── requirements.txt            # salesforce-merlion, pandas, numpy, matplotlib, pyyaml
@@ -58,7 +58,7 @@ To use any template:
 
 ```bash
 # Copy the template you want
-cp -r Template_Orbit_Python my_orbit_project
+cp -r Orbit_Python my_orbit_project
 
 # Navigate to it
 cd my_orbit_project

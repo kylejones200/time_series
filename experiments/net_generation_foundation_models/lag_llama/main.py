@@ -158,7 +158,7 @@ def save_metrics(metrics: dict, config: Config) -> None:
     metrics_path = config.output_dir / "metrics.yaml"
     with open(metrics_path, "w") as f:
         yaml.safe_dump({k: float(v) for k, v in metrics.items()}, f)
-    print(f"✓ Metrics saved -> {metrics_path}")
+    print(f" Metrics saved -> {metrics_path}")
 
 
 def plot_tufte(
@@ -237,7 +237,7 @@ def plot_tufte(
     fig.tight_layout()
     fig.savefig(config.output_plot, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"✓ Lag-Llama plot saved -> {config.output_plot}")
+    print(f" Lag-Llama plot saved -> {config.output_plot}")
 
 
 def main() -> None:

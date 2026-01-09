@@ -1,0 +1,38 @@
+data:
+  input_file: "input.csv"
+  date_col: "date"
+  value_col: "value"
+  test_size: 0.2
+
+model:
+  arima_order: [2, 1, 2]  # [p, d, q]
+  alpha: 0.05  # Significance level (95% CI)
+  n_bootstrap: 100  # Number of bootstrap samples
+  use_bootstrap: true  # Enable bootstrap confidence intervals
+  use_parametric: true  # Enable parametric confidence intervals
+  random_seed: 42  # Random seed for reproducibility
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "g"
+    - "r"
+  linewidth: 2
+  markersize: 4
+  alpha: 0.7
+
+plot_titles:
+  confidence_intervals: "Forecast with Confidence Intervals"
+

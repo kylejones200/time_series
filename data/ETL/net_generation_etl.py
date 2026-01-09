@@ -25,7 +25,7 @@ def convert_net_generation_dataset() -> Path:
 
 def main() -> None:
     output_path = convert_net_generation_dataset()
-    print(f"✓ Net generation dataset converted: {output_path.name}")
+    print(f" Net generation dataset converted: {output_path.name}")
 
 
 if __name__ == "__main__":

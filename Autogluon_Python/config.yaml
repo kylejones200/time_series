@@ -1,0 +1,51 @@
+data:
+  input_file: "amtrak_ridership_time_series_data.csv"
+  date_col: "Year"
+  value_col: "Ridership"
+  item_id_col: null
+  default_item_id: "amtrak"
+  frequency: "A"
+
+model:
+  prediction_length: 5
+  holdout_length: 5
+  model_path: "autogluon_model"
+  eval_metric: "MAPE"
+  presets: "fast_training"  # Options: "fast_training", "medium_quality", "best_quality"
+  hyperparameters: {}  # Custom hyperparameters per model
+  num_val_windows: 1
+  save_leaderboard: true
+  
+  # Advanced options (from WIP run)
+  enable_ensemble: true  # Enable model ensemble
+  refit_every_n_windows: 1  # Refit model every N validation windows
+  refit_full: false  # Refit on full training data
+  random_seed: 123  # Random seed for reproducibility
+  
+  # Quantile forecasting (for uncertainty quantification)
+  quantile_levels: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]  # Set to null to disable
+
+plotting:
+  style:
+    spines:
+      top: false
+      right: false
+      bottom: true
+      left: true
+    grid: false
+  legend:
+    frameon: false
+    loc: "best"
+  figure_size: [15, 6]
+  dpi: 150
+  colors:
+    - "k"
+    - "g"
+    - "r"
+  linewidth: 2
+  markersize: 3
+  alpha: 0.7
+
+plot_titles:
+  autogluon_forecast: "AutoGluon Time Series Forecast"
+

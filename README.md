@@ -1,181 +1,324 @@
-# Time Series Templates
+# Time Series Forecasting for Production Data
 
-A comprehensive collection of time series forecasting and analysis templates, organized using a DRY (Don't Repeat Yourself) structure.
+A comprehensive forecasting pipeline that **compares time series methods against traditional decline curve analysis (DCA)** for oil & gas production forecasting.
 
-## 🎯 Overview
+## Overview
 
-This repository contains **48 production-ready Python templates** for time series analysis, from classical statistical methods to cutting-edge deep learning approaches. Each template is self-contained, config-driven, and follows pythonic best practices.
+This repository combines:
+- **48 production-ready Python templates** for time series forecasting (ARIMA, Prophet, deep learning, etc.)
+- **Decline Curve Analysis (DCA) models** (Arps exponential, hyperbolic, harmonic)
+- **Unified forecasting pipeline** to compare multiple models side-by-side
+- **Standardized evaluation** with consistent metrics (MSE, MAE, MAPE, R²)
 
-## 📁 Structure
+Use it to:
+- Generate production forecasts using modern time series methods
+- Compare time series forecasts against traditional DCA models
+- Evaluate model performance with consistent metrics
+- Select the best model for your production data
+
+## Quick Start
+
+### Option 1: Interactive Wizard (Recommended for New Users)
+
+```bash
+python scripts/quick_start.py
+```
+
+This interactive wizard will:
+- Help you locate and validate your data
+- Recommend suitable templates
+- Guide you through your first forecast
+
+### Option 2: Unified CLI
+
+```bash
+# List all available templates
+python forecast.py list
+
+# Validate your data
+python forecast.py validate data/my_series.csv
+
+# Get template recommendations based on your data
+python forecast.py recommend data/my_series.csv
+
+# Run a specific template
+python forecast.py run ARIMA_Python --data data/my_series.csv
+
+# Benchmark multiple templates
+python forecast.py benchmark --data data/my_series.csv
+```
+
+### Option 3: Traditional Method
+
+1. **Install Dependencies**
+
+```bash
+pip install pandas numpy scipy scikit-learn matplotlib signalplot pyyaml
+```
+
+2. **Generate Example Data**
+
+```bash
+python data/production/generate_example_data.py
+```
+
+3. **Run Comparison Example**
+
+```bash
+python examples/ts_vs_dca_comparison.py
+```
+
+### 4. Use the Pipeline in Your Code
+
+```python
+from pipelines import ForecastingPipeline, register_model
+from models.dca import ArpsExponential, ArpsHyperbolic
+
+# Register models
+register_model("Arps Exponential", lambda: ArpsExponential())
+register_model("Arps Hyperbolic", lambda: ArpsHyperbolic())
+
+# Initialize pipeline
+pipeline = ForecastingPipeline(
+    data_path="data/production/well_production.csv",
+    target_column="oil_rate",
+    forecast_horizon=12,  # months
+    train_size=0.8
+)
+
+# Add models
+pipeline.add_model_from_registry("Arps Exponential")
+pipeline.add_model_from_registry("Arps Hyperbolic")
+
+# Run and compare
+results = pipeline.run_all()
+comparison = pipeline.compare_models(results)
+print(comparison)
+
+# Save results
+pipeline.save_results(results, "outputs/well_001/")
+```
+
+## Repository Structure
 
 ```
 time_series/
-├── utils/                    # Shared utilities (DRY)
-│   ├── ts_utils.py          # Time series utilities (date handling, feature engineering)
-│   └── plotting_utils.py    # Plotting functions
-├── data/                     # Shared data directory
-├── Template_*_Python/        # Individual concept folders
-│   ├── main.py               # Main execution script
-│   ├── config.yaml           # Configuration file
-│   ├── requirements.txt      # Project-specific dependencies
-│   ├── README.md             # Project documentation
-│   └── outputs/              # Output directory
-└── WIP/                      # Work in progress (legacy files)
+├── pipelines/                   # NEW: Unified forecasting pipeline
+│   ├── forecasting_pipeline.py  # Main pipeline orchestrator
+│   ├── model_registry.py        # Model registry system
+│   └── __init__.py
+│
+├── models/                      # NEW: Model implementations
+│   ├── dca/                     # Decline Curve Analysis models
+│   │   ├── arps.py              # Arps models (exponential, hyperbolic, harmonic)
+│   │   ├── exponential.py
+│   │   └── hyperbolic.py
+│   └── __init__.py
+│
+├── evaluation/                  # NEW: Evaluation and comparison
+│   ├── metrics.py               # Standard metrics (MSE, MAE, MAPE, R²)
+│   ├── comparison.py            # Model comparison utilities
+│   └── __init__.py
+│
+├── examples/                    # NEW: Complete examples
+│   └── ts_vs_dca_comparison.py  # Full comparison example
+│
+├── data/
+│   ├── production/              # NEW: Production data examples
+│   │   ├── well_production.csv  # Single well example
+│   │   ├── multi_well.csv       # Multiple wells
+│   │   ├── generate_example_data.py
+│   │   └── README.md
+│   └── ...                      # Other datasets
+│
+├── utils/                       # Shared utilities (DRY)
+│   ├── ts_utils.py              # Time series utilities
+│   └── ...
+│
+├── *_Python/                     # Individual forecasting templates
+│   ├── main.py                  # Template execution script
+│   └── config.yaml              # Configuration
+│
+└── docs/
+    ├── sphinx/                      # ReadTheDocs documentation
+    └── planning/                    # Reference documents (see docs/planning/README.md)
 ```
 
-## 🚀 Quick Start
+## Data Format
 
-1. **Choose a template** from the list below
-2. **Navigate to the template directory**:
+Production data should be CSV files with:
+
+```csv
+well_id,date,oil_rate,gas_rate,water_rate,cum_oil,cum_gas
+WELL_001,2020-01-01,100.5,50.2,10.1,0,0
+WELL_001,2020-02-01,95.3,48.1,9.8,2958,1479
+...
+```
+
+**Required columns:**
+- `well_id`: Unique well identifier
+- `date`: Date of measurement (YYYY-MM-DD)
+- `oil_rate`: Oil production rate
+- `gas_rate`: Gas production rate (optional)
+- `water_rate`: Water production rate (optional)
+
+**Optional columns:**
+- `cum_oil`, `cum_gas`, `cum_water`: Cumulative production
+
+## Decline Curve Analysis Models
+
+The repository includes three Arps decline curve models:
+
+1. **Exponential Decline** (`b=0`): `q(t) = q_i * exp(-D_i * t)`
+2. **Hyperbolic Decline** (`0<b<1`): `q(t) = q_i / (1 + b*D_i*t)^(1/b)`
+3. **Harmonic Decline** (`b=1`): `q(t) = q_i / (1 + D_i*t)`
+
+These serve as **baseline comparisons** for time series forecasting methods.
+
+## Evaluation Metrics
+
+All models are evaluated using consistent metrics:
+
+- **MAE**: Mean Absolute Error
+- **RMSE**: Root Mean Squared Error
+- **MAPE**: Mean Absolute Percentage Error
+- **R²**: Coefficient of determination
+
+Models are automatically ranked by performance (RMSE by default).
+
+## Available Time Series Templates
+
+### Classical Methods
+- **ARIMA** - Autoregressive Integrated Moving Average
+- **ARAR** - Autoregressive Autoregressive
+- **BoxJenkins** - Systematic Box-Jenkins methodology
+- **MovingAverage** - Simple and exponential moving averages
+- **ExponentialSmoothing** - Holt-Winters exponential smoothing
+- **VAR** - Vector Autoregression
+
+### Bayesian & Statistical
+- **Bayesian** - PyMC Bayesian time series modeling
+- **BayesianChangePoint** - Bayesian change point detection
+- **Orbit** - Bayesian structural time series
+- **PyBSTS** - Bayesian structural time series
+- **Nixtla** - StatsForecast fast statistical forecasting
+
+### Modern Forecasting Libraries
+- **Prophet** - Facebook's Prophet
+- **Greykite** - LinkedIn's forecasting library
+- **Darts** - Unified forecasting interface
+- **Chronos** - Amazon Chronos transformer
+- **TimesFM** - Google TimesFM foundation model
+- **LagLlama** - Lag-Llama foundation model
+- **StatsForecast** - Nixtla statsforecast AutoARIMA
+
+### Deep Learning
+- **LSTM** - Long Short-Term Memory networks
+- **NBEATS** - Neural Basis Expansion Analysis
+- **TSAI** - Deep learning for time series
+- **BERT** - Time series classification
+
+### Feature Engineering & Analysis
+- **TSFresh** - Automated feature extraction
+- **Aeon** - Time series analysis toolkit
+- **Kalman** - State space models
+- **Differencing** - Differencing diagnostics
+- **IrregularSeries** - Irregular data handling
+- **ForecastErrorAnalysis** - Forecast error diagnostics
+
+### Specialized
+- **Merlion** - Forecasting & anomaly detection
+- **MFLEs** - Multi-frequency learning ensemble
+- **Autogluon** - Automated time series forecasting
+- **Econometrics** - Causal inference methods
+- **CCM** - Convergent Cross Mapping
+- **SparseRegression** - LASSO/Ridge/Elastic Net
+- **STUMPY_PyOD** - Matrix profile and outlier detection
+- **BollingerBands** - Technical indicators
+- **SerialCorrelation** - Serial correlation tests
+- **ConfidenceIntervals** - Bootstrap intervals
+- **RegimeSwitching** - Markov switching models
+- **TimeSeriesDecomposition** - Trend/seasonal decomposition
+- **tslearn** - Time series machine learning
+- **Volatility** - ARCH/GARCH volatility modeling
+- **TransferEntropy** - Information-theoretic inference
+- **Copula** - Multivariate dependency modeling
+- **PyTimeTK** - Feature engineering toolkit
+- **OrderedEvaluation** - Ordinal forecast scoring
+
+## ️ Using Individual Templates
+
+Each template can still be used standalone:
+
+1. **Navigate to template directory**:
    ```bash
-   cd Template_Prophet_Python
+   cd Prophet_Python
    ```
-3. **Install dependencies**:
+
+2. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
-4. **Place your data** in the shared `data/` directory
-5. **Update `config.yaml`** with your data file name and column names
-6. **Run**:
+
+3. **Place data** in the shared `data/` directory
+
+4. **Update `config.yaml`** with your data file name and column names
+
+5. **Run**:
    ```bash
    python main.py
    ```
 
-## 📚 Available Templates
+## Integration with DCA Projects
 
-### Classical Methods
-1. **ARIMA** - Autoregressive Integrated Moving Average
-2. **ARAR** - Autoregressive Autoregressive (reduced lag sets)
-3. **MovingAverage** - Simple and exponential moving averages
-4. **ExponentialSmoothing** - Simple, Double, and Triple (Holt-Winters) exponential smoothing
-5. **BoxJenkins** - Systematic Box-Jenkins methodology for ARIMA
-6. **VAR** - Vector Autoregression for multivariate time series
+This repository is designed to connect with decline curve analysis workflows:
 
-### Bayesian & Statistical
-7. **Bayesian** - PyMC Bayesian time series modeling
-8. **BayesianChangePoint** - Bayesian change point detection (MCMC)
-9. **Orbit** - Bayesian structural time series
-10. **PyBSTS** - Bayesian structural time series (pybsts, alternative to Orbit)
-11. **Nixtla** - StatsForecast fast statistical forecasting
+1. **Standardized Output**: All forecasts use the same format (pandas Series with datetime index)
+2. **Comparable Metrics**: Use the same evaluation metrics as DCA models
+3. **Unified API**: Single interface to run both TS and DCA models
+4. **Production Data Format**: Standardized CSV format for production rates
 
-### Modern Forecasting Libraries
-12. **Prophet** - Facebook's Prophet
-13. **Greykite** - LinkedIn's forecasting library
-14. **Darts** - Unified forecasting interface
-15. **PyCaret** - Low-code time series forecasting
-16. **Sundial** - Transformer-based forecasting (THUML Sundial)
-17. **Chronos** - Amazon Chronos transformer forecasting
-18. **TimesFM** - Google TimesFM foundation model
-19. **LagLlama** - Lag-Llama foundation model forecasting
-20. **StatsForecast** - Nixtla statsforecast AutoARIMA
+## Documentation
 
-### Deep Learning
-21. **LSTM** - Long Short-Term Memory networks for time series
-22. **NBEATS** - Neural Basis Expansion Analysis
-23. **TSAI** - Deep learning for time series
-24. **BERT** - Time series classification with BERT
+- **Integration Plans**: See `docs/planning/` for integration roadmaps and reference materials
+- **Data Format**: See `data/production/README.md` for production data specifications
+- **Examples**: See `examples/ts_vs_dca_comparison.py` for a complete workflow
 
-### Feature Engineering & Analysis
-25. **TSFresh** - Automated feature extraction
-26. **Aeon** - Time series analysis toolkit
-27. **Kalman** - State space models (Kalman filters)
-28. **Differencing** - Differencing diagnostics and ADF tests
-29. **IrregularSeries** - Resampling and Gaussian Process interpolation for irregular data
-30. **ForecastErrorAnalysis** - ETS-based forecast error diagnostics
+## Features
 
-### Specialized
-31. **Merlion** - Forecasting & anomaly detection (enhanced with ARIMA and AutoEncoder)
-32. **MFLEs** - Multi-frequency learning ensemble
-33. **Autogluon** - Automated time series forecasting
-34. **Econometrics** - Causal inference and econometric methods (Granger, RDD, OLS, VAR)
-35. **CCM** - Convergent Cross Mapping for causal inference
-36. **SparseRegression** - LASSO/Ridge/Elastic Net with automatic feature selection
-37. **STUMPY_PyOD** - Matrix profile and outlier detection
-38. **BollingerBands** - Technical indicators
-39. **SerialCorrelation** - Serial correlation tests and corrections
-40. **ConfidenceIntervals** - Bootstrap and parametric confidence intervals
-41. **RegimeSwitching** - Markov switching models
-42. **TimeSeriesDecomposition** - Trend, seasonal, and residual decomposition
-43. **tslearn** - Time series machine learning (clustering, DTW)
-44. **Volatility** - ARCH/GARCH volatility modeling
-45. **TransferEntropy** - Information-theoretic causal inference
-46. **Copula** - Multivariate dependency modeling with copulas
-47. **PyTimeTK** - Feature engineering toolkit for time series
-48. **OrderedEvaluation** - Scoring ordinal forecasts and policy impact
+1. **Unified Pipeline**: Run multiple models with one API
+2. **DCA Integration**: Compare time series forecasts against traditional DCA models
+3. **Standardized Evaluation**: Consistent metrics across all models
+4. **Production-Ready**: Designed for real oil & gas production data
+5. **Extensible**: Easy to add new models via the registry system
+6. **DRY Structure**: Shared utilities eliminate code duplication
 
-## 🛠️ Shared Utilities
+## Roadmap
 
-### `utils/ts_utils.py`
-Common time series operations:
-- `load_ts_data()` - Load time series from CSV
-- `ensure_datetime_index()` - Ensure datetime index
-- `resample_ts()` - Resample to different frequencies
-- `create_lags()` - Create lagged features
-- `create_rolling_features()` - Rolling window statistics
-- `create_time_features()` - Time-based features (year, month, day, etc.)
-- `split_ts()` - Time series train/test split
-- `detect_frequency()` - Detect time series frequency
-- `fill_missing_dates()` - Fill missing dates
-- `remove_outliers_iqr()` - Outlier removal
+### Phase 1: Core Infrastructure 
+- [x] DCA model implementations (Arps exponential, hyperbolic, harmonic)
+- [x] Unified forecasting pipeline
+- [x] Evaluation framework with standard metrics
 
-### `utils/plotting_utils.py`
-Consistent visualization:
-- `setup_figure()` - Create styled figure
-- `apply_plot_style()` - Apply matplotlib styling
-- `apply_legend()` - Configure legend
-- `save_plot()` - Save plots with config
+### Phase 2: Integration (In Progress)
+- [ ] Wrap existing templates for pipeline integration
+- [ ] Add more production data examples
+- [ ] Enhanced comparison tools (statistical tests, uncertainty quantification)
 
-## ⚙️ Configuration
+### Phase 3: Advanced Features (Planned)
+- [ ] Automatic model selection
+- [ ] Ensemble forecasting
+- [ ] Uncertainty quantification (prediction intervals)
+- [ ] Multi-well batch processing
+- [ ] Web dashboard for model comparison
 
-Each template has a `config.yaml` with:
-- **Data**: Input file path and column names
-- **Model**: Model-specific parameters
-- **Plotting**: Matplotlib styling (spines, grid, colors, etc.)
-- **Output**: Plot settings
-
-All templates use config-driven styling for consistent, minimalist visualizations.
-
-## ✨ Features
-
-1. **DRY Structure**: Shared utilities eliminate code duplication
-2. **Consistency**: All templates follow the same patterns
-3. **Maintainability**: Update utilities once, all templates benefit
-4. **Self-Contained**: Each template has its own `requirements.txt`
-5. **Config-Driven**: Easy customization via YAML
-
-
-## 📊 Data Format
-
-All templates expect CSV files with:
-- A date column (configurable name)
-- One or more value columns (configurable names)
-- Data sorted by date
-
-Place your data files in the shared `data/` directory.
-
-## 🔧 Requirements
-
-Each template has its own `requirements.txt`. Common dependencies include:
-- `pandas` - Data manipulation
-- `numpy` - Numerical computing
-- `matplotlib` - Visualization
-- `scikit-learn` - Machine learning utilities
-- `pyyaml` - Configuration files
-
-## 📝 Notes
-
-- All templates import from shared `utils/` directory
-- All templates load data from shared `data/` directory
-- Outputs are saved to each template's `outputs/` directory
-- Templates are designed to be production-ready and well-documented
-
-## 🤝 Contributing
+## Contributing
 
 This is a personal research collection, but feel free to:
 - Explore the methodologies
 - Adapt code for your projects
 - Suggest improvements or report issues
 
-## 📄 License
+## License
 
 MIT License - See individual files for specific attributions and data source licenses.

@@ -1,69 +1,51 @@
-# Planning Documents
+# Reference Documents
 
-This directory contains all planning, structure, and status documents for the time series repository.
+This directory contains useful reference materials for developers and contributors.
 
-## Document Index
+## Active Reference Documents
 
-### Current Plans & Status
+### Code Quality & Patterns
 
-1. **REPO_CLEANUP_PLAN.md** - Comprehensive cleanup and organization plan for the repository
-   - Current state analysis
-   - Cleanup strategy (4 phases)
-   - Immediate actions
-   - Long-term organization goals
+1. **CI_IMPROVEMENTS.md** - CI best practices and patterns
+   - Optional dependency handling
+   - File handling for Windows compatibility
+   - Type hints for optional dependencies
+   - Prevention guidelines
 
-2. **WIP_CONVERSION_PLAN.md** - Plan for converting WIP notebooks to templates
-   - Priority list of templates to create
-   - Status tracking
-   - Template structure guidelines
+2. **PYTHONIC_PATTERNS.md** - Python coding patterns and best practices
+   - Code style guidelines
+   - Patterns to follow
 
-3. **TEMPLATE_STATUS.md** - Current status of template creation
-   - Completed templates (12/18)
-   - Remaining templates (6/18)
-   - Structure guidelines
-
-### Structure & Organization
-
-4. **DIRECTORY_STRUCTURE_PLAN.md** - Proposed directory organization
-   - Categorization by domain (forecasting, anomaly detection, etc.)
-   - File organization strategy
-
-5. **PROJECT_STRUCTURE_PROPOSAL.md** - Proposed project structure
-   - Template structure (config.yaml, requirements.txt, main.py)
-   - Example configurations
-   - DRY principles
-
-6. **TEMPLATE_STRUCTURE.md** - Detailed template structure guidelines
+3. **TEMPLATE_STRUCTURE.md** - Template structure guidelines
    - File organization
    - Configuration patterns
    - Best practices
 
-### Historical/Completed Work
+### Integration Plans
 
-7. **CLEANUP_SUMMARY.md** - Summary of duplicate notebook cleanup
-   - Results and statistics
-   - Strategy used
-   - Files preserved/removed
+4. **DCA_INTEGRATION_PLAN.md** - Decline Curve Analysis integration roadmap
+   - Architecture for DCA integration
+   - Future enhancements
 
-8. **TEMPLATE_CREATION_SUMMARY.md** - Summary of template creation process
-   - Process overview
-   - Lessons learned
+## Archived Documents
 
-### Guidelines & Patterns
+Historical and completed work documents have been moved to `docs/archive/`:
 
-9. **PYTHONIC_PATTERNS.md** - Python coding patterns and best practices
-   - Code style guidelines
-   - Patterns to follow
+- Migration status documents (all 48 templates migrated )
+- Cleanup summaries (cleanup completed )
+- Template creation summaries (templates created )
+- Status tracking documents (work completed )
+- Structure proposals (implemented )
 
-## Quick Reference
+## Related Documentation
 
-- **Active Cleanup Plan**: See `REPO_CLEANUP_PLAN.md`
-- **Template Status**: See `TEMPLATE_STATUS.md`
-- **Project Structure**: See `PROJECT_STRUCTURE_PROPOSAL.md`
+- **User Documentation**: `docs/sphinx/` - Complete ReadTheDocs documentation
+- **Code Quality**: `.cursor/code_quality.md` - Coding guidelines
+- **Usage Guide**: `USAGE_GUIDE.md` - How to use the library
+- **Simplification Roadmap**: `SIMPLIFICATION_ROADMAP.md` - Future improvements
 
 ## Notes
 
-- Documents are organized chronologically and by topic
-- Historical documents (like CLEANUP_SUMMARY.md) are kept for reference
-- Active planning documents should be updated as work progresses
-
+- Only active reference documents remain here
+- Historical documents are in `docs/archive/` for reference
+- All completed work is documented in git history

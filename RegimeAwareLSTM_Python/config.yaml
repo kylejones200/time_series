@@ -1,0 +1,26 @@
+data:
+  input_file: "reference/example_series.csv"
+  date_column: "date"
+  value_column: "value"
+
+model:
+  regime_detection: "simple"          # "simple" (quantile-based) or "advanced" (Markov switching)
+  num_regimes: 2                      # Number of regimes to detect
+  sequence_length: 30                 # LSTM sequence length
+  hidden_dim: 64                      # LSTM hidden dimension
+  num_layers: 1                       # Number of LSTM layers
+  regime_embed_dim: 4                 # Dimension of regime embeddings
+  epochs: 10                          # Training epochs
+  learning_rate: 0.001                 # Learning rate
+  batch_size: 32                      # Batch size
+
+evaluation:
+  test_size: 0.2
+
+output:
+  output_dir: "outputs"
+  plot_file: "regime_lstm_comparison.png"
+  predictions_file: "regime_lstm_predictions.csv"
+  metrics_file: "regime_lstm_metrics.csv"
+  dpi: 300
+
