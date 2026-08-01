@@ -1,6 +1,6 @@
 data:
-  series1_file: "series1.csv"
-  series2_file: "series2.csv"
+  series1_file: "morocco_daily_total_load.csv"
+  series2_file: "morocco_zone1_daily_load.csv"
   date_col: "date"
   series1_col: "value"
   series2_col: "value"

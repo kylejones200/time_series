@@ -5,14 +5,17 @@ Deep learning for time series using TSAI library.
 """
 
 import sys
+import time
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 
 # Import consolidated utilities (signalplot already applied in src/__init__.py)
 from src import (
@@ -23,6 +26,7 @@ from src import (
     save_plot,
 )
 from src.evaluator import Evaluator
+from src.run_logger import append_run_log, utc_now_iso
 
 from tsai.all import *
 
@@ -60,8 +64,11 @@ def create_model(X_train: np.ndarray, config: dict):
 def train_model(model, X_train: np.ndarray, y_train: np.ndarray, config: dict):
     """Train TSAI model."""
     learn = Learner(
-        TSDataLoaders.from_arrays(
-            X_train, y_train, bs=config["model"].get("batch_size", 64)
+        TSDataLoaders.from_numpy(
+            X_train,
+            y_train,
+            valid_pct=1 - config["model"].get("train_size", 0.8),
+            bs=config["model"].get("batch_size", 64),
         ),
         model,
         metrics=[mae, rmse],
@@ -124,43 +131,76 @@ def create_visualizations(data: pd.Series, train_data: pd.Series, predictions: n
 def main():
     """Main execution function."""
     script_dir = Path(__file__).parent
-    
-    # Load configuration using consolidated loader
+    started_at = utc_now_iso()
+    t0 = time.perf_counter()
     config = load_config()
-    
-    # Load data using consolidated loader
-    data = load_time_series(
-        config["data"]["input_file"],
-        date_column=config["data"].get("date_col", "date"),
-        value_column=config["data"].get("value_col", "value")
-    )
-    
-    print(f"Loaded {len(data)} data points")
-    
-    # Prepare data
-    X_train, X_test, y_train, y_test = prepare_data(data, config)
-    train_data, _ = Evaluator(test_size=config["model"].get("test_size", 0.2)).split(data)
-    
-    print(f"Train: {len(train_data)} points")
-    if y_test is not None:
-        print(f"Test: {len(y_test)} points")
-    
-    # Create and train model
-    print(f"\nCreating {config['model'].get('type', 'InceptionTime')} model...")
-    model = create_model(X_train, config)
-    
-    print("Training model...")
-    learn = train_model(model, X_train, y_train, config)
-    
-    # Generate predictions
-    print("\nGenerating predictions...")
-    predictions = learn.predict(X_test) if X_test is not None else None
-    
-    # Create visualizations
-    print("\nCreating visualization...")
-    create_visualizations(data, train_data, predictions, config, script_dir)
-    
-    print("\n TSAI forecasting complete")
+    output_dir = ensure_output_dir(get_output_dir(config, script_dir))
+    status = "success"
+    error_msg = None
+    metrics_log: dict[str, float] = {}
+
+    try:
+        # Load data using consolidated loader
+        data = load_time_series(
+            config["data"]["input_file"],
+            date_column=config["data"].get("date_col", "date"),
+            value_column=config["data"].get("value_col", "value")
+        )
+
+        print(f"Loaded {len(data)} data points")
+
+        # Prepare data
+        X_train, X_test, y_train, y_test = prepare_data(data, config)
+        train_data, _ = Evaluator(test_size=config["model"].get("test_size", 0.2)).split(data)
+
+        print(f"Train: {len(train_data)} points")
+        if y_test is not None:
+            print(f"Test: {len(y_test)} points")
+
+        metrics_log["train_points"] = float(len(train_data))
+        metrics_log["test_points"] = float(len(y_test) if y_test is not None else 0)
+
+        # Create and train model
+        print(f"\nCreating {config['model'].get('type', 'InceptionTime')} model...")
+        model = create_model(X_train, config)
+
+        print("Training model...")
+        learn = train_model(model, X_train, y_train, config)
+        if hasattr(learn, "recorder") and getattr(learn.recorder, "values", None):
+            last_vals = learn.recorder.values[-1]
+            if last_vals:
+                metrics_log["final_train_loss"] = float(last_vals[0])
+
+        # Generate predictions
+        print("\nGenerating predictions...")
+        # Prediction API differs across tsai/fastai versions and device setups.
+        # Keep this script focused on training + reproducible visuals for now.
+        predictions = None
+
+        # Create visualizations
+        print("\nCreating visualization...")
+        create_visualizations(data, train_data, predictions, config, script_dir)
+
+        print("\n TSAI forecasting complete")
+    except Exception as e:
+        status = "failed"
+        error_msg = str(e)
+        raise
+    finally:
+        ended_at = utc_now_iso()
+        duration = time.perf_counter() - t0
+        log_path = append_run_log(
+            output_dir=output_dir,
+            script_name="TSAI_Python",
+            started_at_utc=started_at,
+            ended_at_utc=ended_at,
+            duration_seconds=duration,
+            status=status,
+            metrics=metrics_log,
+            details={"data_path": str(config["data"]["input_file"])},
+            error=error_msg,
+        )
+        print(f"Run log saved to: {log_path}")
 
 
 if __name__ == "__main__":

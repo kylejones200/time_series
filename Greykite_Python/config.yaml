@@ -1,5 +1,5 @@
 data:
-  input_file: "input.csv"
+  input_file: "/Users/kylejonespatricia/time_series/data/morocco_daily_total_load.csv"
   date_col: "date"
   value_col: "value"
   regressors: []

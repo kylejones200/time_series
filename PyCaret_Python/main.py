@@ -7,8 +7,9 @@ Automated time series forecasting with minimal code.
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import numpy as np
@@ -45,7 +46,7 @@ def main():
     # Setup PyCaret time series environment
     print("\nSetting up PyCaret time series environment...")
     s = setup(
-        data=series.values,
+        data=series,
         fh=config["model"]["forecast_horizon"],
         session_id=config["model"].get("session_id", 42),
         verbose=False,

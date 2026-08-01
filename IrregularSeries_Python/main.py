@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Optional
@@ -23,6 +24,7 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
@@ -42,8 +44,8 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    output_dir = ensure_output_dir(Path(script_dir) / "outputs")
-    
+    common = parse_common_config(config_dict, script_dir)
+
     sim_cfg = config_dict["simulation"]
     gp_cfg = config_dict["gaussian_process"]
     
@@ -54,7 +56,7 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
         n_points=sim_cfg["n_points"],
         gap_prob=sim_cfg["gap_probability"],
         gp_length_scale=gp_cfg["length_scale"],
-        output_dir=output_dir,
+        output_dir=common.output_dir,
     )
 
 

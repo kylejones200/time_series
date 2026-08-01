@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -23,6 +24,7 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from aeon.clustering import TimeSeriesKMeans
 from aeon.distances import dtw_distance
@@ -48,20 +50,18 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_cfg = config_dict["data"]
+    common = parse_common_config(config_dict, script_dir)
     cluster_cfg = config_dict["clustering"]
     plot_cfg = config_dict["plotting"]
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
-    
+
     figsize = tuple(plot_cfg.get("figsize", [16, 10]))
     dpi = int(plot_cfg.get("dpi", 150))
-    
+
     return Config(
-        data_path=repo_root / "data" / data_cfg["input_file"],
-        date_col=data_cfg["date_col"],
-        value_col=data_cfg["value_col"],
-        freq=data_cfg.get("freq", "MS"),
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
+        freq=config_dict["data"].get("freq", "MS"),
         n_clusters=int(cluster_cfg.get("n_clusters", 3)),
         distance=cluster_cfg.get("distance", "dtw"),
         season_length=int(cluster_cfg.get("season_length", 12)),
@@ -69,8 +69,8 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
             "colors",
             ["#1f77b4", "#ff7f0e", "#2ca02c", "#9467bd", "#8c564b"],
         ),
-        output_dir=output_dir,
-        output_plot=output_dir / config_dict["output"]["cluster_summary_plot"],
+        output_dir=common.output_dir,
+        output_plot=common.output_dir / config_dict["output"]["cluster_summary_plot"],
         figsize=figsize,
         dpi=dpi,
     )

@@ -15,5 +15,5 @@ model:
   horizon: 8
 
 output:
-  tufte_plot: "lag_llama_tufte.png"
+  tufte_plot: "granite_ttm_tufte.png"
   output_dir: "outputs"

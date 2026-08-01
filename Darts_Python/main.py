@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional
@@ -127,10 +128,16 @@ def main() -> None:
     # Convert to Darts TimeSeries
     ts = TimeSeries.from_series(series)
     
-    # Evaluate models
-    horizon = config["model"]["horizon"]
-    n_splits = config["model"]["n_splits"]
-    models_config = config["model"]["models"]
+    # Evaluate models (support legacy and nested config layouts)
+    if "model" in config:
+        horizon = config["model"]["horizon"]
+        n_splits = config["model"]["n_splits"]
+        models_config = config["model"]["models"]
+    else:
+        eval_cfg = config.get("evaluations", {}).get("overview_last_fold") or config.get("evaluations", {}).get("tufte_last_fold", {})
+        horizon = int(eval_cfg.get("horizon", 12))
+        n_splits = int(eval_cfg.get("n_splits", 5))
+        models_config = config.get("models", {}).get("overview_last_fold") or config.get("models", {}).get("tufte_last_fold", [])
     
     results = []
     for model_cfg in models_config:

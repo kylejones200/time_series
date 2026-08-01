@@ -9,8 +9,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Optional
@@ -26,6 +27,7 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from autogluon.timeseries import TimeSeriesDataFrame, TimeSeriesPredictor
 
@@ -52,18 +54,15 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    
-    if not data_path.exists():
-        raise FileNotFoundError(f"Input CSV not found at {data_path}")
-    
-    output_dir = ensure_output_dir(Path(script_dir) / "outputs")
-    
+    common = parse_common_config(config_dict, script_dir)
+
+    if not common.data_path.exists():
+        raise FileNotFoundError(f"Input CSV not found at {common.data_path}")
+
     return Config(
-        data_path=data_path,
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         item_id_col=config_dict["data"].get("item_id_col"),
         default_item_id=config_dict["data"].get("default_item_id", "series_1"),
         frequency=config_dict["data"].get("frequency"),
@@ -77,7 +76,7 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
         hyperparameters=config_dict["model"].get("hyperparameters", {}),
         num_val_windows=config_dict["model"].get("num_val_windows", 1),
         save_leaderboard=config_dict["model"].get("save_leaderboard", True),
-        output_dir=output_dir,
+        output_dir=common.output_dir,
     )
 
 

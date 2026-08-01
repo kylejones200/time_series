@@ -1,30 +1,22 @@
 data:
-  input_file: "production/north_dakota_production.csv"  # Panel data with entity and date columns
-  entity_column: "API_WELLNO"  # Column identifying entities (e.g., well IDs)
-  date_column: "ReportDate"  # Date column
-  dependent_variable: "Oil"  # Dependent variable (e.g., production rate)
-
+  input_file: /Users/kylejonespatricia/time_series/data/_harness_adapted/PanelRegression_Python_us_monthly.csv
+  entity_column: API_WELLNO
+  date_column: ReportDate
+  dependent_variable: Oil
 model:
-  independent_vars: ["Days"]  # List of independent variables
-  entity_effects: true  # Include entity fixed effects
-  time_effects: false  # Include time fixed effects
-  
-  # Standard error types
-  driscoll_kraay: true  # Driscoll-Kraay standard errors
-  clustered: true  # Clustered standard errors
-  robust: false  # Robust standard errors
-  
-  # Driscoll-Kraay parameters
-  bandwidth: 3  # Bandwidth for kernel
-  kernel: "bartlett"  # Kernel type
-  
-  # Clustered SE parameters
-  cluster_entity: true  # Cluster by entity
-  cluster_time: false  # Cluster by time
-
+  independent_vars:
+  - Days
+  entity_effects: false
+  time_effects: false
+  driscoll_kraay: false
+  clustered: false
+  robust: true
+  bandwidth: 3
+  kernel: bartlett
+  cluster_entity: false
+  cluster_time: false
 output:
-  output_dir: "outputs"
-  plot_file: "panel_regression.png"
-  results_file: "panel_regression_results.csv"
+  output_dir: outputs
+  plot_file: panel_regression.png
+  results_file: panel_regression_results.csv
   dpi: 300
-

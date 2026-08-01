@@ -7,8 +7,9 @@ Tests and corrections for serial correlation in time series regression models.
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -45,17 +46,30 @@ def main():
     # Convert to DataFrame for feature engineering
     df = pd.DataFrame({config["data"]["value_col"]: series})
     
-    y_col = config["model"]["y_col"]
-    x_cols = config["model"]["x_cols"]
+    y_col = config["model"].get("y_col", config["data"].get("value_col", "value"))
+    x_cols = list(config["model"].get("x_cols", [y_col]))
+    # Guard against degenerate regression where predictor equals target.
+    x_cols = [c for c in x_cols if c != y_col]
     
     # Create lags if configured
     if config["model"].get("create_lags", False):
         from utils.ts_utils import create_lags
-        for lag in range(1, config["model"].get("max_lags", 2) + 1):
-            df = create_lags(df, x_cols[0], [lag])
-            x_cols.append(f"{x_cols[0]}_lag{lag}")
+        base = x_cols[0] if x_cols else y_col
+        lag_list = list(range(1, config["model"].get("max_lags", 2) + 1))
+        lag_df = create_lags(df[base], lag_list)
+        # create_lags returns columns: value, lag_{k}
+        for lag in lag_list:
+            src = f"lag_{lag}"
+            dst = f"{base}_lag{lag}"
+            df[dst] = lag_df[src].values
+            x_cols.append(dst)
     
-    df = df[[y_col] + x_cols].dropna()
+    # De-duplicate any accidentally repeated predictors while preserving order.
+    ordered_cols = [y_col]
+    for col in x_cols:
+        if col not in ordered_cols:
+            ordered_cols.append(col)
+    df = df[ordered_cols].dropna()
     
     y = df[y_col]
     X = df[x_cols]

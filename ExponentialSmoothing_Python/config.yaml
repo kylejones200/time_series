@@ -1,5 +1,5 @@
 data:
-  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
+  input_file: "us_all_sectors_generation_monthly.csv"
   date_col: "date"
   value_col: "value"
   freq: "MS"

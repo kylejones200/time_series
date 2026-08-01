@@ -1,9 +1,8 @@
 data:
-  input_file: "input.csv"
-  date_col: "date"
-  value_col: "value"
+  input_file: /Users/kylejonespatricia/time_series/data/morocco_daily_total_load.csv
+  date_col: date
+  value_col: value
   test_size: 0.2
-
 model:
   use_auto_arima: true
   start_p: 0
@@ -11,11 +10,10 @@ model:
   max_p: 5
   max_q: 5
   max_d: 3
-  d: null  # Auto-detect if null
-  p: 1  # Used if use_auto_arima is false
-  q: 1  # Used if use_auto_arima is false
+  d: null
+  p: 1
+  q: 1
   seasonal: false
-
 plotting:
   style:
     spines:
@@ -26,17 +24,17 @@ plotting:
     grid: false
   legend:
     frameon: false
-    loc: "best"
-  figure_size: [15, 6]
+    loc: best
+  figure_size:
+  - 15
+  - 6
   dpi: 150
   colors:
-    - "k"
-    - "g"
-    - "r"
+  - k
+  - g
+  - r
   linewidth: 2
   markersize: 3
   alpha: 0.7
-
 plot_titles:
-  box_jenkins_forecast: "Box-Jenkins ARIMA Forecast"
-
+  box_jenkins_forecast: Box-Jenkins ARIMA Forecast

@@ -1,15 +1,15 @@
 data:
-  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
+  input_file: "/Users/kylejonespatricia/time_series/data/morocco_daily_total_load.csv"
   date_col: "date"
   value_col: "value"
-  freq: "MS"
+  freq: "D"
 
 model:
-  horizon: 12
+  horizon: 14
   n_splits: 5
-  input_chunk_length: 36
-  output_chunk_length: 12
-  n_epochs: 50
+  input_chunk_length: 60
+  output_chunk_length: 14
+  n_epochs: 20
 
 output:
   tufte_plot: "eia_nbeats_last_fold.png"

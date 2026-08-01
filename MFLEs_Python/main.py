@@ -7,8 +7,9 @@ Ensemble forecasting using multiple frequency components.
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import numpy as np
@@ -38,15 +39,21 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 def extract_frequency_components(data: pd.Series, config: dict):
     """Extract features from multiple frequency components."""
     from utils.ts_utils import create_time_features, create_lags, create_rolling_features
-    
-    features = create_time_features(data)
-    features = create_lags(data, config["model"].get("lags", [1, 2, 3, 7, 14]))
-    features = create_rolling_features(
+
+    time_feats = create_time_features(data)
+    lag_feats = create_lags(data, config["model"].get("lags", [1, 2, 3, 7, 14]))
+    roll_feats = create_rolling_features(
         data,
         windows=config["model"].get("windows", [7, 14, 30]),
         functions=config["model"].get("rolling_funcs", ["mean", "std"]),
     )
-    
+
+    features = pd.concat([time_feats, lag_feats, roll_feats], axis=1)
+    # Prevent leakage: remove the contemporaneous target from features.
+    features = features.loc[:, ~features.columns.duplicated()]
+    if "value" in features.columns:
+        features = features.drop(columns=["value"])
+
     return features
 
 
@@ -103,7 +110,10 @@ def main():
     
     # Prepare data - shift target for next-step prediction
     features = features.dropna()
-    target = series.loc[features.index]
+    target = series.shift(-1).loc[features.index]
+    valid = ~target.isna()
+    features = features.loc[valid]
+    target = target.loc[valid]
     
     # Split train/test using consolidated evaluator
     evaluator = Evaluator(test_size=config.get("evaluation", {}).get("test_size", 0.2))

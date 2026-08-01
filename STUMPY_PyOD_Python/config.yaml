@@ -1,8 +1,8 @@
 data:
-  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
+  input_file: "/Users/kylejonespatricia/time_series/data/morocco_daily_total_load.csv"
   date_col: "date"
   value_col: "value"
-  freq: "MS"
+  freq: "D"
 
 methods:
   stl:
@@ -14,7 +14,7 @@ methods:
     enabled: true
     window: 24
     batch_size: 32
-    epochs: 200
+    epochs: 40
     learning_rate: 0.001
     z_threshold: 3.0
     output_plot: "eia_anomaly_autoencoder.png"

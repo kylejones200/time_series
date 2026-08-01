@@ -1,5 +1,5 @@
 data:
-  input_file: "amtrak_ridership_time_series_data.csv"
+  input_file: "us_all_sectors_generation_monthly.csv"
   date_col: "Year"
   value_col: "Ridership"
   item_id_col: null

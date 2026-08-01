@@ -4,8 +4,9 @@
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Tuple, Optional
@@ -22,6 +23,7 @@ from src import (
     ensure_output_dir,
     get_output_dir,
 )
+from src.config import parse_common_config
 
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import TimeSeriesSplit
@@ -49,16 +51,15 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
+    common = parse_common_config(config_dict, script_dir)
+
     
     experiment = config_dict["experiment"]
     
     return Config(
-        data_path=data_path,
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         freq=config_dict["data"].get("freq", "MS"),
         history_end=pd.Timestamp(experiment["history_end"]),
         forecast_start=pd.Timestamp(experiment["forecast_start"]),
@@ -66,9 +67,9 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
         horizon=int(config_dict["evaluation"]["horizon"]),
         n_splits=int(config_dict["evaluation"]["n_splits"]),
         season=int(config_dict["evaluation"]["season"]),
-        output_dir=output_dir,
-        ets_plot=output_dir / config_dict["output"]["ets_plot"],
-        comparison_plot=output_dir / config_dict["output"]["comparison_plot"],
+        output_dir=common.output_dir,
+        ets_plot=common.output_dir / config_dict["output"]["ets_plot"],
+        comparison_plot=common.output_dir / config_dict["output"]["comparison_plot"],
     )
 
 

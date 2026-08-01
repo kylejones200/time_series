@@ -129,11 +129,17 @@ def parametric_confidence_intervals(
         raise AttributeError("Model must have 'get_forecast' method for parametric CIs")
     
     forecast_result = model.get_forecast(steps=forecast_steps)
-    mean_forecast = forecast_result.predicted_mean.values
+    predicted_mean = forecast_result.predicted_mean
+    mean_forecast = predicted_mean.values if hasattr(predicted_mean, "values") else np.asarray(predicted_mean)
     conf_int = forecast_result.conf_int(alpha=1 - confidence)
     
-    lower_bound = conf_int.iloc[:, 0].values
-    upper_bound = conf_int.iloc[:, 1].values
+    if hasattr(conf_int, "iloc"):
+        lower_bound = conf_int.iloc[:, 0].values
+        upper_bound = conf_int.iloc[:, 1].values
+    else:
+        ci_arr = np.asarray(conf_int)
+        lower_bound = ci_arr[:, 0]
+        upper_bound = ci_arr[:, 1]
     
     return mean_forecast, lower_bound, upper_bound
 

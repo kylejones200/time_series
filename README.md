@@ -16,6 +16,20 @@ Use it to:
 - Evaluate model performance with consistent metrics
 - Select the best model for your production data
 
+## Environment Setup
+
+Use a single virtual environment (specialty venvs were consolidated):
+
+```bash
+cd time_series
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+pip install -r requirements.txt   # optional extras (tensorflow, torch, etc.)
+```
+
+After `pip install -e .`, templates can `import src` without manual path hacks.
+
 ## Quick Start
 
 ### Option 1: Interactive Wizard (Recommended for New Users)

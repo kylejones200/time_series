@@ -1,12 +1,12 @@
 data:
-  input_file: "input.csv"
+  input_file: "us_all_sectors_generation_monthly.csv"
   date_col: "date"
   value_col: "value"
 
 model:
   k_regimes: 2  # Number of regimes
   trend: "c"  # Options: "c" (constant), "n" (none)
-  switching_variance: true  # Allow variance to switch between regimes
+  switching_variance: false  # Allow variance to switch between regimes
 
 plotting:
   style:

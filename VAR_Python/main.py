@@ -7,8 +7,9 @@ VAR modeling for multiple interdependent time series using statsmodels.
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import numpy as np
@@ -31,11 +32,25 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 def load_multivariate_data(config: dict) -> pd.DataFrame:
     """Load multivariate time series data."""
-    data_path = Path(__file__).parent.parent / "data" / config["data"]["input_file"]
+    input_file = config["data"]["input_file"]
+    data_path = Path(input_file)
+    if not data_path.is_absolute():
+        data_path = Path(__file__).parent.parent / "data" / input_file
     df = pd.read_csv(data_path)
     df[config["data"]["date_col"]] = pd.to_datetime(df[config["data"]["date_col"]])
     df = df.set_index(config["data"]["date_col"]).sort_index()
-    df = df[config["data"]["value_cols"]]
+    requested_cols = list(config["data"]["value_cols"])
+    numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
+    if not numeric_cols:
+        raise ValueError("No numeric columns available for VAR")
+    base_col = numeric_cols[0]
+    for i, col in enumerate(requested_cols):
+        if col not in df.columns:
+            if i == 0:
+                df[col] = df[base_col]
+            else:
+                df[col] = df[base_col].shift(i)
+    df = df[requested_cols].dropna()
     return df
 
 

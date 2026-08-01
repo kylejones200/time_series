@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from collections import deque
 from dataclasses import dataclass
@@ -24,10 +25,12 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
@@ -52,24 +55,23 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
+    common = parse_common_config(config_dict, script_dir)
+
     
     return Config(
-        data_path=data_path,
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         freq=config_dict["data"].get("freq", "MS"),
         horizon=int(config_dict["evaluation"]["horizon"]),
         n_splits=int(config_dict["evaluation"]["n_splits"]),
         season=int(config_dict["evaluation"]["season"]),
         max_lag=int(config_dict["evaluation"]["max_lag"]),
-        output_dir=output_dir,
-        uni_multi_plot=output_dir / config_dict["output"]["uni_multi_plot"],
-        baseline_plot=output_dir / config_dict["output"]["baseline_plot"],
-        ensemble_plot=output_dir / config_dict["output"]["ensemble_plot"],
-        streaming_plot=output_dir / config_dict["output"]["streaming_plot"],
+        output_dir=common.output_dir,
+        uni_multi_plot=common.output_dir / config_dict["output"]["uni_multi_plot"],
+        baseline_plot=common.output_dir / config_dict["output"]["baseline_plot"],
+        ensemble_plot=common.output_dir / config_dict["output"]["ensemble_plot"],
+        streaming_plot=common.output_dir / config_dict["output"]["streaming_plot"],
     )
 
 
@@ -84,18 +86,28 @@ def load_series(config: Config) -> pd.Series:
     
     if config.freq:
         series = series.asfreq(config.freq)
-    
-    return series.astype(float)
+
+    # Avoid leakage: only forward-fill missing values from past observations.
+    return series.astype(float).ffill().dropna()
 
 
 def make_calendar_features(index: pd.DatetimeIndex) -> pd.DataFrame:
-    """Create calendar features."""
+    """Create compact seasonal features with stable scale."""
     df = pd.DataFrame(index=index)
-    month = df.index.month.values
-    df["sin12"] = np.sin(2 * np.pi * month / 12.0)
-    df["cos12"] = np.cos(2 * np.pi * month / 12.0)
-    month_dummies = pd.get_dummies(month, prefix="month")
-    df = df.join(month_dummies)
+    inferred = pd.infer_freq(index)
+    is_daily = inferred in {"D", "B", "H"} or (inferred is None and len(index) > 40)
+    if is_daily:
+        dow = df.index.dayofweek.values
+        doy = df.index.dayofyear.values
+        df["dow_sin"] = np.sin(2 * np.pi * dow / 7.0)
+        df["dow_cos"] = np.cos(2 * np.pi * dow / 7.0)
+        df["doy_sin"] = np.sin(2 * np.pi * doy / 365.25)
+        df["doy_cos"] = np.cos(2 * np.pi * doy / 365.25)
+    else:
+        month = df.index.month.values
+        df["sin12"] = np.sin(2 * np.pi * month / 12.0)
+        df["cos12"] = np.cos(2 * np.pi * month / 12.0)
+    df["trend"] = np.arange(len(df), dtype=float)
     return df
 
 
@@ -132,13 +144,16 @@ def rolling_origin_uni_vs_multi(
         
         # Multivariate regression
         cal_features = make_calendar_features(train_series.index)
-        X_train = cal_features.values
+        scaler = StandardScaler()
+        X_train = scaler.fit_transform(cal_features.values)
         y_train = train_series.values
         
         reg = LinearRegression().fit(X_train, y_train)
         
         future_cal_features = make_calendar_features(future_series.index)
-        X_future = future_cal_features.values
+        # Keep feature layout consistent between train and future windows.
+        future_cal_features = future_cal_features.reindex(columns=cal_features.columns, fill_value=0.0)
+        X_future = scaler.transform(future_cal_features.values)
         mul_forecast = pd.Series(reg.predict(X_future), index=future_series.index)
         mul_mae = mean_absolute_error(future_series.values, mul_forecast.values)
         mul_maes.append(mul_mae)

@@ -4,20 +4,15 @@ ARAR: Autoregressive Autoregressive
 Refactored to support config-driven workflows, evaluation, and comparison with ARIMA.
 """
 
-#!/usr/bin/env python3
-"""
-ARAR: Autoregressive Autoregressive
-Refactored to support config-driven workflows, evaluation, and comparison with ARIMA.
-"""
-
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 from typing import Dict, List
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import matplotlib.pyplot as plt
 import numpy as np

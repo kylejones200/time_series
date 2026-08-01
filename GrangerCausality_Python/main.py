@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import warnings
 import numpy as np
@@ -89,7 +90,7 @@ def load_multivariate_data(
             # Merge on index
             df = pd.concat(dfs, axis=1)
         
-        # Single file, single column (fallback - not ideal for Granger)
+        # Single file, single column (fallback - synthesize a lagged predictor)
         else:
             from src import load_time_series
             first_series = load_time_series(
@@ -97,7 +98,12 @@ def load_multivariate_data(
                 date_column=data_config.get("date_column", "date"),
                 value_column=data_config.get("value_column", "value"),
             )
-            df = pd.DataFrame({data_config.get("series_names", ["series1"])[0]: first_series})
+            series_names = data_config.get("series_names", ["target", "predictor"])
+            target_name = series_names[0]
+            predictor_name = series_names[1] if len(series_names) > 1 else "predictor"
+            df = pd.DataFrame({target_name: first_series})
+            df[predictor_name] = df[target_name].shift(1)
+            df = df.dropna()
         
         return df.dropna()
     
@@ -344,6 +350,11 @@ def main():
     
     # Get series names from config
     series_names = config["data"].get("series_names", list(df.columns))
+    if len(series_names) >= 2:
+        for name in series_names[:2]:
+            if name not in df.columns:
+                series_names = list(df.columns)
+                break
     if len(series_names) < 2:
         raise ValueError("Need at least 2 series for Granger causality testing")
     

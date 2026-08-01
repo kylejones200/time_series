@@ -1,8 +1,8 @@
 data:
-  input_file: "input.csv"  # Ignored if url is provided
-  url: "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.csv"
-  date_col: "Year"
-  value_col: "Temperature Anomaly"
+  input_file: "us_all_sectors_generation_monthly.csv"
+  url: null
+  date_col: "date"
+  value_col: "value"
   resample_rule: null
 
 model:

@@ -4,11 +4,11 @@
 from __future__ import annotations
 
 import sys
-import os
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Optional
@@ -26,6 +26,7 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from chronos import ChronosPipeline
 from matplotlib.ticker import MaxNLocator, StrMethodFormatter
@@ -55,18 +56,17 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    output_dir = ensure_output_dir(Path(script_dir) / "outputs")
+    common = parse_common_config(config_dict, script_dir)
+
     
     plotting_cfg = config_dict.get("plotting", {})
     tufte_cfg = plotting_cfg.get("tufte", {})
     forecast_cfg = plotting_cfg.get("forecast", {})
     
     return Config(
-        data_path=data_path,
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         resample_rule=config_dict["data"].get("resample_rule"),
         frequency=config_dict["data"].get("frequency"),
         context_length=config_dict["model"].get("context_length"),
@@ -75,7 +75,7 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
         device_map=config_dict["model"].get("device_map", "cpu"),
         torch_dtype=config_dict["model"].get("torch_dtype", "float32"),
         num_samples=config_dict["model"].get("num_samples", 20),
-        output_dir=output_dir,
+        output_dir=common.output_dir,
         tufte_cfg=tufte_cfg,
         forecast_plot_cfg=forecast_cfg,
     )

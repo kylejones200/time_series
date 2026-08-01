@@ -1,5 +1,5 @@
 data:
-  input_file: "input.csv"
+  input_file: "us_all_sectors_generation_monthly.csv"
   date_col: "date"
   value_col: "value"
 

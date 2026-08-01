@@ -7,22 +7,15 @@ Automatic forecasting procedure for business time series.
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import matplotlib.pyplot as plt
 from prophet import Prophet
 
-# Import consolidated utilities (signalplot already applied in src/__init__.py)
-from src import (
-    load_config,
-    load_time_series,
-    create_forecast_plot,
-    save_plot,
-    ensure_output_dir,
-    get_output_dir,
-)
+from src import BaseTemplate
 
 
 def prepare_data(data: pd.Series) -> pd.DataFrame:
@@ -59,66 +52,47 @@ def fit_and_predict(model: Prophet, df: pd.DataFrame, config: dict) -> pd.DataFr
 
 def main():
     """Main execution function."""
-    # Load configuration using consolidated loader
-    config = load_config()
-    
-    # Load data using consolidated loader
-    series = load_time_series(
-        config["data"]["input_file"],
-        date_column=config["data"].get("date_column", "date"),
-        value_column=config["data"].get("value_column", "value")
-    )
-    
+    template = BaseTemplate(config_path="config.yaml", script_dir=Path(__file__).parent)
+    config = template.config
+    series = template.load_data()
+
     print(f"Loaded {len(series)} data points")
     print(f"Date range: {series.index.min()} to {series.index.max()}")
-    
-    # Prepare data for Prophet
+
     df = prepare_data(series)
-    
-    # Create and fit model
+
     print("\nFitting Prophet model...")
     model = create_prophet_model(config)
     forecast = fit_and_predict(model, df, config)
-    
-    # Extract forecast components
+
     forecast_period = forecast[forecast["ds"] > series.index.max()]
-    historical_period = forecast[forecast["ds"] <= series.index.max()]
-    
-    # Create forecast Series with confidence intervals
     forecast_series = pd.Series(
         forecast_period["yhat"].values,
-        index=pd.to_datetime(forecast_period["ds"])
+        index=pd.to_datetime(forecast_period["ds"]),
     )
-    
-    conf_int = pd.DataFrame({
-        "lower": forecast_period["yhat_lower"].values,
-        "upper": forecast_period["yhat_upper"].values,
-    }, index=forecast_series.index)
-    
-    # Create plot using consolidated plotting utility
+    conf_int = pd.DataFrame(
+        {
+            "lower": forecast_period["yhat_lower"].values,
+            "upper": forecast_period["yhat_upper"].values,
+        },
+        index=forecast_series.index,
+    )
+
     print("\nCreating visualization...")
-    fig, ax = create_forecast_plot(
+    fig, ax = template.create_plot(
         train=series,
         forecast=forecast_series,
         conf_int=conf_int,
         figsize=tuple(config["plotting"].get("figure_size", [12, 6])),
         title="Prophet Forecast",
     )
-    
-    # Save plot using consolidated utility
+
     if config["output"].get("save_plots", True):
-        script_dir = Path(__file__).parent
-        output_dir = ensure_output_dir(get_output_dir(config, script_dir))
-        plot_path = save_plot(
-            fig,
-            output_dir / "prophet_forecast.png",
-            dpi=config.get("output", {}).get("dpi", 300)
-        )
+        plot_path = template.save_plot(fig, "prophet_forecast.png")
         print(f"Plot saved to: {plot_path}")
-    
+
     print("\n Prophet forecasting complete")
-    
-    # Show plot if configured
+
     if config.get("plotting", {}).get("show_plot", True):
         plt.show()
     else:

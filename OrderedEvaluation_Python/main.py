@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Optional
@@ -24,6 +25,7 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from scipy.stats import wilcoxon
 from sklearn.metrics import cohen_kappa_score, confusion_matrix
@@ -44,8 +46,8 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    output_dir = ensure_output_dir(Path(script_dir) / "outputs")
-    
+    common = parse_common_config(config_dict, script_dir)
+
     return Config(
         n_points=config_dict["simulation"]["n_points"],
         class_labels=config_dict["simulation"]["class_labels"],
@@ -54,7 +56,7 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
         none_cost=config_dict["policy"]["none_cost"],
         risk_levels=config_dict["policy"]["risk_levels"],
         intervention_effects=config_dict["policy"]["intervention_effects"],
-        output_dir=output_dir,
+        output_dir=common.output_dir,
     )
 
 

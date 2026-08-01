@@ -7,8 +7,9 @@ Causal inference method for detecting causality in time series using state space
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import numpy as np
@@ -171,14 +172,31 @@ def main():
     config = load_config()
     
     # Load data - CCM requires two series
-    data_path = script_dir.parent / "data" / config["data"]["input_file"]
-    df = pd.read_csv(data_path, encoding="utf-8")
-    
-    series1_col = config["data"]["series1_col"]
-    series2_col = config["data"]["series2_col"]
-    
-    series1 = df[series1_col].values
-    series2 = df[series2_col].values
+    data_cfg = config["data"]
+    if "input_file" in data_cfg:
+        data_path = Path(data_cfg["input_file"])
+        if not data_path.is_absolute():
+            data_path = script_dir.parent / "data" / data_cfg["input_file"]
+        df = pd.read_csv(data_path, encoding="utf-8")
+        series1_col = data_cfg.get("series1_col", "value")
+        series2_col = data_cfg.get("series2_col", "value")
+        series1 = df[series1_col].values
+        series2 = df[series2_col].values
+    else:
+        # Fallback for split-file configs
+        def _load_series(path_key: str, value_key: str) -> np.ndarray:
+            p = Path(data_cfg[path_key])
+            if not p.is_absolute():
+                p = script_dir.parent / "data" / data_cfg[path_key]
+            s = load_time_series(
+                str(p),
+                date_column=data_cfg.get("date_col", "date"),
+                value_column=data_cfg.get(value_key, "value"),
+            )
+            return s.values
+
+        series1 = _load_series("series1_file", "series1_col")
+        series2 = _load_series("series2_file", "series2_col")
     
     print(f"Loaded {len(series1)} data points for both series")
     

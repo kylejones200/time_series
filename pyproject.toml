@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ts-forecast"
+version = "0.1.0"
+description = "Time series forecasting templates and pipeline for production data"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "scikit-learn>=1.4",
+    "statsmodels>=0.14",
+    "pmdarima>=2.0",
+    "openpyxl>=3.1",
+    "tqdm>=4.66",
+    "signalplot>=0.1.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+deep = ["tensorflow>=2.16", "torch>=2.2"]
+prophet = ["prophet>=1.1"]
+all = ["ts-forecast[deep,prophet]"]
+
+[project.scripts]
+forecast = "forecast:main"
+
+[tool.setuptools]
+py-modules = ["forecast"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]

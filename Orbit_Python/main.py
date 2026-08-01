@@ -7,8 +7,9 @@ Bayesian structural time series models for forecasting.
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 import numpy as np
@@ -100,8 +101,8 @@ def main():
     )
     
     # Add confidence intervals if available
-    pred_lower = predictions.get("prediction_5") or predictions.get("prediction_lower")
-    pred_upper = predictions.get("prediction_95") or predictions.get("prediction_upper")
+    pred_lower = predictions.get("prediction_5") if "prediction_5" in predictions.columns else predictions.get("prediction_lower") if "prediction_lower" in predictions.columns else None
+    pred_upper = predictions.get("prediction_95") if "prediction_95" in predictions.columns else predictions.get("prediction_upper") if "prediction_upper" in predictions.columns else None
     
     if pred_lower is not None and pred_upper is not None:
         ax.fill_between(

@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Tuple
@@ -23,6 +25,8 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
+from src.run_logger import append_run_log, utc_now_iso
 
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -49,22 +53,21 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
+    common = parse_common_config(config_dict, script_dir)
+
     
     return Config(
-        data_path=data_path,
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         freq=config_dict["data"].get("freq", "MS"),
         horizon=int(config_dict["model"]["horizon"]),
         n_splits=int(config_dict["model"]["n_splits"]),
         input_chunk_length=int(config_dict["model"]["input_chunk_length"]),
         output_chunk_length=int(config_dict["model"]["output_chunk_length"]),
         n_epochs=int(config_dict["model"]["n_epochs"]),
-        output_dir=output_dir,
-        output_plot=output_dir / config_dict["output"]["tufte_plot"],
+        output_dir=common.output_dir,
+        output_plot=common.output_dir / config_dict["output"]["tufte_plot"],
     )
 
 
@@ -167,7 +170,7 @@ def plot_nbeats_forecast(series: TimeSeries, config: Config, last_forecast: Time
     ax.plot(history.to_series().index, history.to_series().values, color="#555555", lw=1.5, label="History")
     ax.axvline(forecast_start, color="#777777", linestyle="--", lw=1)
     
-    if not actual.is_empty:
+    if len(actual) > 0:
         ax.plot(actual.to_series().index, actual.to_series().values, color="#1f77b4", lw=1.8, label="Actual")
     
     ax.plot(forecast.to_series().index, forecast.to_series().values, color="red", lw=2.0, label="N-BEATS Forecast")
@@ -189,25 +192,53 @@ def plot_nbeats_forecast(series: TimeSeries, config: Config, last_forecast: Time
 def main() -> None:
     """Main execution function."""
     script_dir = Path(__file__).parent
-    
-    # Load configuration using consolidated loader
+    started_at = utc_now_iso()
+    t0 = time.perf_counter()
+
+    status = "success"
+    error_msg = None
+    metrics_log: dict[str, float] = {}
+
     config_dict = load_config()
-    
-    # Parse into Config dataclass
     config = parse_config(config_dict, script_dir)
-    
-    # Load series
-    series = load_series(config)
-    print(f"Loaded {len(series)} data points")
-    
-    # Rolling origin evaluation
-    _, last_true, last_pred = rolling_origin_nbeats(series, config)
-    
-    # Plot forecast
-    if last_pred is not None:
-        plot_nbeats_forecast(series, config, last_pred)
-    
-    print("\n N-BEATS analysis complete")
+
+    try:
+        # Load series
+        series = load_series(config)
+        print(f"Loaded {len(series)} data points")
+
+        # Rolling origin evaluation
+        mean_mae, last_true, last_pred = rolling_origin_nbeats(series, config)
+        metrics_log["rolling_origin_mae"] = float(mean_mae)
+
+        # Plot forecast
+        if last_pred is not None:
+            plot_nbeats_forecast(series, config, last_pred)
+
+        print("\n N-BEATS analysis complete")
+    except Exception as e:
+        status = "failed"
+        error_msg = str(e)
+        raise
+    finally:
+        ended_at = utc_now_iso()
+        duration = time.perf_counter() - t0
+        log_path = append_run_log(
+            output_dir=config.output_dir,
+            script_name="NBEATS_Python",
+            started_at_utc=started_at,
+            ended_at_utc=ended_at,
+            duration_seconds=duration,
+            status=status,
+            metrics=metrics_log,
+            details={
+                "data_path": str(config.data_path),
+                "horizon": str(config.horizon),
+                "n_epochs": str(config.n_epochs),
+            },
+            error=error_msg,
+        )
+        print(f"Run log saved to: {log_path}")
 
 
 if __name__ == "__main__":

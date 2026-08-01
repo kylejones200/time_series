@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Tuple
@@ -23,6 +24,7 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from darts import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -49,22 +51,21 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
+    common = parse_common_config(config_dict, script_dir)
+
     
     return Config(
-        data_path=data_path,
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         freq=config_dict["data"].get("freq", "MS"),
         horizon=int(config_dict["model"]["horizon"]),
         n_splits=int(config_dict["model"]["n_splits"]),
         input_chunk_length=int(config_dict["model"]["input_chunk_length"]),
         output_chunk_length=int(config_dict["model"]["output_chunk_length"]),
         epochs=int(config_dict["model"]["epochs"]),
-        output_dir=output_dir,
-        output_plot=output_dir / config_dict["output"]["tufte_plot"],
+        output_dir=common.output_dir,
+        output_plot=common.output_dir / config_dict["output"]["tufte_plot"],
     )
 
 
@@ -174,7 +175,7 @@ def plot_lstm_forecast(series: TimeSeries, config: Config, last_forecast: TimeSe
     ax.plot(history.to_series().index, history.to_series().values, color="#555555", lw=1.5, label="History")
     ax.axvline(forecast_start, color="#777777", linestyle="--", lw=1)
     
-    if not actual.is_empty:
+    if len(actual) > 0:
         ax.plot(actual.to_series().index, actual.to_series().values, color="#1f77b4", lw=1.8, label="Actual")
     
     ax.plot(forecast.to_series().index, forecast.to_series().values, color="red", lw=2.0, label="LSTM Forecast")

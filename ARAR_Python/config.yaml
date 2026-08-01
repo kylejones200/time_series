@@ -1,7 +1,7 @@
 data:
-  input_file: "ercot_load_data.csv"
+  input_file: "us_all_sectors_generation_monthly.csv"
   date_col: "date"
-  value_col: "values"
+  value_col: "value"
   resample:
     enabled: false
     freq: "15min"

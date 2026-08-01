@@ -6,8 +6,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 
@@ -22,6 +23,7 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -47,39 +49,45 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
+    common = parse_common_config(config_dict, script_dir)
+
     
     return Config(
-        data_path=data_path,
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         season=int(config_dict["feature_importance"]["season"]),
         n_splits=int(config_dict["feature_importance"]["n_splits"]),
         window_size=int(config_dict["sliding_window"]["window_size"]),
-        output_dir=output_dir,
-        rf_plot=output_dir / config_dict["output"]["random_forest_plot"],
-        supervised_forecast_plot=output_dir / config_dict["output"]["supervised_forecast"],
-        supervised_importance_plot=output_dir / config_dict["output"]["supervised_importance"],
-        seasonal_pattern_plot=output_dir / config_dict["output"]["seasonal_pattern"],
-        fuel_mix_plot=output_dir / config_dict["output"]["fuel_mix_plot"],
+        output_dir=common.output_dir,
+        rf_plot=common.output_dir / config_dict["output"]["random_forest_plot"],
+        supervised_forecast_plot=common.output_dir / config_dict["output"]["supervised_forecast"],
+        supervised_importance_plot=common.output_dir / config_dict["output"]["supervised_importance"],
+        seasonal_pattern_plot=common.output_dir / config_dict["output"]["seasonal_pattern"],
+        fuel_mix_plot=common.output_dir / config_dict["output"]["fuel_mix_plot"],
     )
 
 
 def load_dataframe(config: Config) -> pd.DataFrame:
     """Load DataFrame from CSV."""
-    from src import load_time_series
     if not config.data_path.exists():
         raise FileNotFoundError(f"Input CSV not found at {config.data_path}")
-    
-    df = pd.read_csv(config.data_path, skiprows=4)
+
+    # Try standard CSV first; fallback to legacy EIA export layout.
+    df = pd.read_csv(config.data_path)
+    date_key = config.date_col.lower()
+    value_key = config.value_col.lower()
+    if date_key not in [c.strip().lower() for c in df.columns]:
+        df = pd.read_csv(config.data_path, skiprows=4)
+
     df = df.rename(columns=lambda c: c.strip().lower())
-    if config.date_col.lower() not in df.columns:
+    if date_key not in df.columns:
         raise ValueError("Date column not present in CSV")
-    df[config.date_col.lower()] = pd.to_datetime(df[config.date_col.lower()], errors="coerce")
-    df = df.dropna(subset=[config.date_col.lower()])
-    return df.sort_values(config.date_col.lower()).reset_index(drop=True)
+    if value_key not in df.columns:
+        raise ValueError("Value column not present in CSV")
+    df[date_key] = pd.to_datetime(df[date_key], errors="coerce")
+    df = df.dropna(subset=[date_key, value_key])
+    return df.sort_values(date_key).reset_index(drop=True)
 
 
 def build_features(series: pd.Series, season: int) -> pd.DataFrame:

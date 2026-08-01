@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dataclasses import dataclass
 from typing import Optional
@@ -25,6 +27,8 @@ from src import (
     get_output_dir,
     save_plot,
 )
+from src.config import parse_common_config
+from src.run_logger import append_run_log, utc_now_iso
 
 from statsmodels.tsa.seasonal import STL
 
@@ -95,9 +99,9 @@ class Config:
 
 def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
-    repo_root = script_dir.parent
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
-    
+    common = parse_common_config(config_dict, script_dir)
+    output_dir = common.output_dir
+
     stl_cfg = config_dict["methods"]["stl"]
     ae_cfg = config_dict["methods"]["autoencoder"]
     stumpy_cfg = config_dict["methods"]["stumpy"]
@@ -110,9 +114,9 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
     }
     
     return Config(
-        data_path=repo_root / "data" / config_dict["data"]["input_file"],
-        date_col=config_dict["data"]["date_col"],
-        value_col=config_dict["data"]["value_col"],
+        data_path=common.data_path,
+        date_col=common.date_col,
+        value_col=common.value_col,
         freq=config_dict["data"].get("freq", "MS"),
         stl=STLConfig(
             enabled=bool(stl_cfg.get("enabled", True)),
@@ -140,7 +144,7 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
             method=pyod_cfg.get("method", "IForest"),
             contamination=float(pyod_cfg.get("contamination", 0.1)),
         ),
-        output_dir=output_dir,
+        output_dir=common.output_dir,
         colors=colors,
     )
 
@@ -160,7 +164,7 @@ def load_series(config: Config) -> pd.Series:
     return series.astype(float)
 
 
-def run_stl(series: pd.Series, config: Config) -> pd.Series:
+def run_stl(series: pd.Series, config: Config) -> tuple[pd.Series, int]:
     """Run STL decomposition anomaly detection."""
     stl = STL(series, period=config.stl.season, robust=True).fit()
     resid = pd.Series(stl.resid, index=series.index)
@@ -196,7 +200,7 @@ def run_stl(series: pd.Series, config: Config) -> pd.Series:
     
     print(f" STL anomalies saved -> {config.stl.output_plot}")
     print(f"  Anomalies detected: {int(anomalies.sum())}")
-    return resid
+    return resid, int(anomalies.sum())
 
 
 class ResidualAutoencoder(nn.Module):
@@ -428,44 +432,74 @@ def run_pyod(series: pd.Series, config: Config) -> None:
 def main() -> None:
     """Main execution function."""
     script_dir = Path(__file__).parent
-    
+    started_at = utc_now_iso()
+    t0 = time.perf_counter()
     torch.manual_seed(42)
     np.random.seed(42)
-    
-    # Load configuration using consolidated loader
+
     config_dict = load_config()
-    
-    # Parse into Config dataclass
     config = parse_config(config_dict, script_dir)
-    
-    # Load series
-    series = load_series(config)
-    
-    print(
-        f"Loaded series with {len(series)} points from {series.index.min().date()} to {series.index.max().date()}"
-    )
-    
-    residuals = None
-    if config.stl.enabled:
-        print("\nRunning STL anomaly detection...")
-        residuals = run_stl(series, config)
-    
-    if config.autoencoder.enabled:
-        print("\nTraining autoencoder for anomaly detection...")
-        residuals_for_ae = (
-            residuals if residuals is not None else series - series.mean()
+
+    status = "success"
+    error_msg = None
+    metrics_log: dict[str, float] = {}
+
+    try:
+        # Load series
+        series = load_series(config)
+
+        print(
+            f"Loaded series with {len(series)} points from {series.index.min().date()} to {series.index.max().date()}"
         )
-        train_autoencoder(residuals_for_ae, config)
-    
-    if config.stumpy.enabled:
-        print("\nRunning STUMPY matrix profile anomaly detection...")
-        run_stumpy(series, config)
-    
-    if config.pyod.enabled:
-        print("\nRunning PyOD anomaly detection...")
-        run_pyod(series, config)
-    
-    print("\n Anomaly detection pipeline complete")
+
+        residuals = None
+        stl_count = 0
+        ae_count = 0
+        if config.stl.enabled:
+            print("\nRunning STL anomaly detection...")
+            residuals, stl_count = run_stl(series, config)
+
+        if config.autoencoder.enabled:
+            print("\nTraining autoencoder for anomaly detection...")
+            residuals_for_ae = (
+                residuals if residuals is not None else series - series.mean()
+            )
+            _, _, ae_anomalies = train_autoencoder(residuals_for_ae, config)
+            ae_count = int(ae_anomalies.sum())
+
+        if config.stumpy.enabled:
+            print("\nRunning STUMPY matrix profile anomaly detection...")
+            run_stumpy(series, config)
+
+        if config.pyod.enabled:
+            print("\nRunning PyOD anomaly detection...")
+            run_pyod(series, config)
+
+        metrics_log = {
+            "stl_anomalies": float(stl_count),
+            "autoencoder_anomalies": float(ae_count),
+        }
+
+        print("\n Anomaly detection pipeline complete")
+    except Exception as e:
+        status = "failed"
+        error_msg = str(e)
+        raise
+    finally:
+        ended_at = utc_now_iso()
+        duration = time.perf_counter() - t0
+        log_path = append_run_log(
+            output_dir=config.output_dir,
+            script_name="STUMPY_PyOD_Python",
+            started_at_utc=started_at,
+            ended_at_utc=ended_at,
+            duration_seconds=duration,
+            status=status,
+            metrics=metrics_log,
+            details={"data_path": str(config.data_path)},
+            error=error_msg,
+        )
+        print(f"Run log saved to: {log_path}")
 
 
 if __name__ == "__main__":

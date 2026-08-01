@@ -1,9 +1,27 @@
 #!/usr/bin/env python3
 """Shared utility functions for templates."""
 
+import sys
 from pathlib import Path
 from importlib import util
 from typing import Any
+
+
+def bootstrap_repo(script_file: str | None = None) -> Path:
+    """
+    Add repository root to sys.path so `import src` works from template scripts.
+
+    Call with ``__file__`` when running a template's main.py directly.
+    """
+    if script_file is not None:
+        repo_root = Path(script_file).resolve().parents[1]
+    else:
+        repo_root = Path(__file__).resolve().parents[1]
+
+    repo_str = str(repo_root)
+    if repo_str not in sys.path:
+        sys.path.insert(0, repo_str)
+    return repo_root
 
 
 def repo_import(module: str) -> Any:

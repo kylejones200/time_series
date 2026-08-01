@@ -1,5 +1,5 @@
 data:
-  input_file: "reference/example_series.csv"
+  input_file: "us_all_sectors_generation_monthly.csv"
   date_column: "date"
   value_column: "value"
 
@@ -11,7 +11,7 @@ model:
 
 evaluation:
   test_size: 0.2
-  forecast_horizon: 24        # Forecast steps ahead
+  forecast_horizon: 12        # Forecast steps ahead
 
 output:
   output_dir: "outputs"

@@ -1,18 +1,18 @@
 data:
-  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
+  input_file: "/Users/kylejonespatricia/time_series/data/morocco_daily_total_load.csv"
   date_col: "date"
   value_col: "value"
-  freq: "MS"
+  freq: "D"
 
 experiment:
-  history_end: "2024-12-01"
-  forecast_start: "2025-01-01"
-  forecast_end: "2025-08-01"
+  history_end: "2024-04-30"
+  forecast_start: "2024-05-01"
+  forecast_end: "2024-05-24"
 
 model:
   checkpoint: "ibm-granite/granite-timeseries-ttm-r2"
-  context_length: 512
-  horizon: 8
+  context_length: 120
+  horizon: 24
 
 output:
   tufte_plot: "eia_granite_ttm_last_fold.png"

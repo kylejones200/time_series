@@ -38,7 +38,23 @@ ENV/
 *.swp
 *.swo
 *~
+
+# macOS / AppleDouble junk
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
 # Jupyter Notebook
 .ipynb_checkpoints/
@@ -46,6 +62,7 @@ ENV/
 
 # Outputs
 outputs/
+mlruns/
 *.png
 *.jpg
 *.jpeg
